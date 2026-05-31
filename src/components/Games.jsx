@@ -83,10 +83,10 @@ function GameCard({ game, index }) {
             <div className="flex items-center gap-2 mb-6">
               <div className="flex gap-0.5">
                 {[1,2,3,4,5].map(s => (
-                  <span key={s} className={`text-xs ${s <= 4 ? 'text-yellow-400' : 'text-gray-600'}`}>★</span>
+                  <span key={s} className={`text-xs ${s <= 5 ? 'text-yellow-400' : 'text-gray-600'}`}>★</span>
                 ))}
               </div>
-              <span className="text-xs text-gray-500 font-medium">4.8 · 1.2K değerlendirme</span>
+              <span className="text-xs text-gray-500 font-medium">5 · 10+ değerlendirme</span>
             </div>
 
             <div className="flex gap-3">

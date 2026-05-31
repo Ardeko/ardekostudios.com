@@ -38,8 +38,7 @@ function TypewriterWords() {
 
 const STATS = [
   { value: '1', label: 'Oyun Yayında' },
-  { value: '10K+', label: 'İndirme' },
-  { value: '4.8★', label: 'App Store Puanı' },
+  { value: '5★', label: 'App Store Puanı' },
 ];
 
 // Floating particle dots
