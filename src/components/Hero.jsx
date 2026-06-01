@@ -41,16 +41,17 @@ const STATS = [
   { value: '5★', label: 'App Store Puanı' },
 ];
 
-// Floating particle dots
 function Particles() {
-  const dots = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 2 + 1,
-    duration: Math.random() * 6 + 4,
-    delay: Math.random() * 4,
-  }));
+  const dots = useRef(
+    Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      duration: Math.random() * 6 + 4,
+      delay: Math.random() * 4,
+    }))
+  ).current;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -58,25 +59,65 @@ function Particles() {
         <motion.div
           key={dot.id}
           className="absolute rounded-full bg-indigo-400/20"
-          style={{
-            left: `${dot.x}%`,
-            top: `${dot.y}%`,
-            width: dot.size,
-            height: dot.size,
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0, 0.6, 0],
-          }}
-          transition={{
-            duration: dot.duration,
-            delay: dot.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          style={{ left: `${dot.x}%`, top: `${dot.y}%`, width: dot.size, height: dot.size }}
+          animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
+          transition={{ duration: dot.duration, delay: dot.delay, repeat: Infinity, ease: 'easeInOut' }}
         />
       ))}
     </div>
+  );
+}
+
+function MagneticLink({ href, children, primary }) {
+  const ref = useRef(null);
+
+  const handleMouseMove = (e) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    el.style.transform = `translate(${x * 0.32}px, ${y * 0.32}px)`;
+    el.style.transition = 'transform 0.1s ease';
+    if (primary) {
+      el.style.boxShadow = '0 0 70px rgba(99,102,241,0.6)';
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!ref.current) return;
+    ref.current.style.transform = 'translate(0px, 0px)';
+    ref.current.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+    if (primary) {
+      ref.current.style.boxShadow = '0 0 40px rgba(99,102,241,0.3)';
+    }
+  };
+
+  if (primary) {
+    return (
+      <a
+        ref={ref}
+        href={href}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="relative inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-white uppercase bg-indigo-600 rounded-xl overflow-hidden group shadow-[0_0_40px_rgba(99,102,241,0.3)] will-change-transform"
+      >
+        <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <span className="relative z-10">{children}</span>
+      </a>
+    );
+  }
+
+  return (
+    <a
+      ref={ref}
+      href={href}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-gray-300 uppercase border border-white/10 rounded-xl hover:border-white/30 transition-colors will-change-transform"
+    >
+      {children}
+    </a>
   );
 }
 
@@ -93,7 +134,6 @@ export default function Hero() {
     >
       <Particles />
 
-      {/* Animated background blob */}
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
@@ -105,7 +145,6 @@ export default function Hero() {
         className="absolute top-1/2 left-1/2 w-[500px] h-[500px] md:w-[800px] md:h-[800px] bg-indigo-600 rounded-full blur-[180px] pointer-events-none"
       />
 
-      {/* Secondary blob */}
       <motion.div
         animate={{
           scale: [1, 1.3, 1],
@@ -118,7 +157,6 @@ export default function Hero() {
       />
 
       <motion.div style={{ y, opacity }} className="flex flex-col items-center">
-        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -135,7 +173,6 @@ export default function Hero() {
           </span>
         </motion.div>
 
-        {/* Heading */}
         <motion.h1
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -149,7 +186,6 @@ export default function Hero() {
           <TypewriterWords />
         </motion.h1>
 
-        {/* Subtext */}
         <motion.p
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -160,34 +196,16 @@ export default function Hero() {
           sıra dışı görsellikle harmanlıyoruz.
         </motion.p>
 
-        {/* CTA Buttons */}
         <motion.div
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1, delay: 0.7 }}
           className="flex flex-col sm:flex-row gap-4 mb-20"
         >
-          <motion.a
-            href="#games"
-            whileHover={{ scale: 1.05, boxShadow: '0 0 60px rgba(99,102,241,0.5)' }}
-            whileTap={{ scale: 0.95 }}
-            className="relative inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-white uppercase bg-indigo-600 rounded-xl overflow-hidden group shadow-[0_0_40px_rgba(99,102,241,0.3)]"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <span className="relative z-10">Oyunları Keşfet</span>
-          </motion.a>
-
-          <motion.a
-            href="#about"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-gray-300 uppercase border border-white/10 rounded-xl hover:border-white/30 transition-colors"
-          >
-            Hakkımızda
-          </motion.a>
+          <MagneticLink href="#games" primary>Oyunları Keşfet</MagneticLink>
+          <MagneticLink href="#about">Hakkımızda</MagneticLink>
         </motion.div>
 
-        {/* Stats Row */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -203,7 +221,6 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -28,15 +28,55 @@ const TIMELINE = [
   { year: '2024', event: 'Legend of Rey', sub: 'Itchi.io da ilk oyunumuz yayınlandı.' },
   { year: '2025', event: 'Wordeko, Protocol ve Nebula - Bubble Shooter', sub: '3 farklı mini mobil oyun ardaguner.com da yayınlandı.' },
   { year: '2026', event: 'Switch Master: Railway', sub: 'İlk oyun App Store\'da yayına girdi.' },
-  { year: '2026', event: 'Gizli Proje başladı', sub: 'Yeni nesil mekanikler geliştiriliyor.' },
+  { year: '2026', event: 'Yeni Proje başladı', sub: 'Yeni nesil mekanikler geliştiriliyor.' },
   { year: '2026', event: 'Büyüme dönemi', sub: 'Ekip genişliyor, vizyon büyüyor.' },
 ];
+
+const valuesContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+  },
+};
+
+const valueItem = {
+  hidden: { opacity: 0, y: 30 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const timelineContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+  },
+};
+
+const timelineItemLeft = {
+  hidden: { opacity: 0, x: -40 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const timelineItemRight = {
+  hidden: { opacity: 0, x: 40 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
 
 export default function About() {
   return (
     <section id="about" className="py-32 px-6 overflow-hidden">
       <div className="max-w-[1280px] mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -52,9 +92,7 @@ export default function About() {
           </h2>
         </motion.div>
 
-        {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
-          {/* Left: Manifesto */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -76,7 +114,6 @@ export default function About() {
               cevap hayır ise çıkarıyoruz. Geri kalan her şeyi mükemmelleştiriyoruz.
             </p>
 
-            {/* Decorative bar */}
             <motion.div
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
@@ -86,15 +123,17 @@ export default function About() {
             />
           </motion.div>
 
-          {/* Right: Values grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <motion.div
+            variants={valuesContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: '-40px' }}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          >
             {VALUES.map((v, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
+                variants={valueItem}
                 whileHover={{ y: -4, borderColor: 'rgba(99,102,241,0.3)' }}
                 className="bg-white/[0.02] border border-white/8 rounded-2xl p-5 flex flex-col gap-3 cursor-default transition-colors"
               >
@@ -103,10 +142,9 @@ export default function About() {
                 <p className="text-xs text-gray-500 font-light leading-relaxed">{v.desc}</p>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Timeline */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -118,7 +156,6 @@ export default function About() {
           </p>
 
           <div className="relative">
-            {/* Timeline line */}
             <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5 hidden sm:block" />
             <motion.div
               initial={{ scaleY: 0 }}
@@ -128,14 +165,17 @@ export default function About() {
               className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-indigo-500/40 to-transparent origin-top hidden sm:block"
             />
 
-            <div className="flex flex-col gap-8">
+            <motion.div
+              variants={timelineContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: '-40px' }}
+              className="flex flex-col gap-8"
+            >
               {TIMELINE.map((item, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.7, delay: i * 0.1 }}
+                  variants={i % 2 === 0 ? timelineItemLeft : timelineItemRight}
                   className={`flex items-center gap-6 ${
                     i % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'
                   } flex-row`}
@@ -148,7 +188,6 @@ export default function About() {
                     <p className="text-xs text-gray-500 font-light mt-0.5">{item.sub}</p>
                   </div>
 
-                  {/* Center dot */}
                   <motion.div
                     whileInView={{ scale: [0, 1.3, 1] }}
                     viewport={{ once: true }}
@@ -159,7 +198,7 @@ export default function About() {
                   <div className="flex-1 hidden sm:block" />
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </motion.div>
       </div>
