@@ -355,7 +355,7 @@ function GameCard({ game }) {
               <span className="text-[9px] font-black tracking-[0.4em] text-indigo-400/60 uppercase mb-2">
                 Project Codename: Unknown
               </span>
-              <h3 className="text-xl font-black text-white mb-4 tracking-wider uppercase">Yeni Proje</h3>
+              <h3 className="text-xl font-black text-white mb-4 tracking-wider uppercase">YENİ PROJE</h3>
               <p className="text-gray-500 max-w-xs text-xs font-light leading-relaxed">
                 Sınırları zorlayan yeni nesil bir mobil deneyim için AR-GE süreçlerimiz devam ediyor.
                 Çok yakında burada listelenecek — takipte kal.
@@ -418,7 +418,7 @@ export default function Games() {
           Neler Yapıyoruz?
         </p>
         <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-          Projelerimiz
+          PROJELERİMİZ
         </h2>
       </motion.div>
       <motion.div

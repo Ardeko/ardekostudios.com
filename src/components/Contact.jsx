@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef } from 'react';
 
 const CONTACT_CARDS = [
-  { icon: '✉️', label: 'E-posta', value: 'ardaguner2000@gmail.com', href: 'mailto:ardaguner2000@gmail.com' },
+  { icon: '✉️', label: 'E-posta', value: 'info@ardekostudios.com', href: 'mailto:info@ardekostudios.com' },
   { icon: '📸', label: 'INSTAGRAM', value: '@ardekostudios', href: 'https://www.instagram.com/ardekostudios/' },
   { icon: '📍', label: 'Konum', value: 'İstanbul, Türkiye', href: '#' },
 ];

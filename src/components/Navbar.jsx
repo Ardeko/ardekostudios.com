@@ -25,12 +25,11 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <motion.nav
         initial={{ x: -200, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="hidden md:flex fixed top-0 left-0 h-screen w-64 bg-[#05070F]/80 backdrop-blur-2xl border-r border-white/5 flex-col justify-between items-center py-12 px-8 z-50"
+        className="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-[#05070F]/80 backdrop-blur-2xl border-r border-white/5 flex-col justify-between items-center py-12 px-8 z-50"
       >
         <div className="w-full flex flex-col items-center gap-4">
           <motion.a
@@ -96,12 +95,11 @@ export default function Navbar() {
                     className="ml-auto w-1 h-1 rounded-full bg-indigo-400"
                   />
                 )}
-              </motion.a>
+                  </motion.a>
             );
           })}
         </div>
 
-        {/* Değiştirdiğimiz Yeni Sosyal Alan Burası */}
         <div className="w-full flex flex-col items-center gap-3">
           <div className="flex mb-2">
             <motion.a
@@ -114,12 +112,11 @@ export default function Navbar() {
               INSTAGRAM
             </motion.a>
           </div>
-          <div className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">v1.0.0</div>
+          <div className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">info@ardekostudios.com</div>
         </div>
       </motion.nav>
 
-      {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 w-full h-16 bg-[#05070F]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center px-5 z-50">
+      <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-[#05070F]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center px-5 z-50">
         <a href="#">
           <img src="/ardeko.png" alt="Ardeko" className="h-8 w-auto object-contain" />
         </a>
@@ -134,7 +131,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Full-screen Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -142,7 +138,7 @@ export default function Navbar() {
             animate={{ opacity: 1, clipPath: 'circle(150% at 95% 5%)' }}
             exit={{ opacity: 0, clipPath: 'circle(0% at 95% 5%)' }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 bg-[#05070F] z-40 flex flex-col justify-center items-center gap-8 md:hidden"
+            className="fixed inset-0 bg-[#05070F] z-40 flex flex-col justify-center items-center gap-8 lg:hidden"
           >
             <img src="/ardeko.png" alt="Ardeko" className="h-20 w-auto mb-6 opacity-80" />
             {NAV_ITEMS.map((item, i) => (

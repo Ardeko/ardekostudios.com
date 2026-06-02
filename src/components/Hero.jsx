@@ -1,8 +1,23 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 
-const WORDS = ['CYBER PLAY', 'BOLD GAMES', 'NEW WORLDS', 'PIXEL ART'];
-
+const WORDS = [
+  'BOLD GAMES',
+  'WEB EXPERIENCES',
+  'CYBER PLAY',
+  'VISUAL IDENTITIES',
+  'IMMERSIVE WORLDS',
+  'CREATIVE CODE',
+  'MOBILE ADVENTURES',
+  'UNIQUE UI/UX',
+  'PIXEL ART',
+  'NEXT-GEN EXPERIENCES',
+  'INTERACTIVE ART',
+  'FUTURE TECH',
+  'DIGITAL INNOVATION',
+  'SMART SOLUTIONS',
+  ''
+];
 function TypewriterWords() {
   const [index, setIndex] = useState(0);
   const [displayed, setDisplayed] = useState('');
