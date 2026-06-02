@@ -85,7 +85,7 @@ export default function About() {
           className="mb-24 text-center lg:text-left"
         >
           <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
-            Kim Olduğumuz
+            KİM OLDUĞUMUZ
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
             Hakkımızda
