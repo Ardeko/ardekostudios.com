@@ -163,7 +163,7 @@ export default function Contact() {
             Ulaşın
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-            İletişim
+            İLETİŞİM
           </h2>
         </motion.div>
 

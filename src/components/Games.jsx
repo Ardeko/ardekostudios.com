@@ -326,21 +326,20 @@ function GameCard({ game }) {
               <div className="flex gap-3">
                 <MagneticButton
                   href="https://apps.apple.com/tr/app/switch-master-railway/id6770972534?l=tr"
+                  target="_blank"
+                  rel="noreferrer"
                   className="flex-1 px-6 py-3.5 bg-white text-[#05070F] rounded-xl text-[10px] font-black tracking-widest uppercase text-center"
                 >
                   App Store
                 </MagneticButton>
-                <div className="relative flex-1">
-                  <MagneticButton
-                    href="#"
-                    className="w-full px-6 py-3.5 border border-white/15 hover:border-white/40 rounded-xl text-[10px] font-black tracking-widest text-white uppercase text-center transition-colors block"
-                  >
-                    Google Play
-                  </MagneticButton>
-                  <span className="absolute -top-2 -right-2 text-[8px] font-black tracking-widest bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded-full uppercase pointer-events-none">
-                    Yakında
-                  </span>
-                </div>
+                <MagneticButton
+                  href="https://play.google.com/store/apps/details?id=com.ardeko.switchmaster&pcampaignid=web_share"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 px-6 py-3.5 border border-white/15 hover:border-white/40 rounded-xl text-[10px] font-black tracking-widest text-white uppercase text-center transition-colors block"
+                >
+                  Google Play
+                </MagneticButton>
               </div>
             </>
           ) : (

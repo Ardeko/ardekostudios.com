@@ -32,7 +32,7 @@ export default function Footer() {
                 App Store
               </a>
               <a
-                href="https://play.google.com/store/apps/developer?id=Ardeko+Studios&hl=en-US"
+                href="https://play.google.com/store/apps/developer?id=Ardeko+Studios&hl=tr"
                 target="_blank"
                 rel="noreferrer"
                 className="px-3 py-1.5 border border-white/10 rounded-lg text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
