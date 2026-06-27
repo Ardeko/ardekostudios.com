@@ -19,7 +19,7 @@ const VALUES = [
   {
     icon: '🌍',
     title: 'Küresel Vizyon',
-    desc: 'İstanbul\'dan dünyanın her köşesine ulaşan oyunlar yapıyoruz.',
+    desc: 'İstanbul\'dan dünyanın her köşesine ulaşan oyunlar kodluyoruz.',
   },
 ];
 
