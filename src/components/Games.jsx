@@ -744,7 +744,7 @@ export default function Games() {
       status: 'soon',
       title: 'Rushville',
       desc: 'Büyüyen şehrin trafiğini akışta tut. Renk renk mahalleleri yollarla bağla, tıkanıklığı çöz — sade ama derin bir şehir-bulmaca.',
-      platforms: 'ANDROID',
+      platforms: 'IOS · ANDROID',
       scene: RushvilleScene,
     },
     {

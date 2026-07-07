@@ -27,7 +27,7 @@ const TIMELINE = [
   { year: '2023', event: 'Ardeko Studios kuruldu', sub: '1 geliştirici, 0 ödün.' },
   { year: '2024', event: 'Legend of Rey', sub: 'Itchi.io da ilk oyunumuz yayınlandı.' },
   { year: '2025', event: 'Wordeko, Protocol ve Nebula - Bubble Shooter', sub: '3 farklı mini mobil oyun ardaguner.com da yayınlandı.' },
-  { year: '2026', event: 'Switch Master: Railway', sub: 'İlk oyun Google Play veApp Store\'da yayına girdi.' },
+  { year: '2026', event: 'Switch Master: Railway', sub: 'İlk oyun Google Play ve App Store\'da yayına girdi.' },
   { year: '2026', event: 'Yeni Projelere başlandı', sub: 'Yeni nesil mekanikler geliştiriliyor.' },
   { year: '2026', event: 'Büyüme dönemi', sub: 'Ekip genişliyor, vizyon büyüyor.' },
 ];
