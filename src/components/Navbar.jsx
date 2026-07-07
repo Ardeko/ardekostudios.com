@@ -25,6 +25,7 @@ export default function Navbar() {
 
   return (
     <>
+      {/* DESKTOP SIDEBAR */}
       <motion.nav
         initial={{ x: -200, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -95,13 +96,35 @@ export default function Navbar() {
                     className="ml-auto w-1 h-1 rounded-full bg-indigo-400"
                   />
                 )}
-                  </motion.a>
+              </motion.a>
             );
           })}
         </div>
 
-        <div className="w-full flex flex-col items-center gap-3">
-          <div className="flex mb-2">
+        {/* BOTTOM AREA (FOUNDER & SOCIALS) */}
+        <div className="w-full flex flex-col items-center gap-4">
+          
+          {/* Kişisel Web Sitesi Linki (Modern & Minimal Yerleşim) */}
+          <motion.a
+            href="https://ardaguner.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ y: -3 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            className="group flex flex-col items-center gap-0.5 cursor-pointer select-none"
+          >
+            <span className="text-[8px] font-bold tracking-[0.4em] text-gray-500 group-hover:text-indigo-400 transition-colors duration-300">
+              FOUNDER
+            </span>
+            <span className="text-[10px] font-black tracking-[0.2em] text-gray-400 group-hover:text-white transition-colors duration-300">
+              ARDA GÜNER
+            </span>
+          </motion.a>
+
+          {/* İnce Şık Bir Ayırıcı Çizgi */}
+          <div className="w-6 h-[1px] bg-white/10" />
+
+          <div className="flex">
             <motion.a
               href="https://www.instagram.com/ardekostudios/"
               target="_blank"
@@ -112,10 +135,13 @@ export default function Navbar() {
               INSTAGRAM
             </motion.a>
           </div>
-          <div className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">info@ardekostudios.com</div>
+          <div className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">
+            info@ardekostudios.com
+          </div>
         </div>
       </motion.nav>
 
+      {/* MOBILE HEADER */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-[#05070F]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center px-5 z-50">
         <a href="#">
           <img src="/ardeko.png" alt="Ardeko" className="h-8 w-auto object-contain" />
@@ -131,6 +157,7 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* MOBILE MENU */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -141,6 +168,7 @@ export default function Navbar() {
             className="fixed inset-0 bg-[#05070F] z-40 flex flex-col justify-center items-center gap-8 lg:hidden"
           >
             <img src="/ardeko.png" alt="Ardeko" className="h-20 w-auto mb-6 opacity-80" />
+            
             {NAV_ITEMS.map((item, i) => (
               <motion.a
                 key={item}
@@ -154,6 +182,23 @@ export default function Navbar() {
                 {item}
               </motion.a>
             ))}
+
+            {/* Mobile Founder Link (Menünün en altında zarifçe belirir) */}
+            <motion.a
+              href="https://ardaguner.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + NAV_ITEMS.length * 0.07 }}
+              className="flex flex-col items-center gap-0.5 mt-8 group"
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="text-[9px] font-bold tracking-[0.4em] text-gray-600">FOUNDER</span>
+              <span className="text-sm font-black tracking-[0.15em] text-gray-400 group-hover:text-indigo-400 transition-colors duration-300">
+                ARDA GÜNER
+              </span>
+            </motion.a>
           </motion.div>
         )}
       </AnimatePresence>
