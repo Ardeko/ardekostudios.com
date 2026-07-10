@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
+import RevoScene from './RevoScene';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -640,19 +641,47 @@ function GameCard({ game }) {
             <StatusBadge status={game.status} />
             <span className="text-[9px] text-gray-600 font-bold tracking-widest">{game.platforms}</span>
           </div>
-          <h3 className="text-2xl font-black text-white mb-3 tracking-tight">{game.title}</h3>
+          <h3 className={`text-2xl font-black text-white tracking-tight ${game.subtitle ? 'mb-1' : 'mb-3'}`}>
+            {game.title}
+          </h3>
+          {game.subtitle && (
+            <p className="text-[11px] text-[#3ECFC0] font-bold tracking-wide mb-3">{game.subtitle}</p>
+          )}
           <p className="text-gray-400 text-sm font-light leading-relaxed mb-8 flex-1">
             {game.desc}
           </p>
 
-          {isLive ? (
-            <>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map(s => <span key={s} className="text-xs text-yellow-400">★</span>)}
-                </div>
-                <span className="text-xs text-gray-500 font-medium">{game.rating}</span>
+          {game.links ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 mb-1">
+                <motion.span
+                  animate={{ scale: [1, 1.4, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-1.5 h-1.5 rounded-full bg-[#3ECFC0]"
+                />
+                <span className="text-[9px] font-bold tracking-widest text-gray-500 uppercase">
+                  Tek tıkla bağlan, kurulum gerekmez
+                </span>
               </div>
+              <MagneticButton
+                href={game.links.primary.url}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-xl text-[10px] font-black tracking-widest uppercase text-center shadow-[0_0_25px_rgba(62,207,192,0.25)] block"
+              >
+                {game.links.primary.text} →
+              </MagneticButton>
+            </div>
+          ) : isLive ? (
+            <>
+              {game.rating && (
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(s => <span key={s} className="text-xs text-yellow-400">★</span>)}
+                  </div>
+                  <span className="text-xs text-gray-500 font-medium">{game.rating}</span>
+                </div>
+              )}
               <div className="flex gap-3">
                 {game.appStore && (
                   <MagneticButton
@@ -732,6 +761,18 @@ export default function Games() {
       scene: TrainScene,
       appStore: 'https://apps.apple.com/tr/app/switch-master-railway/id6770972534?l=tr',
       googlePlay: 'https://play.google.com/store/apps/details?id=com.ardeko.switchmaster&pcampaignid=web_share',
+    },
+    {
+      id: "revo",
+      status: "live",
+      title: "REVO",
+      subtitle: "Arkadaşlarınla aynı frekansta buluş",
+      desc: "SignalR ve WebRTC ile güçlendirilmiş tarayıcı tabanlı anlık iletişim platformu. Hiçbir kurulum yapmadan odanı yarat ve konuşmaya başla.",
+      platforms: "WEB · BROWSER",
+      scene: RevoScene,
+      links: {
+        primary: { text: "SOHBETE BAŞLA", url: "https://ardekostudios.xyz" },
+      }
     },
     {
       status: 'soon',
