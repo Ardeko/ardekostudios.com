@@ -52,7 +52,7 @@ function TypewriterWords() {
 }
 
 const STATS = [
-  { value: '1', label: 'Oyun Yayında' },
+  { value: '2', label: 'Yayında' },
   { value: '5★', label: 'App Store Puanı' },
   { value: '5★', label: 'Google Play Puanı' },
 ];
