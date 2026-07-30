@@ -27,6 +27,7 @@ export default function Footer() {
                 href="https://apps.apple.com/tr/developer/arda-guner/id1896681354?l=tr"
                 target="_blank"
                 rel="noreferrer"
+                data-cursor="ring"
                 className="px-3 py-1.5 border border-white/10 rounded-lg text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
               >
                 App Store
@@ -35,6 +36,7 @@ export default function Footer() {
                 href="https://play.google.com/store/apps/developer?id=Ardeko+Studios&hl=tr"
                 target="_blank"
                 rel="noreferrer"
+                data-cursor="ring"
                 className="px-3 py-1.5 border border-white/10 rounded-lg text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
               >
                 Google Play
@@ -57,6 +59,7 @@ export default function Footer() {
                   href="https://www.instagram.com/ardekostudios/"
                   target="_blank"
                   rel="noreferrer"
+                  data-cursor="ring"
                   className="text-xs text-gray-500 hover:text-gray-200 transition-colors font-light"
                 >
                   Instagram
@@ -80,6 +83,7 @@ export default function Footer() {
                   href="https://ardaguner.com/privacy-policy"
                   target="_blank"
                   rel="noreferrer"
+                  data-cursor="ring"
                   className="text-xs text-gray-500 hover:text-gray-200 transition-colors font-light"
                 >
                   Gizlilik Politikası

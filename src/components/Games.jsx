@@ -627,6 +627,8 @@ function GameCard({ game }) {
         ref={tilt.ref}
         onMouseMove={tilt.onMouseMove}
         onMouseLeave={tilt.onMouseLeave}
+        data-cursor="soft"
+        data-cursor-color={game.id === 'revo' ? 'teal' : undefined}
         className="group relative rounded-3xl border border-white/10 bg-white/[0.03] overflow-hidden flex flex-col min-h-[460px] will-change-transform"
       >
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
@@ -667,6 +669,7 @@ function GameCard({ game }) {
                 href={game.links.primary.url}
                 target="_blank"
                 rel="noreferrer"
+                cursorColor="teal"
                 className="w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-xl text-[10px] font-black tracking-widest uppercase text-center shadow-[0_0_25px_rgba(62,207,192,0.25)] block"
               >
                 {game.links.primary.text} →
@@ -725,7 +728,7 @@ function GameCard({ game }) {
   );
 }
 
-function MagneticButton({ href, className, children, target, rel }) {
+function MagneticButton({ href, className, children, target, rel, cursorColor }) {
   const ref = useRef(null);
   const handleMouseMove = (e) => {
     const el = ref.current;
@@ -742,7 +745,17 @@ function MagneticButton({ href, className, children, target, rel }) {
     ref.current.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
   };
   return (
-    <a ref={ref} href={href} target={target} rel={rel} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className={className}>
+    <a
+      ref={ref}
+      href={href}
+      target={target}
+      rel={rel}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      data-cursor="ring"
+      data-cursor-color={cursorColor}
+      className={className}
+    >
       {children}
     </a>
   );

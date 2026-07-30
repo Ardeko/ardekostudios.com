@@ -36,6 +36,7 @@ export default function Navbar() {
           <motion.a
             href="#"
             whileHover={{ scale: 1.05 }}
+            data-cursor="ring"
             className="w-28 h-28 flex items-center justify-center"
           >
             <img
@@ -58,6 +59,7 @@ export default function Navbar() {
                 key={item}
                 href={`#${item.toLowerCase()}`}
                 whileTap={{ scale: 0.97 }}
+                data-cursor="ring"
                 className="relative group flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200"
               >
                 <motion.div
@@ -111,6 +113,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             whileHover={{ y: -3 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            data-cursor="ring"
             className="group flex flex-col items-center gap-0.5 cursor-pointer select-none"
           >
             <span className="text-[8px] font-bold tracking-[0.4em] text-gray-500 group-hover:text-indigo-400 transition-colors duration-300">
@@ -130,6 +133,7 @@ export default function Navbar() {
               target="_blank"
               rel="noreferrer"
               whileHover={{ scale: 1.1, color: '#818cf8' }}
+              data-cursor="ring"
               className="text-[10px] font-black tracking-[0.2em] text-gray-600 hover:text-indigo-400 transition-colors uppercase"
             >
               INSTAGRAM

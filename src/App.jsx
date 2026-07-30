@@ -6,6 +6,7 @@ import Games from './components/Games';
 import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import CustomCursor from './components/CustomCursor';
 
 export default function App() {
   const cursorX = useMotionValue(-100);
@@ -30,6 +31,8 @@ export default function App() {
 
   return (
     <div className="relative antialiased bg-[#05070F] overflow-hidden">
+      <CustomCursor />
+
       <motion.div
         className="fixed top-0 left-0 right-0 h-[2px] bg-indigo-500 origin-left z-[100]"
         style={{ scaleX }}

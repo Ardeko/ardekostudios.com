@@ -135,6 +135,7 @@ export default function About() {
                 key={i}
                 variants={valueItem}
                 whileHover={{ y: -4, borderColor: 'rgba(99,102,241,0.3)' }}
+                data-cursor="soft"
                 className="bg-white/[0.02] border border-white/8 rounded-2xl p-5 flex flex-col gap-3 cursor-default transition-colors"
               >
                 <span className="text-2xl">{v.icon}</span>

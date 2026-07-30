@@ -67,6 +67,7 @@ function MagneticButton({ children, loading, disabled }) {
       disabled={disabled || loading}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      data-cursor="soft"
       className="mt-2 px-8 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_0_30px_rgba(99,102,241,0.25)] relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed will-change-transform"
     >
       <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -312,6 +313,7 @@ export default function Contact() {
                   <p className="text-gray-500 text-sm font-light">En kısa sürede geri dönüş yapacağız.</p>
                   <button
                     onClick={() => { setSubmitted(false); setForm({ name: '', email: '', message: '' }); setErrors({}); }}
+                    data-cursor="ring"
                     className="text-[10px] font-black tracking-widest text-indigo-400 uppercase mt-2 hover:text-white transition-colors"
                   >
                     Yeni mesaj gönder
@@ -346,6 +348,7 @@ export default function Contact() {
                   href={card.href}
                   variants={cardItem}
                   whileHover={{ x: 6, borderColor: 'rgba(99,102,241,0.3)' }}
+                  data-cursor="ring"
                   className="flex items-center gap-4 bg-white/[0.02] border border-white/8 rounded-2xl px-5 py-4 transition-colors group"
                 >
                   <span className="text-xl w-8 text-center">{card.icon}</span>

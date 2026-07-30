@@ -116,6 +116,7 @@ function MagneticLink({ href, children, primary }) {
         href={href}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        data-cursor="soft"
         className="relative inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-white uppercase bg-indigo-600 rounded-xl overflow-hidden group shadow-[0_0_40px_rgba(99,102,241,0.3)] will-change-transform"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -130,6 +131,7 @@ function MagneticLink({ href, children, primary }) {
       href={href}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      data-cursor="ring"
       className="inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-gray-300 uppercase border border-white/10 rounded-xl hover:border-white/30 transition-colors will-change-transform"
     >
       {children}
