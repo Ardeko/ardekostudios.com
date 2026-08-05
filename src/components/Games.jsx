@@ -558,22 +558,170 @@ function ForzaShiftScene() {
 }
 
 const AS_CSS = `
-@keyframes asPulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } }
-@keyframes asMove { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
-.as { position:relative; width:100%; height:190px; background:#0a0614; border-radius:14px; overflow:hidden; }
-.as-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(99,102,241,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.1) 1px, transparent 1px); background-size: 20px 20px; }
-.as-core { position:absolute; top:50%; left:50%; width:40px; height:40px; margin:-20px 0 0 -20px; background:#6366f1; border-radius:8px; box-shadow:0 0 20px #6366f1; animation: asMove 3s ease-in-out infinite; transform: rotate(45deg); }
-.as-ring { position:absolute; top:50%; left:50%; width:100px; height:100px; margin:-50px 0 0 -50px; border:2px solid rgba(99,102,241,0.5); border-radius:50%; animation: asPulse 2s ease-in-out infinite; }
+@keyframes asFloodPulse { 0%,100% { opacity:.5; } 50% { opacity:.85; } }
+@keyframes asPoleTwinkle { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+@keyframes asSmokePuff { 0% { opacity:.5; transform:translate(0,0) scale(.35); } 60% { opacity:.24; } 100% { opacity:0; transform:translate(-11px,-10px) scale(2.2); } }
+@keyframes asFlameFlicker { 0%,100% { opacity:.9; transform:scaleX(1) scaleY(1); } 30% { opacity:.5; transform:scaleX(.6) scaleY(1.25); } 55% { opacity:1; transform:scaleX(1.25) scaleY(.75); } 80% { opacity:.65; transform:scaleX(.8) scaleY(1.1); } }
+
+.as { position:relative; width:100%; height:190px; background:#06070a; border-radius:14px; overflow:hidden; }
+.as-svg { position:absolute; inset:0; width:100%; height:100%; display:block; }
+.as-vignette { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 46%, transparent 40%, rgba(2,3,6,.62) 100%); }
+.as-flood-a { animation:asFloodPulse 5.4s ease-in-out infinite; }
+.as-flood-b { animation:asFloodPulse 6.6s ease-in-out infinite 1.3s; }
+.as-pole { animation:asPoleTwinkle 3s ease-in-out infinite; }
+.as-smoke1 { animation:asSmokePuff 2.3s ease-out infinite; }
+.as-smoke2 { animation:asSmokePuff 2.3s ease-out infinite .6s; }
+.as-smoke3 { animation:asSmokePuff 2.3s ease-out infinite 1.2s; }
+.as-flame { animation:asFlameFlicker .2s ease-in-out infinite; transform-origin:center; }
 `;
 
 function ApexShiftScene() {
   return (
     <div className="as">
       <style>{AS_CSS}</style>
-      <div className="as-grid" />
-      <div className="as-ring" style={{ animationDelay: '0s' }} />
-      <div className="as-ring" style={{ width: '140px', height: '140px', margin: '-70px 0 0 -70px', animationDelay: '0.5s' }} />
-      <div className="as-core" />
+      <svg
+        className="as-svg"
+        viewBox="0 0 800 300"
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <linearGradient id="asAsphalt" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#34373f" />
+            <stop offset="55%" stopColor="#22242a" />
+            <stop offset="100%" stopColor="#131418" />
+          </linearGradient>
+          <radialGradient id="asInfield" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="#142018" />
+            <stop offset="100%" stopColor="#080b09" />
+          </radialGradient>
+          <radialGradient id="asFloodGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(226,236,255,.55)" />
+            <stop offset="100%" stopColor="rgba(226,236,255,0)" />
+          </radialGradient>
+          <radialGradient id="asSmokeGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(214,216,220,.8)" />
+            <stop offset="100%" stopColor="rgba(214,216,220,0)" />
+          </radialGradient>
+          <radialGradient id="asPoleGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fff6da" />
+            <stop offset="100%" stopColor="rgba(255,246,218,0)" />
+          </radialGradient>
+          <radialGradient id="asFlameGrad" cx="35%" cy="50%" r="65%">
+            <stop offset="0%" stopColor="#ffe38a" />
+            <stop offset="45%" stopColor="#ff8a2b" />
+            <stop offset="100%" stopColor="#5aa8ff" />
+          </radialGradient>
+          <pattern id="asChecker" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="#0b0b0d" />
+            <rect width="4" height="4" fill="#f5f5f5" />
+            <rect x="4" y="4" width="4" height="4" fill="#f5f5f5" />
+          </pattern>
+          <filter id="asGrain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" result="n" />
+            <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0" />
+          </filter>
+          <clipPath id="asTrackClip">
+            <path
+              d="M155,20 L645,20 A130,130 0 1 1 645,280 L155,280 A130,130 0 1 1 155,20 Z M245,80 L555,80 A70,70 0 1 1 555,220 L245,220 A70,70 0 1 1 245,80 Z"
+              clipRule="evenodd"
+            />
+          </clipPath>
+          <symbol id="asCarBody" viewBox="-18 -8 36 16">
+            <rect x="-16" y="-6.4" width="30" height="12.8" rx="5.4" fill="currentColor" stroke="rgba(0,0,0,.55)" strokeWidth="0.6" />
+            <rect x="-18" y="-7.4" width="3" height="14.8" rx="1" fill="#111318" />
+            <rect x="15" y="-7" width="4" height="14" rx="1.2" fill="#111318" />
+            <rect x="-2.5" y="-4.4" width="10" height="8.8" rx="2.8" fill="#0a0a10" opacity="0.9" />
+            <rect x="-16" y="-1" width="29" height="2" fill="rgba(255,255,255,.32)" />
+            <rect x="-11.5" y="-8" width="6" height="2.2" rx="1" fill="#0d0e12" />
+            <rect x="-11.5" y="5.8" width="6" height="2.2" rx="1" fill="#0d0e12" />
+            <rect x="6" y="-8" width="6" height="2.2" rx="1" fill="#0d0e12" />
+            <rect x="6" y="5.8" width="6" height="2.2" rx="1" fill="#0d0e12" />
+            <ellipse cx="15.6" cy="-4" rx="1.5" ry="1" fill="#fff6da" />
+            <ellipse cx="15.6" cy="4" rx="1.5" ry="1" fill="#fff6da" />
+            <rect x="-17.4" y="-5" width="1.8" height="2" fill="#ff2d2d" />
+            <rect x="-17.4" y="3" width="1.8" height="2" fill="#ff2d2d" />
+          </symbol>
+        </defs>
+
+        <rect x="0" y="0" width="800" height="300" fill="#06070a" />
+
+        <ellipse className="as-flood-a" cx="230" cy="70" rx="190" ry="90" fill="url(#asFloodGrad)" />
+        <ellipse className="as-flood-b" cx="560" cy="230" rx="190" ry="90" fill="url(#asFloodGrad)" />
+
+        <path d="M245,80 L555,80 A70,70 0 1 1 555,220 L245,220 A70,70 0 1 1 245,80 Z" fill="url(#asInfield)" />
+
+        <path d="M155,5 L645,5 A145,145 0 1 1 645,295 L155,295 A145,145 0 1 1 155,5 Z"
+          fill="none" stroke="#3c3f46" strokeWidth="7" />
+        <path d="M155,5 L645,5 A145,145 0 1 1 645,295 L155,295 A145,145 0 1 1 155,5 Z"
+          fill="none" stroke="#8b8f97" strokeWidth="1.2" strokeDasharray="3 9" opacity=".5" />
+
+        <path
+          d="M155,20 L645,20 A130,130 0 1 1 645,280 L155,280 A130,130 0 1 1 155,20 Z M245,80 L555,80 A70,70 0 1 1 555,220 L245,220 A70,70 0 1 1 245,80 Z"
+          fillRule="evenodd"
+          fill="url(#asAsphalt)"
+        />
+        <rect x="0" y="0" width="800" height="300" clipPath="url(#asTrackClip)" filter="url(#asGrain)" opacity=".5" />
+
+        <path d="M555,80 A70,70 0 1 1 555,220" fill="none" stroke="#f2f2f0" strokeWidth="9" />
+        <path d="M555,80 A70,70 0 1 1 555,220" fill="none" stroke="#d81e2c" strokeWidth="9" strokeDasharray="13 13" />
+        <path d="M245,220 A70,70 0 1 1 245,80" fill="none" stroke="#f2f2f0" strokeWidth="9" />
+        <path d="M245,220 A70,70 0 1 1 245,80" fill="none" stroke="#d81e2c" strokeWidth="9" strokeDasharray="13 13" />
+        <path d="M645,20 A130,130 0 1 1 645,280" fill="none" stroke="#f2f2f0" strokeWidth="7" opacity=".85" />
+        <path d="M645,20 A130,130 0 1 1 645,280" fill="none" stroke="#d81e2c" strokeWidth="7" strokeDasharray="11 11" opacity=".85" />
+        <path d="M155,280 A130,130 0 1 1 155,20" fill="none" stroke="#f2f2f0" strokeWidth="7" opacity=".85" />
+        <path d="M155,280 A130,130 0 1 1 155,20" fill="none" stroke="#d81e2c" strokeWidth="7" strokeDasharray="11 11" opacity=".85" />
+
+        <path d="M560,95 Q600,80 615,110" stroke="#000" strokeWidth="3" strokeLinecap="round" opacity=".2" fill="none" />
+        <path d="M560,205 Q600,220 615,190" stroke="#000" strokeWidth="3" strokeLinecap="round" opacity=".16" fill="none" />
+        <path d="M240,95 Q200,80 185,110" stroke="#000" strokeWidth="3" strokeLinecap="round" opacity=".2" fill="none" />
+        <path d="M240,205 Q200,220 185,190" stroke="#000" strokeWidth="3" strokeLinecap="round" opacity=".16" fill="none" />
+
+        <path id="apexLaneB" d="M200,50 L600,50 A100,100 0 1 1 600,250 L200,250 A100,100 0 1 1 200,50 Z"
+          fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="1.4" strokeDasharray="6 9" />
+        <path id="apexLaneA" d="M173,32 L627,32 A118,118 0 1 1 627,268 L173,268 A118,118 0 1 1 173,32 Z" fill="none" stroke="none" />
+        <path id="apexLaneC" d="M227,68 L573,68 A82,82 0 1 1 573,232 L227,232 A82,82 0 1 1 227,68 Z" fill="none" stroke="none" />
+
+        <rect x="389" y="20" width="2" height="60" fill="rgba(255,255,255,.85)" />
+        <rect x="393" y="20" width="14" height="60" fill="url(#asChecker)" />
+        <rect x="409" y="20" width="2" height="60" fill="rgba(255,255,255,.85)" />
+
+        {[[155,5],[400,5],[645,5],[155,295],[400,295],[645,295],[10,150],[790,150]].map(([x,y],i) => (
+          <circle key={i} className="as-pole" cx={x} cy={y} r="9" fill="url(#asPoleGlow)" style={{ animationDelay: `${i * 0.35}s` }} />
+        ))}
+
+        {[[605,92],[605,208],[195,92],[195,208]].map(([x,y], gi) => (
+          <g key={gi}>
+            <circle className="as-smoke1" cx={x} cy={y} r="6" fill="url(#asSmokeGrad)" />
+            <circle className="as-smoke2" cx={x + 3} cy={y - 2} r="5" fill="url(#asSmokeGrad)" />
+            <circle className="as-smoke3" cx={x - 2} cy={y + 3} r="4.5" fill="url(#asSmokeGrad)" />
+          </g>
+        ))}
+
+        <g>
+          <animateMotion dur="5.6s" begin="0s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#apexLaneA" xlinkHref="#apexLaneA" />
+          </animateMotion>
+          <ellipse className="as-flame" cx="-20.5" cy="-1.6" rx="2.3" ry="1" fill="url(#asFlameGrad)" />
+          <use href="#asCarBody" xlinkHref="#asCarBody" x="-18" y="-8" width="36" height="16" style={{ color: '#c8202a' }} />
+        </g>
+        <g>
+          <animateMotion dur="6.2s" begin="-2.1s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#apexLaneB" xlinkHref="#apexLaneB" />
+          </animateMotion>
+          <ellipse className="as-flame" cx="-20.5" cy="-1.6" rx="2.3" ry="1" fill="url(#asFlameGrad)" style={{ animationDelay: '.07s' }} />
+          <use href="#asCarBody" xlinkHref="#asCarBody" x="-18" y="-8" width="36" height="16" style={{ color: '#cfd3d8' }} />
+        </g>
+        <g>
+          <animateMotion dur="4.9s" begin="-3.4s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#apexLaneC" xlinkHref="#apexLaneC" />
+          </animateMotion>
+          <ellipse className="as-flame" cx="-20.5" cy="-1.6" rx="2.3" ry="1" fill="url(#asFlameGrad)" style={{ animationDelay: '.13s' }} />
+          <use href="#asCarBody" xlinkHref="#asCarBody" x="-18" y="-8" width="36" height="16" style={{ color: '#2a63d6' }} />
+        </g>
+      </svg>
+      <div className="as-vignette" />
     </div>
   );
 }
@@ -684,7 +832,7 @@ function GameCard({ game }) {
                   className="w-1.5 h-1.5 rounded-full bg-[#3ECFC0]"
                 />
                 <span className="text-[9px] font-bold tracking-widest text-gray-500 uppercase">
-                  Tek tıkla gir, kurulum gerekmez
+                  Tek tıkla bağlan, kurulum gerekmez
                 </span>
               </div>
               <MagneticButton
