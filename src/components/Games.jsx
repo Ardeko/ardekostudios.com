@@ -557,6 +557,28 @@ function ForzaShiftScene() {
   );
 }
 
+const AS_CSS = `
+@keyframes asPulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.1); opacity: 0.8; } }
+@keyframes asMove { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+.as { position:relative; width:100%; height:190px; background:#0a0614; border-radius:14px; overflow:hidden; }
+.as-grid { position:absolute; inset:0; background-image:linear-gradient(rgba(99,102,241,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.1) 1px, transparent 1px); background-size: 20px 20px; }
+.as-core { position:absolute; top:50%; left:50%; width:40px; height:40px; margin:-20px 0 0 -20px; background:#6366f1; border-radius:8px; box-shadow:0 0 20px #6366f1; animation: asMove 3s ease-in-out infinite; transform: rotate(45deg); }
+.as-ring { position:absolute; top:50%; left:50%; width:100px; height:100px; margin:-50px 0 0 -50px; border:2px solid rgba(99,102,241,0.5); border-radius:50%; animation: asPulse 2s ease-in-out infinite; }
+`;
+
+function ApexShiftScene() {
+  return (
+    <div className="as">
+      <style>{AS_CSS}</style>
+      <div className="as-grid" />
+      <div className="as-ring" style={{ animationDelay: '0s' }} />
+      <div className="as-ring" style={{ width: '140px', height: '140px', margin: '-70px 0 0 -70px', animationDelay: '0.5s' }} />
+      <div className="as-core" />
+    </div>
+  );
+}
+
+
 function StatusBadge({ status }) {
   if (status === 'live') {
     return (
@@ -662,7 +684,7 @@ function GameCard({ game }) {
                   className="w-1.5 h-1.5 rounded-full bg-[#3ECFC0]"
                 />
                 <span className="text-[9px] font-bold tracking-widest text-gray-500 uppercase">
-                  Tek tıkla bağlan, kurulum gerekmez
+                  Tek tıkla gir, kurulum gerekmez
                 </span>
               </div>
               <MagneticButton
@@ -788,6 +810,28 @@ export default function Games() {
       }
     },
     {
+      id: "forza-orbit",
+      status: "live",
+      title: "Forza Orbit",
+      desc: "Halkadan halkaya fırla, tam kenarda 'Perfect' yakala. Zamanlama üzerine kurulu minimalist, hipnotik bir arcade.",
+      platforms: "WEB · BROWSER",
+      scene: ForzaShiftScene,
+      links: {
+        primary: { text: "OYNA", url: "https://ardaguner.com/forza-orbit" },
+      }
+    },
+    {
+      id: "apex-shift",
+      status: "live",
+      title: "Apex Shift",
+      desc: "Sınırları zorlayan, yüksek tempoya ve anlık kararlara dayanan yeni nesil arcade deneyimi.",
+      platforms: "WEB · BROWSER",
+      scene: ApexShiftScene,
+      links: {
+        primary: { text: "OYNA", url: "https://ardaguner.com/apex-shift" },
+      }
+    },
+    {
       status: 'soon',
       title: 'Kafa Kafaya',
       desc: 'İki oyuncunun kıyasıya çarpıştığı, fizik tabanlı hızlı bir kafa topu oyunu. Kupalar, yetenek kartları ve çevrimiçi sıralamayla rekabetçi mobil deneyim.',
@@ -807,13 +851,6 @@ export default function Games() {
       desc: 'Alacakaranlık şehrinde ağdan ağa savrul. Sarkaç fiziğiyle çalışan, refleks odaklı sonsuz koşu.',
       platforms: 'IOS · ANDROID',
       scene: SkylineSwingerScene,
-    },
-    {
-      status: 'soon',
-      title: 'Forza Shift',
-      desc: "Halkadan halkaya fırla, tam kenarda 'Perfect' yakala. Zamanlama üzerine kurulu minimalist, hipnotik bir arcade.",
-      platforms: 'IOS · ANDROID',
-      scene: ForzaShiftScene,
     },
     {
       status: 'secret',
