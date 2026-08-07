@@ -974,7 +974,7 @@ export default function Games() {
       status: "live",
       title: "REVO",
       subtitle: "Arkadaşlarınla aynı frekansta buluş",
-      desc: "SignalR ve WebRTC ile güçlendirilmiş anlık iletişim platformu. Şifreli odalar kur, ekranını paylaş, gürültü engellemeyle net konuş. Tarayıcıda kurulumsuz çalışır; Windows için masaüstü uygulaması da var.",
+      desc: "Uçtan uca şifreli, düşük gecikmeli sesli sohbet. Odanı saniyeler içinde kur ve linki paylaş; gürültü engelleme, ekran paylaşımı ve kişi başı ses kontrolü hazır gelir.",
       platforms: "WEB · WINDOWS",
       scene: RevoScene,
       links: {
