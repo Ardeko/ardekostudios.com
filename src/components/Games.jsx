@@ -832,7 +832,7 @@ function GameCard({ game }) {
                   className="w-1.5 h-1.5 rounded-full bg-[#3ECFC0]"
                 />
                 <span className="text-[9px] font-bold tracking-widest text-gray-500 uppercase">
-                  Tek tıkla bağlan, kurulum gerekmez
+                  {game.links.secondary ? 'Tarayıcıda aç ya da masaüstüne kur' : 'Tek tıkla bağlan, kurulum gerekmez'}
                 </span>
               </div>
               <MagneticButton
@@ -844,6 +844,30 @@ function GameCard({ game }) {
               >
                 {game.links.primary.text} →
               </MagneticButton>
+
+              {game.links.secondary && (
+                <>
+                  <MagneticButton
+                    href={game.links.secondary.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    cursorColor="teal"
+                    className="w-full px-6 py-3.5 border border-[#3ECFC0]/30 hover:border-[#3ECFC0]/70 rounded-xl text-[10px] font-black tracking-widest text-[#3ECFC0] uppercase text-center transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 3v12" />
+                      <path d="m7 11 5 5 5-5" />
+                      <path d="M4 20h16" />
+                    </svg>
+                    {game.links.secondary.text}
+                  </MagneticButton>
+                  {game.links.secondary.note && (
+                    <span className="text-[9px] text-gray-600 font-bold tracking-widest uppercase text-center">
+                      {game.links.secondary.note}
+                    </span>
+                  )}
+                </>
+              )}
             </div>
           ) : isLive ? (
             <>
@@ -950,11 +974,18 @@ export default function Games() {
       status: "live",
       title: "REVO",
       subtitle: "Arkadaşlarınla aynı frekansta buluş",
-      desc: "SignalR ve WebRTC ile güçlendirilmiş tarayıcı tabanlı anlık iletişim platformu. Hiçbir kurulum yapmadan odanı yarat ve konuşmaya başla.",
-      platforms: "WEB · BROWSER",
+      desc: "SignalR ve WebRTC ile güçlendirilmiş anlık iletişim platformu. Şifreli odalar kur, ekranını paylaş, gürültü engellemeyle net konuş. Tarayıcıda kurulumsuz çalışır; Windows için masaüstü uygulaması da var.",
+      platforms: "WEB · WINDOWS",
       scene: RevoScene,
       links: {
         primary: { text: "SOHBETE BAŞLA", url: "https://ardekostudios.xyz" },
+        // Doğrudan indirme: kullanıcı sürüm sayfasına düşmez, tıklar tıklamaz
+        // dosya inmeye başlar. Kalıcı adres — yeni sürümde değiştirmen gerekmez.
+        secondary: {
+          text: "Windows için indir",
+          url: "https://github.com/Ardeko/Revo/releases/latest/download/REVO-Setup.exe",
+          note: "Windows 10/11 · 64-bit · Kurulum dosyası",
+        },
       }
     },
     {
