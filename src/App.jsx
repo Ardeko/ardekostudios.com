@@ -7,6 +7,8 @@ import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
+import SmoothScroll from './components/SmoothScroll';
+import Preloader from './components/Preloader';
 
 export default function App() {
   const cursorX = useMotionValue(-100);
@@ -30,7 +32,9 @@ export default function App() {
   }, [cursorX, cursorY]);
 
   return (
-    <div className="relative antialiased bg-[#05070F] overflow-hidden">
+    <SmoothScroll>
+    <div className="relative antialiased bg-[#05070F] overflow-x-clip">
+      <Preloader />
       <CustomCursor />
 
       <motion.div
@@ -65,5 +69,6 @@ export default function App() {
         </main>
       </div>
     </div>
+    </SmoothScroll>
   );
 }

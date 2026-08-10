@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import RevoScene from './RevoScene';
+import { SplitWords } from './Reveal';
+import HoverPreviewList from './HoverPreviewList';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -1047,9 +1049,11 @@ export default function Games() {
         <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
           Neler Yapıyoruz?
         </p>
-        <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-          PROJELERİMİZ
-        </h2>
+        <SplitWords
+          as="h2"
+          className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase"
+          text="PROJELERİMİZ"
+        />
       </motion.div>
       <motion.div
         variants={containerVariants}
@@ -1062,6 +1066,18 @@ export default function Games() {
           <GameCard key={i} game={game} />
         ))}
       </motion.div>
+      <HoverPreviewList
+        className="mt-32"
+        items={[
+          { id: 'switch',    title: 'Switch Master',   meta: 'iOS · Android',   image: '/games/switch.jpg',    href: '#games' },
+          { id: 'revo',      title: 'REVO',            meta: 'Web · Windows',   image: '/games/revo.jpg',      href: '#games' },
+          { id: 'forza',     title: 'Forza Orbit',     meta: 'Web · Browser',   image: '/games/forza.jpg',     href: '#games' },
+          { id: 'apex',      title: 'Apex Shift',      meta: 'Web · Browser',   image: '/games/apex.jpg',      href: '#games' },
+          { id: 'kafa',      title: 'Kafa Kafaya',     meta: 'Yakında · Mobil', image: '/games/kafa.jpg',      href: '#games' },
+          { id: 'rushville', title: 'Rushville',       meta: 'Yakında · Mobil', image: '/games/rushville.jpg', href: '#games' },
+          { id: 'skyline',   title: 'Skyline Swinger', meta: 'Yakında · Mobil', image: '/games/skyline.jpg',   href: '#games' },
+        ]}
+      />
     </section>
   );
 }
