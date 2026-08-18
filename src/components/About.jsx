@@ -1,36 +1,5 @@
 import { motion } from 'framer-motion';
-
-const VALUES = [
-  {
-    icon: '⚡',
-    title: 'Hız & Yalınlık',
-    desc: 'Her mekanik sezgisel, her piksel kasıtlı. Gürültüyü çıkar, özü bırak.',
-  },
-  {
-    icon: '🎮',
-    title: 'Oyuncu Odaklı',
-    desc: 'Her kararı gerçek oyuncularla test ederiz. Eğlence asla pazarlamaya kurban edilmez.',
-  },
-  {
-    icon: '🔬',
-    title: 'AR-GE Kültürü',
-    desc: 'Kanıtlanmış kalıpları kırarız. Her proje bir deney, her hata bir ders.',
-  },
-  {
-    icon: '🌍',
-    title: 'Küresel Vizyon',
-    desc: 'İstanbul\'dan dünyanın her köşesine ulaşan oyunlar kodluyoruz.',
-  },
-];
-
-const TIMELINE = [
-  { year: '2023', event: 'Ardeko Studios kuruldu', sub: '1 geliştirici, 0 ödün.' },
-  { year: '2024', event: 'Legend of Rey', sub: 'Itchi.io da ilk oyunumuz yayınlandı.' },
-  { year: '2025', event: 'Wordeko, Protocol ve Nebula - Bubble Shooter', sub: '3 farklı mini mobil oyun ardaguner.com da yayınlandı.' },
-  { year: '2026', event: 'Switch Master: Railway', sub: 'İlk oyun Google Play ve App Store\'da yayına girdi.' },
-  { year: '2026', event: 'Yeni Projelere başlandı', sub: 'Yeni nesil mekanikler geliştiriliyor.' },
-  { year: '2026', event: 'Büyüme dönemi', sub: 'Ekip genişliyor, vizyon büyüyor.' },
-];
+import { useLang } from '../lib/i18n';
 
 const valuesContainer = {
   hidden: {},
@@ -74,6 +43,7 @@ const timelineItemRight = {
 };
 
 export default function About() {
+  const { t } = useLang();
   return (
     <section id="about" className="py-32 px-6 overflow-hidden">
       <div className="max-w-[1280px] mx-auto">
@@ -85,10 +55,10 @@ export default function About() {
           className="mb-24 text-center lg:text-left"
         >
           <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
-            KİM OLDUĞUMUZ
+            {t.about.eyebrow}
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-            Hakkımızda
+            {t.about.title}
           </h2>
         </motion.div>
 
@@ -101,17 +71,15 @@ export default function About() {
             className="flex flex-col justify-center"
           >
             <p className="text-2xl sm:text-3xl font-black text-white leading-tight mb-6 tracking-tight">
-              "Mobil oyun yapmak değil,{' '}
-              <span className="text-indigo-400">deneyim tasarlamak</span>{' '}
-              için buradayız."
+              {t.about.quotePre}
+              <span className="text-indigo-400">{t.about.quoteHighlight}</span>
+              {t.about.quotePost}
             </p>
             <p className="text-gray-400 text-base font-light leading-relaxed mb-6">
-              Ardeko Studios, İstanbul merkezli bağımsız bir mobil oyun stüdyosudur. Fizik tabanlı
-              mekanikler, minimalist estetik ve bağımlılık yaratan döngüler üzerine uzmanlaşıyoruz.
+              {t.about.p1}
             </p>
             <p className="text-gray-500 text-sm font-light leading-relaxed">
-              Küçük ama odaklıyız. Her projede "bu gerçekten gerekli mi?" sorusunu soruyoruz ve
-              cevap hayır ise çıkarıyoruz. Geri kalan her şeyi mükemmelleştiriyoruz.
+              {t.about.p2}
             </p>
 
             <motion.div
@@ -130,7 +98,7 @@ export default function About() {
             viewport={{ once: true, margin: '-40px' }}
             className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
-            {VALUES.map((v, i) => (
+            {t.about.values.map((v, i) => (
               <motion.div
                 key={i}
                 variants={valueItem}
@@ -153,7 +121,7 @@ export default function About() {
           transition={{ duration: 0.8 }}
         >
           <p className="text-[11px] font-black tracking-[0.4em] text-gray-500 uppercase mb-10 text-center">
-            Yolculuğumuz
+            {t.about.journey}
           </p>
 
           <div className="relative">
@@ -173,7 +141,7 @@ export default function About() {
               viewport={{ once: true, margin: '-40px' }}
               className="flex flex-col gap-8"
             >
-              {TIMELINE.map((item, i) => (
+              {t.about.timeline.map((item, i) => (
                 <motion.div
                   key={i}
                   variants={i % 2 === 0 ? timelineItemLeft : timelineItemRight}

@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import SmoothScroll from './components/SmoothScroll';
 import Preloader from './components/Preloader';
+import { LanguageProvider } from './lib/i18n';
 
 export default function App() {
   const cursorX = useMotionValue(-100);
@@ -32,6 +33,7 @@ export default function App() {
   }, [cursorX, cursorY]);
 
   return (
+    <LanguageProvider>
     <SmoothScroll>
     <div className="relative antialiased bg-[#05070F] overflow-x-clip">
       <Preloader />
@@ -70,5 +72,6 @@ export default function App() {
       </div>
     </div>
     </SmoothScroll>
+    </LanguageProvider>
   );
 }

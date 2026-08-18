@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import RevoScene from './RevoScene';
 import { SplitWords } from './Reveal';
 import HoverPreviewList from './HoverPreviewList';
+import { useLang } from '../lib/i18n';
 
 const cardVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -730,21 +731,23 @@ function ApexShiftScene() {
 
 
 function StatusBadge({ status }) {
+  const { t } = useLang();
   if (status === 'live') {
     return (
       <span className="text-[10px] font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full uppercase">
-        ● Yayında
+        {t.games.statusLive}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center text-[10px] font-black tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full uppercase">
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 animate-pulse" />Çok Yakında
+      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 animate-pulse" />{t.games.statusSoon}
     </span>
   );
 }
 
 function GameCard({ game }) {
+  const { t } = useLang();
   const tilt = useTilt();
   const Scene = game.scene;
 
@@ -769,12 +772,11 @@ function GameCard({ game }) {
               🔒
             </motion.div>
             <span className="text-[9px] font-black tracking-[0.4em] text-indigo-400/60 uppercase mb-2">
-              Project Codename: Unknown
+              {t.games.secret.codename}
             </span>
-            <h3 className="text-xl font-black text-white mb-4 tracking-wider uppercase">YENİ PROJE</h3>
+            <h3 className="text-xl font-black text-white mb-4 tracking-wider uppercase">{t.games.secret.title}</h3>
             <p className="text-gray-500 max-w-xs text-xs font-light leading-relaxed">
-              Sınırları zorlayan yeni nesil bir mobil deneyim için AR-GE süreçlerimiz devam ediyor.
-              Çok yakında burada listelenecek — takipte kal.
+              {t.games.secret.desc}
             </p>
             <div className="mt-8 w-full h-px bg-white/5 rounded-full overflow-hidden">
               <motion.div
@@ -784,7 +786,7 @@ function GameCard({ game }) {
               />
             </div>
             <span className="text-[9px] text-gray-600 font-bold tracking-widest uppercase mt-2">
-              Yakında...
+              {t.games.secret.soon}
             </span>
           </div>
         </div>
@@ -793,6 +795,7 @@ function GameCard({ game }) {
   }
 
   const isLive = game.status === 'live';
+  const words = t.games.items[game.id] || {};
   return (
     <motion.div variants={cardVariants}>
       <div
@@ -815,14 +818,14 @@ function GameCard({ game }) {
             <StatusBadge status={game.status} />
             <span className="text-[9px] text-gray-600 font-bold tracking-widest">{game.platforms}</span>
           </div>
-          <h3 className={`text-2xl font-black text-white tracking-tight ${game.subtitle ? 'mb-1' : 'mb-3'}`}>
+          <h3 className={`text-2xl font-black text-white tracking-tight ${words.subtitle ? 'mb-1' : 'mb-3'}`}>
             {game.title}
           </h3>
-          {game.subtitle && (
-            <p className="text-[11px] text-[#3ECFC0] font-bold tracking-wide mb-3">{game.subtitle}</p>
+          {words.subtitle && (
+            <p className="text-[11px] text-[#3ECFC0] font-bold tracking-wide mb-3">{words.subtitle}</p>
           )}
           <p className="text-gray-400 text-sm font-light leading-relaxed mb-8 flex-1">
-            {game.desc}
+            {words.desc}
           </p>
 
           {game.links ? (
@@ -834,23 +837,23 @@ function GameCard({ game }) {
                   className="w-1.5 h-1.5 rounded-full bg-[#3ECFC0]"
                 />
                 <span className="text-[9px] font-bold tracking-widest text-gray-500 uppercase">
-                  {game.links.secondary ? 'Tarayıcıda aç ya da masaüstüne kur' : 'Tek tıkla bağlan, kurulum gerekmez'}
+                  {game.links.secondary ? t.games.hintBrowser : t.games.hintOneClick}
                 </span>
               </div>
               <MagneticButton
-                href={game.links.primary.url}
+                href={game.links.primary}
                 target="_blank"
                 rel="noreferrer"
                 cursorColor="teal"
                 className="w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-xl text-[10px] font-black tracking-widest uppercase text-center shadow-[0_0_25px_rgba(62,207,192,0.25)] block"
               >
-                {game.links.primary.text} →
+                {words.linkPrimary} →
               </MagneticButton>
 
               {game.links.secondary && (
                 <>
                   <MagneticButton
-                    href={game.links.secondary.url}
+                    href={game.links.secondary}
                     target="_blank"
                     rel="noreferrer"
                     cursorColor="teal"
@@ -861,11 +864,11 @@ function GameCard({ game }) {
                       <path d="m7 11 5 5 5-5" />
                       <path d="M4 20h16" />
                     </svg>
-                    {game.links.secondary.text}
+                    {words.linkSecondary}
                   </MagneticButton>
-                  {game.links.secondary.note && (
+                  {words.linkSecondaryNote && (
                     <span className="text-[9px] text-gray-600 font-bold tracking-widest uppercase text-center">
-                      {game.links.secondary.note}
+                      {words.linkSecondaryNote}
                     </span>
                   )}
                 </>
@@ -873,12 +876,12 @@ function GameCard({ game }) {
             </div>
           ) : isLive ? (
             <>
-              {game.rating && (
+              {words.rating && (
                 <div className="flex items-center gap-2 mb-6">
                   <div className="flex gap-0.5">
                     {[1,2,3,4,5].map(s => <span key={s} className="text-xs text-yellow-400">★</span>)}
                   </div>
-                  <span className="text-xs text-gray-500 font-medium">{game.rating}</span>
+                  <span className="text-xs text-gray-500 font-medium">{words.rating} {t.games.reviewsSuffix}</span>
                 </div>
               )}
               <div className="flex gap-3">
@@ -914,7 +917,7 @@ function GameCard({ game }) {
                 />
               </div>
               <span className="text-[9px] text-gray-500 font-black tracking-[0.3em] uppercase">
-                Mağazalarda çok yakında
+                {t.games.comingToStores}
               </span>
             </>
           )}
@@ -960,76 +963,64 @@ function MagneticButton({ href, className, children, target, rel, cursorColor })
 export { MagneticButton };
 
 export default function Games() {
+  const { t } = useLang();
   const games = [
     {
+      id: 'switch',
       status: 'live',
       title: 'Switch Master: Railway',
-      desc: 'Demiryolu makaslarını doğru zamanda değiştir, trenleri kazasız hedeflerine ulaştır. Refleks ve stratejiyi birleştiren minimalist bir bulmaca deneyimi.',
       platforms: 'IOS · ANDROID',
-      rating: '5 · 10+ değerlendirme',
       scene: TrainScene,
       appStore: 'https://apps.apple.com/tr/app/switch-master-railway/id6770972534?l=tr',
       googlePlay: 'https://play.google.com/store/apps/details?id=com.ardeko.switchmaster&pcampaignid=web_share',
     },
     {
-      id: "revo",
-      status: "live",
-      title: "REVO",
-      subtitle: "Arkadaşlarınla aynı frekansta buluş",
-      desc: "Uçtan uca şifreli, düşük gecikmeli sesli sohbet. Odanı saniyeler içinde kur ve linki paylaş; gürültü engelleme, ekran paylaşımı ve kişi başı ses kontrolü hazır gelir.",
-      platforms: "WEB · WINDOWS",
+      id: 'revo',
+      status: 'live',
+      title: 'REVO',
+      platforms: 'WEB · WINDOWS',
       scene: RevoScene,
       links: {
-        primary: { text: "SOHBETE BAŞLA", url: "https://ardekostudios.xyz" },
+        primary: 'https://ardekostudios.xyz',
         // Doğrudan indirme: kullanıcı sürüm sayfasına düşmez, tıklar tıklamaz
         // dosya inmeye başlar. Kalıcı adres — yeni sürümde değiştirmen gerekmez.
-        secondary: {
-          text: "Windows için indir",
-          url: "https://github.com/Ardeko/Revo/releases/latest/download/REVO-Setup.exe",
-          note: "Windows 10/11 · 64-bit · Kurulum dosyası",
-        },
-      }
+        secondary: 'https://github.com/Ardeko/Revo/releases/latest/download/REVO-Setup.exe',
+      },
     },
     {
-      id: "forza-orbit",
-      status: "live",
-      title: "Forza Orbit",
-      desc: "Halkadan halkaya fırla, tam kenarda 'Perfect' yakala. Zamanlama üzerine kurulu minimalist, hipnotik bir arcade.",
-      platforms: "WEB · BROWSER",
+      id: 'forza',
+      status: 'live',
+      title: 'Forza Orbit',
+      platforms: 'WEB · BROWSER',
       scene: ForzaShiftScene,
-      links: {
-        primary: { text: "OYNA", url: "https://ardaguner.com/forza-orbit" },
-      }
+      links: { primary: 'https://ardaguner.com/forza-orbit' },
     },
     {
-      id: "apex-shift",
-      status: "live",
-      title: "Apex Shift",
-      desc: "Sınırları zorlayan, yüksek tempoya ve anlık kararlara dayanan yeni nesil arcade deneyimi.",
-      platforms: "WEB · BROWSER",
+      id: 'apex',
+      status: 'live',
+      title: 'Apex Shift',
+      platforms: 'WEB · BROWSER',
       scene: ApexShiftScene,
-      links: {
-        primary: { text: "OYNA", url: "https://ardaguner.com/apex-shift" },
-      }
+      links: { primary: 'https://ardaguner.com/apex-shift' },
     },
     {
+      id: 'kafa',
       status: 'soon',
       title: 'Kafa Kafaya',
-      desc: 'İki oyuncunun kıyasıya çarpıştığı, fizik tabanlı hızlı bir kafa topu oyunu. Kupalar, yetenek kartları ve çevrimiçi sıralamayla rekabetçi mobil deneyim.',
       platforms: 'IOS · ANDROID',
       scene: KafaKafayaScene,
     },
     {
+      id: 'rushville',
       status: 'soon',
       title: 'Rushville',
-      desc: 'Büyüyen şehrin trafiğini akışta tut. Renk renk mahalleleri yollarla bağla, tıkanıklığı çöz — sade ama derin bir şehir-bulmaca.',
       platforms: 'IOS · ANDROID',
       scene: RushvilleScene,
     },
     {
+      id: 'skyline',
       status: 'soon',
       title: 'Skyline Swinger',
-      desc: 'Alacakaranlık şehrinde ağdan ağa savrul. Sarkaç fiziğiyle çalışan, refleks odaklı sonsuz koşu.',
       platforms: 'IOS · ANDROID',
       scene: SkylineSwingerScene,
     },
@@ -1047,12 +1038,12 @@ export default function Games() {
         className="mb-20 text-center lg:text-left"
       >
         <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
-          Neler Yapıyoruz?
+          {t.games.eyebrow}
         </p>
         <SplitWords
           as="h2"
           className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase"
-          text="PROJELERİMİZ"
+          text={t.games.title}
         />
       </motion.div>
       <motion.div
@@ -1069,13 +1060,13 @@ export default function Games() {
       <HoverPreviewList
         className="mt-32"
         items={[
-          { id: 'switch',    title: 'Switch Master',   meta: 'iOS · Android',   image: '/games/switch.jpg',    href: '#games' },
-          { id: 'revo',      title: 'REVO',            meta: 'Web · Windows',   image: '/games/revo.jpg',      href: '#games' },
-          { id: 'forza',     title: 'Forza Orbit',     meta: 'Web · Browser',   image: '/games/forza.jpg',     href: '#games' },
-          { id: 'apex',      title: 'Apex Shift',      meta: 'Web · Browser',   image: '/games/apex.jpg',      href: '#games' },
-          { id: 'kafa',      title: 'Kafa Kafaya',     meta: 'Yakında · Mobil', image: '/games/kafa.jpg',      href: '#games' },
-          { id: 'rushville', title: 'Rushville',       meta: 'Yakında · Mobil', image: '/games/rushville.jpg', href: '#games' },
-          { id: 'skyline',   title: 'Skyline Swinger', meta: 'Yakında · Mobil', image: '/games/skyline.jpg',   href: '#games' },
+          { id: 'switch',    title: 'Switch Master',   meta: t.games.previewMeta.switch,    image: '/games/switch.jpg',    href: '#games' },
+          { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
+          { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
+          { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
+          { id: 'kafa',      title: 'Kafa Kafaya',     meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
+          { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
+          { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
         ]}
       />
     </section>

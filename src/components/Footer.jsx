@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
+import { useLang } from '../lib/i18n';
 
 export default function Footer() {
+  const { t } = useLang();
   return (
     <footer className="border-t border-white/5 px-6 py-16 overflow-hidden">
       <div className="max-w-[1280px] mx-auto">
@@ -19,7 +21,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-xs text-gray-600 font-light leading-relaxed">
-              İstanbul merkezli bağımsız mobil oyun stüdyosu. Minimalist mekanikler, maksimum eğlence.
+              {t.footer.desc}
             </p>
 
             <div className="flex gap-2 mt-5">
@@ -51,7 +53,7 @@ export default function Footer() {
             transition={{ duration: 0.7, delay: 0.08 }}
           >
             <h4 className="text-[9px] font-black tracking-[0.4em] text-gray-500 uppercase mb-5">
-              Sosyal
+              {t.footer.social}
             </h4>
             <ul className="flex flex-col gap-3">
               <li>
@@ -75,7 +77,7 @@ export default function Footer() {
             transition={{ duration: 0.7, delay: 0.16 }}
           >
             <h4 className="text-[9px] font-black tracking-[0.4em] text-gray-500 uppercase mb-5">
-              Hukuki
+              {t.footer.legal}
             </h4>
             <ul className="flex flex-col gap-3">
               <li>
@@ -86,7 +88,7 @@ export default function Footer() {
                   data-cursor="ring"
                   className="text-xs text-gray-500 hover:text-gray-200 transition-colors font-light"
                 >
-                  Gizlilik Politikası
+                  {t.footer.privacy}
                 </a>
               </li>
             </ul>
@@ -97,7 +99,7 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-[10px] text-gray-700 font-medium tracking-widest uppercase">
-            © {new Date().getFullYear()} Ardeko Studios. Tüm hakları saklıdır.
+            © {new Date().getFullYear()} Ardeko Studios. {t.footer.rights}
           </p>
 
           <div className="flex items-center gap-2">

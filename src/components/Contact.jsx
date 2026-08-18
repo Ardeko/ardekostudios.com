@@ -1,11 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef } from 'react';
-
-const CONTACT_CARDS = [
-  { icon: '✉️', label: 'E-posta', value: 'info@ardekostudios.com', href: 'mailto:info@ardekostudios.com' },
-  { icon: '📸', label: 'INSTAGRAM', value: '@ardekostudios', href: 'https://www.instagram.com/ardekostudios/' },
-  { icon: '📍', label: 'Konum', value: 'İstanbul, Türkiye', href: '#' },
-];
+import { useLang } from '../lib/i18n';
 
 const cardsContainer = {
   hidden: {},
@@ -39,7 +34,8 @@ const fieldItem = {
   },
 };
 
-function MagneticButton({ children, loading, disabled }) {
+function MagneticButton({ loading, disabled }) {
+  const { t } = useLang();
   const ref = useRef(null);
 
   const handleMouseMove = (e) => {
@@ -79,10 +75,10 @@ function MagneticButton({ children, loading, disabled }) {
               transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
               className="inline-block w-3 h-3 border-2 border-white/30 border-t-white rounded-full"
             />
-            Gönderiliyor...
+            {t.contact.form.sending}
           </>
         ) : (
-          'Gönder →'
+          t.contact.form.send
         )}
       </span>
     </button>
@@ -94,6 +90,7 @@ function validateEmail(email) {
 }
 
 export default function Contact() {
+  const { t } = useLang();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -110,10 +107,10 @@ export default function Contact() {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.name.trim()) newErrors.name = 'Ad gerekli';
-    if (!form.email.trim()) newErrors.email = 'E-posta gerekli';
-    else if (!validateEmail(form.email)) newErrors.email = 'Geçerli bir e-posta girin';
-    if (!form.message.trim()) newErrors.message = 'Mesaj gerekli';
+    if (!form.name.trim()) newErrors.name = t.contact.form.errors.name;
+    if (!form.email.trim()) newErrors.email = t.contact.form.errors.email;
+    else if (!validateEmail(form.email)) newErrors.email = t.contact.form.errors.emailInvalid;
+    if (!form.message.trim()) newErrors.message = t.contact.form.errors.message;
     return newErrors;
   };
 
@@ -161,10 +158,10 @@ export default function Contact() {
           className="mb-20 text-center lg:text-left"
         >
           <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
-            Ulaşın
+            {t.contact.eyebrow}
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-            İLETİŞİM
+            {t.contact.title}
           </h2>
         </motion.div>
 
@@ -191,8 +188,8 @@ export default function Contact() {
                     className="flex flex-col gap-4"
                   >
                     {[
-                      { name: 'name', label: 'Adınız', type: 'text', placeholder: 'Arda GÜNER' },
-                      { name: 'email', label: 'E-posta', type: 'email', placeholder: 'info@ardekostudios.com' },
+                      { name: 'name', label: t.contact.form.nameLabel, type: 'text', placeholder: t.contact.form.namePlaceholder },
+                      { name: 'email', label: t.contact.form.emailLabel, type: 'email', placeholder: t.contact.form.emailPlaceholder },
                     ].map((field) => (
                       <motion.div key={field.name} variants={fieldItem} className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
@@ -238,7 +235,7 @@ export default function Contact() {
 
                     <motion.div variants={fieldItem} className="flex flex-col gap-1.5">
                       <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
-                        Mesajınız
+                        {t.contact.form.messageLabel}
                       </label>
                       <div className="relative">
                         <textarea
@@ -247,7 +244,7 @@ export default function Contact() {
                           onChange={handleChange}
                           onFocus={() => setFocused('message')}
                           onBlur={() => setFocused(null)}
-                          placeholder="Merhaba, sizinle iletişime geçmek istiyorum..."
+                          placeholder={t.contact.form.messagePlaceholder}
                           rows={5}
                           className={`${inputBase} resize-none ${
                             errors.message
@@ -289,7 +286,7 @@ export default function Contact() {
                           exit={{ opacity: 0 }}
                           className="text-[11px] text-red-400 font-medium text-center"
                         >
-                          Bir hata oluştu. Lütfen tekrar deneyin veya direkt e-posta gönderin.
+                          {t.contact.form.serverError}
                         </motion.p>
                       )}
                     </AnimatePresence>
@@ -309,14 +306,14 @@ export default function Contact() {
                   >
                     🎉
                   </motion.div>
-                  <h3 className="text-xl font-black text-white">Mesajınız ulaştı!</h3>
-                  <p className="text-gray-500 text-sm font-light">En kısa sürede geri dönüş yapacağız.</p>
+                  <h3 className="text-xl font-black text-white">{t.contact.form.successTitle}</h3>
+                  <p className="text-gray-500 text-sm font-light">{t.contact.form.successBody}</p>
                   <button
                     onClick={() => { setSubmitted(false); setForm({ name: '', email: '', message: '' }); setErrors({}); }}
                     data-cursor="ring"
                     className="text-[10px] font-black tracking-widest text-indigo-400 uppercase mt-2 hover:text-white transition-colors"
                   >
-                    Yeni mesaj gönder
+                    {t.contact.form.sendAnother}
                   </button>
                 </motion.div>
               )}
@@ -331,8 +328,7 @@ export default function Contact() {
             className="flex flex-col justify-center gap-5"
           >
             <p className="text-gray-400 text-base font-light leading-relaxed mb-2">
-              İş birliği fırsatları, basın sorguları veya sadece merhaba demek için —
-              her türlü mesajı bekliyoruz.
+              {t.contact.lead}
             </p>
 
             <motion.div
@@ -342,7 +338,7 @@ export default function Contact() {
               viewport={{ once: true }}
               className="flex flex-col gap-5"
             >
-              {CONTACT_CARDS.map((card, i) => (
+              {t.contact.cards.map((card, i) => (
                 <motion.a
                   key={i}
                   href={card.href}
@@ -372,7 +368,7 @@ export default function Contact() {
                 className="w-1.5 h-1.5 rounded-full bg-emerald-400"
               />
               <span className="text-[10px] font-bold tracking-widest text-gray-600 uppercase">
-                Genellikle 24 saat içinde yanıt veriyoruz
+                {t.contact.responseNote}
               </span>
             </div>
           </motion.div>

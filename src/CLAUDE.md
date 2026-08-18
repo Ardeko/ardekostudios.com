@@ -1,0 +1,109 @@
+# Ardeko Studios — proje bağlamı
+
+Bu dosya repo kökünde durur ve Claude Code her oturumda otomatik okur.
+Yeni kararlar aldıkça buraya ekle; sohbet geçmişi kaybolur, bu dosya kalmaz.
+
+## Proje
+
+`ardekostudios.com` — Ardeko Studios'un kendi sitesi. GitHub'daki gerçek
+canlı repo: `github.com/Ardeko/ardekostudios.com` (bu çalışma kopyasıyla
+aynı git geçmişi). Stüdyo **oyun ve mobil uygulama** geliştiriyor.
+
+## ⚠️ Tasarım kararı (2026-08-18)
+
+2026-08 başında site tamamen minimalist/editoryal bir tasarıma geçirildi
+(tek sütun, `void`/`panel` renk token'ları, Unbounded/Manrope/JetBrains,
+kart yok/gölge yok, bilingual `i18n.js`). Kullanıcı bunu **reddetti** —
+"eski site çok daha iyiydi" diyip klasik/maksimalist tasarıma tam geri
+dönüş istedi. O redesign'ın tüm dosyaları (`App.jsx`, `i18n.js`,
+`index.css`, `index.html`, `tailwind.config.js`, tüm bileşenler) `git
+checkout HEAD` ile eski commit'ten geri yüklendi ve `i18n.js` silindi.
+**Yeni bir "minimalist redesign" denemesi başlatmadan önce bu geçmişi
+bil — kullanıcı bir kez bunu istemedi.**
+
+Şu an canonical olan: koyu indigo/mor (`#05070F` zemin, `indigo-400/500/600`,
+`purple-600` vurgular), yuvarlak köşeli camsı kartlar (`rounded-2xl`,
+`bg-white/[0.02-0.05]`, `border-white/8-10`), glow/blur efektler,
+`font-black`/`tracking-widest`/`uppercase` etiketler, emoji ikonlar
+(About.jsx'teki değer kartları gibi), sabit sol sidebar nav (`Navbar.jsx`),
+`CustomCursor`, `Preloader`. Site **TR + EN** bilingual — bkz. i18n bölümü.
+
+## i18n (2026-08-18'de eklendi)
+
+`src/lib/i18n-content.js` — tüm TR/EN metin (Hero, Viewport, About, Games,
+Contact, Footer). `src/lib/i18n.jsx` — `LanguageProvider` + `useLang()`
+context/hook (içerik ayrı dosyada, react-refresh sadece component/hook
+export eden dosyaları sever). `App.jsx` her şeyi `<LanguageProvider>` ile
+sarıyor. Her bileşen `const { t } = useLang()` çekip `t.section.key` okur.
+
+Nav etiketleri (GAMES/ABOUT/CONTACT), kurucu adı, "FOUNDER", App Store /
+Google Play, "Made with ♥ in Istanbul" gibi zaten İngilizce/marka olan
+şeyler bilerek `CONTENT` dışında — bileşenin kendi içinde sabit, iki dilde
+de aynı. Dil tercihi `localStorage` (`ardeko-lang`) ile kalıcı, varsayılan
+`tr`, `document.documentElement.lang` ile senkron.
+
+**`src/components/LanguageSwitch.jsx`** — dil değiştirici. Standart bir
+dropdown/bayrak değil: TR/EN her zaman görünür bir capsule'da, aktif
+olanın altında spring fizikle kayan bir glow nokta (Navbar'daki
+`active-bar`/`active-dot` ile aynı motion dili), tıklayınca merkezden
+dışa patlayan bir "radar ping" halkası, ve yanında her değişimde
+scramble-decode olan bir dil kodu (`TR`/`EN`) — Hero'daki
+`TypewriterWords` ile aynı "kod çözülüyor" hissi. Navbar'da hem masaüstü
+sidebar'da (logo altında) hem mobil header'da (hamburger'in solunda) var.
+
+## Stack
+
+- React 19 + Vite 8
+- Tailwind **v4** (PostCSS üzerinden, `@tailwindcss/postcss`)
+- framer-motion 12, lucide-react, lenis (SmoothScroll için)
+- Düz JSX, TypeScript yok, shadcn/ui kurulu değil
+
+`tailwind.config.js` var ama v4'te `index.css` bir `@config` direktifiyle
+bağlamadığı sürece okunmaz — pratikte etkisiz, sadece legacy. Gerçek
+tema `src/index.css` içinde: birkaç `@theme` rengi (indigo/emerald/purple
+tonları) + çoğu stil doğrudan Tailwind'in varsayılan paletiyle
+(`bg-indigo-600`, `text-gray-400` vb.) satır içi yazılıyor.
+
+## Bileşen ağacı (App.jsx)
+
+`CustomCursor` → `Navbar` (sabit sol sidebar, `lg:pl-64` ile içerik
+kaydırılıyor) → `main`: `Hero` → `Games` → `About` → `Contact` → `Footer`.
+`SmoothScroll`/`lenis` ve `scrollVelocity.js` scroll hızını `Marquee`'ye
+besliyor (şu an Marquee hiçbir yerde render edilmiyor — kullanılmıyor
+ama silinmedi, eski koddan kalma).
+
+### `src/components/Viewport.jsx` — Hero'ya eklenen imza öğesi
+
+Minimalist redesign'dan kalan tek parça, bilinçli olarak tutuldu ve eski
+tasarıma göre yeniden derlendi (indigo/emerald renk, `rounded-2xl` camsı
+kart, `font-black`/`tracking-widest` etiketler — artık `t` prop'una ya da
+i18n'e bağımlı değil, string'ler dosyanın içinde sabit).
+
+`Hero.jsx` içinde CTA butonlarının altında, STATS satırının üstünde
+render ediliyor. İki sekme:
+- **OYUN** — wireframe mesh, imleç yüzeyi fiziksel olarak deforme eder.
+- **UYGULAMA** — kendini kuran arayüz iskeleti; elemanlar imlece doğru
+  *manyetik* şekilde çekilip üzerinden geçince parlıyor (`Hero`/`Contact`
+  içindeki `MagneticLink`/`MagneticButton` diliyle bilerek aynı).
+
+Altında gerçek fps/frame HUD'u var. `prefers-reduced-motion`'a saygı
+duyar (tek kare, pointer etkisi kapalı). Stok video/görsel kullanmıyor —
+stüdyonun görsel asset'i yok, bu yüzden canvas'ta canlı çiziliyor.
+
+## Gerçek içerik — uydurma, kaynağı kontrol et
+
+`Games.jsx` ve `About.jsx`'teki proje adları, tarihler ve linkler
+**gerçek** (eski canlı siteden): Switch Master: Railway (App Store +
+Google Play, 2026), REVO (ardekostudios.xyz + GitHub release), Forza
+Orbit, Apex Shift (ardaguner.com), Kafa Kafaya / Rushville / Skyline
+Swinger ("yakında"). `About.jsx`'teki tarihçe: 2023 kuruluş → Legend of
+Rey (2024, itch.io) → Wordeko/Protocol/Nebula - Bubble Shooter (2025,
+ardaguner.com) → Switch Master (2026). İletişim: `info@ardekostudios.com`,
+Instagram `@ardekostudios`, kurucu Arda Güner (ardaguner.com). Yeni bir
+proje eklerken bu listeleri güncelle, uydurma placeholder yazma.
+
+## Yapılacak
+
+1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
+2. Lighthouse: LCP, CLS ve mobil kontrast (özellikle `Preloader` +
+   ağır `framer-motion` animasyonları mobilde maliyetli olabilir).

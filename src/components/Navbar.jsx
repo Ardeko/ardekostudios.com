@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LanguageSwitch from './LanguageSwitch';
 
 const NAV_ITEMS = ['GAMES', 'ABOUT', 'CONTACT'];
 
@@ -49,6 +50,8 @@ export default function Navbar() {
             <h1 className="text-sm font-black tracking-[0.3em] text-white">ARDEKO</h1>
             <p className="text-[9px] font-medium tracking-[0.4em] text-gray-500 mt-1">STUDIOS</p>
           </div>
+
+          <LanguageSwitch className="mt-2" />
         </div>
 
         <div className="flex flex-col gap-2 w-full">
@@ -150,15 +153,18 @@ export default function Navbar() {
         <a href="#">
           <img src="/ardeko.png" alt="Ardeko" className="h-8 w-auto object-contain" />
         </a>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-          className="flex flex-col gap-1.5 p-2"
-        >
-          <motion.div animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-white origin-center" />
-          <motion.div animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0 }} className="w-5 h-0.5 bg-white" />
-          <motion.div animate={isOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-white origin-center" />
-        </button>
+        <div className="flex items-center gap-3">
+          <LanguageSwitch />
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+            className="flex flex-col gap-1.5 p-2"
+          >
+            <motion.div animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-white origin-center" />
+            <motion.div animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0 }} className="w-5 h-0.5 bg-white" />
+            <motion.div animate={isOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-white origin-center" />
+          </button>
+        </div>
       </div>
 
       {/* MOBILE MENU */}

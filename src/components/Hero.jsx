@@ -1,5 +1,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+import Viewport from './Viewport';
+import { useLang } from '../lib/i18n';
 
 const WORDS = [
   'BOLD GAMES',
@@ -50,12 +52,6 @@ function TypewriterWords() {
     </span>
   );
 }
-
-const STATS = [
-  { value: '4', label: 'Yayında' },
-  { value: '5★', label: 'App Store Puanı' },
-  { value: '5★', label: 'Google Play Puanı' },
-];
 
 function Particles() {
   const dots = useRef(
@@ -140,6 +136,7 @@ function MagneticLink({ href, children, primary }) {
 }
 
 export default function Hero() {
+  const { t } = useLang();
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
@@ -187,7 +184,7 @@ export default function Hero() {
             className="w-1.5 h-1.5 rounded-full bg-indigo-400"
           />
           <span className="text-[10px] font-black tracking-[0.4em] text-indigo-400 uppercase">
-            Next-Gen Mobile Gaming
+            {t.hero.badge}
           </span>
         </motion.div>
 
@@ -198,7 +195,7 @@ export default function Hero() {
           className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-4 uppercase leading-[0.9] select-none"
         >
           <span className="bg-gradient-to-b from-white via-gray-100 to-gray-600 bg-clip-text text-transparent">
-            WE CRAFT
+            {t.hero.lead}
           </span>
           <br />
           <TypewriterWords />
@@ -210,18 +207,26 @@ export default function Hero() {
           transition={{ duration: 1, delay: 0.5 }}
           className="text-gray-400 max-w-sm sm:max-w-xl text-base md:text-lg font-light mb-12 leading-relaxed px-2"
         >
-          Ardeko Studios olarak, fizik tabanlı mekanikleri ve bağımlılık yaratan minimalist bulmacaları
-          sıra dışı görsellikle harmanlıyoruz.
+          {t.hero.desc}
         </motion.p>
 
         <motion.div
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1, delay: 0.7 }}
-          className="flex flex-col sm:flex-row gap-4 mb-20"
+          className="flex flex-col sm:flex-row gap-4 mb-14"
         >
-          <MagneticLink href="#games" primary>Oyunları Keşfet</MagneticLink>
-          <MagneticLink href="#about">Hakkımızda</MagneticLink>
+          <MagneticLink href="#games" primary>{t.hero.primary}</MagneticLink>
+          <MagneticLink href="#about">{t.hero.secondary}</MagneticLink>
+        </motion.div>
+
+        <motion.div
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1, delay: 0.85 }}
+          className="w-full max-w-md sm:max-w-xl mb-14"
+        >
+          <Viewport />
         </motion.div>
 
         <motion.div
@@ -230,8 +235,8 @@ export default function Hero() {
           transition={{ duration: 1, delay: 1 }}
           className="flex items-center gap-8 sm:gap-12"
         >
-          {STATS.map((stat, i) => (
-            <div key={i} className={`text-center ${i !== STATS.length - 1 ? 'pr-8 sm:pr-12 border-r border-white/10' : ''}`}>
+          {t.hero.stats.map((stat, i) => (
+            <div key={i} className={`text-center ${i !== t.hero.stats.length - 1 ? 'pr-8 sm:pr-12 border-r border-white/10' : ''}`}>
               <div className="text-xl sm:text-2xl font-black text-white tracking-tight">{stat.value}</div>
               <div className="text-[9px] font-bold tracking-widest text-gray-500 uppercase mt-1">{stat.label}</div>
             </div>
@@ -245,7 +250,7 @@ export default function Hero() {
         transition={{ delay: 2 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-[9px] tracking-widest text-gray-600 uppercase font-bold">Kaydır</span>
+        <span className="text-[9px] tracking-widest text-gray-600 uppercase font-bold">{t.hero.scroll}</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
