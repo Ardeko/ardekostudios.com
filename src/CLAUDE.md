@@ -78,11 +78,30 @@ set ediyor). Bu yüzden CSS `text-transform: uppercase` **Türkçe** kuralını
 uyguluyor: `i` → `İ`. Türkçe metinde doğru, ama İngilizce marka
 ifadelerinde değil — rozet "İNTERACTİVE MEDİA" diye render oluyordu
 (eskiden de "MOBİLE GAMİNG" diye çıkıyormuş). Çözüm: İngilizce kalması
-gereken uppercase metne `lang="en"` ver (bkz. `Hero.jsx` rozeti).
-**Hâlâ düzeltilmemiş bir örnek var:** REVO kartındaki `SignalR · WebRTC`
-etiketi "SİGNALR · WEBRTC" çıkıyor. Kaynağı zaten büyük harfle yazılmış
-stringler (`IOS · ANDROID` gibi) etkilenmez — sorun sadece küçük `i`
-içerip CSS ile büyütülen İngilizce metinlerde.
+gereken uppercase metne `lang="en"` ver. Kaynağı zaten büyük harfle
+yazılmış stringler (`IOS · ANDROID` gibi) etkilenmez — sorun sadece küçük `i` içerip CSS ile büyütülen İngilizce
+metinlerde.
+
+Site tarandı, etkilenen 20 metnin hepsi elden geçirildi. İki kalıp var:
+
+- **Saf İngilizce eleman → `lang="en"`**: hero rozeti, `Footer`'daki
+  "Studios" logotipi, "Made with ♥ in Istanbul" ve telif satırındaki
+  "Ardeko Studios" (span'e sarıldı), `Navbar`'ın masaüstü kenar
+  çubuğundaki `info@ardekostudios.com`, `RevoScene`'deki
+  `SignalR · WebRTC`.
+- **Karışık TR+EN metin → İngilizce token'ı kaynakta zaten büyük yaz**
+  (markup gerekmez, `Games.jsx`'teki `platforms: 'IOS · ANDROID'`
+  deseniyle aynı): `'WINDOWS için indir'`,
+  `'WINDOWS 10/11 · 64-BIT · Kurulum dosyası'` ve `previewMeta`'daki
+  `'IOS · ANDROID'` / `'WEB · WINDOWS'` / `'WEB · BROWSER'`.
+
+`HoverPreviewList` başlıkları CSS ile büyütülüyor ve çoğu İngilizce ürün
+adı, bu yüzden span `lang={item.lang ?? 'en'}` kullanıyor; Türkçe adlar
+`Games.jsx`'te `lang: 'tr'` ile işaretli. **Yeni proje eklerken adı
+Türkçeyse `lang: 'tr'` koymayı unutma.**
+
+Kasıtlı olarak `İ` ile kalanlar: **TORPİDODAN** (Türkçe ürün adı; EN
+sayfada da öyle kalır, özel ad kendi dilini korur) ve **HUKUKİ**.
 
 ## Stack
 
@@ -178,8 +197,6 @@ tekrar düşme:**
 ## Yapılacak
 
 1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
-2. REVO kartındaki `SignalR · WebRTC` etiketine `lang="en"` ekle
-   (yukarıdaki Türkçe büyük harf tuzağı).
 2. **`public/games/` 12 MB** — tek tek 1.4–2.2 MB'lık JPEG'ler, oysa en
    büyük kullanım yeri 320×220 (masaüstü hover kartı), mobilde 80×56
    thumbnail. Yeniden boyutlandır (≈640px genişlik + WebP) — mobil veri

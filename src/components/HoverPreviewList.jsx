@@ -85,7 +85,11 @@ export default function HoverPreviewList({ items = [], className = '' }) {
                   />
                 )}
 
+                {/* lang: başlıklar CSS ile büyütülüyor, Türkçe belgede `i` -> `İ`
+                    oluyor. Ürün adlarının çoğu İngilizce (SKYLINE SWINGER),
+                    Türkçe olanlar item'da lang:'tr' ile işaretli (TORPİDODAN). */}
                 <motion.span
+                  lang={item.lang ?? 'en'}
                   animate={{
                     x: isActive ? 22 : 0,
                     opacity: dimmed ? 0.22 : 1,

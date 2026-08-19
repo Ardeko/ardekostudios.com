@@ -1285,11 +1285,11 @@ export default function Games() {
           { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
           { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
           { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
-          { id: 'kafa',      title: 'Kafa Kafaya',     meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
+          { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
           { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,      image: '/games/decoy.svg',     href: '#games' },
-          { id: 'torpidodan', title: 'Torpidodan',     meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.svg', href: '#games' },
+          { id: 'torpidodan', title: 'Torpidodan',     lang: 'tr', meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.svg', href: '#games' },
         ]}
       />
     </section>

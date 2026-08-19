@@ -112,7 +112,7 @@ export default function RevoScene() {
           transition={{ duration: 2, repeat: Infinity }}
           style={{ width: 6, height: 6, borderRadius: '50%', background: '#3ECFC0', boxShadow: '0 0 6px #3ECFC0', display: 'inline-block' }}
         />
-        <span style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', color: '#6b7785', textTransform: 'uppercase' }}>
+        <span lang="en" style={{ fontSize: 9, fontWeight: 900, letterSpacing: '0.3em', color: '#6b7785', textTransform: 'uppercase' }}>
           SignalR · WebRTC
         </span>
       </div>

@@ -155,7 +155,7 @@ export default function Navbar() {
               INSTAGRAM
             </motion.a>
           </div>
-          <div className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">
+          <div lang="en" className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">
             info@ardekostudios.com
           </div>
         </div>

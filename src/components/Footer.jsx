@@ -17,7 +17,7 @@ export default function Footer() {
               <img src="/ardeko.png" alt="Ardeko" className="h-8 w-auto object-contain opacity-80" />
               <div>
                 <div className="text-xs font-black tracking-[0.3em] text-white">ARDEKO</div>
-                <div className="text-[8px] font-bold tracking-[0.3em] text-gray-600 uppercase">Studios</div>
+                <div lang="en" className="text-[8px] font-bold tracking-[0.3em] text-gray-600 uppercase">Studios</div>
               </div>
             </div>
             <p className="text-xs text-gray-600 font-light leading-relaxed">
@@ -99,7 +99,7 @@ export default function Footer() {
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-[10px] text-gray-700 font-medium tracking-widest uppercase">
-            © {new Date().getFullYear()} Ardeko Studios. {t.footer.rights}
+            © {new Date().getFullYear()} <span lang="en">Ardeko Studios.</span> {t.footer.rights}
           </p>
 
           <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export default function Footer() {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-1 h-1 rounded-full bg-indigo-500"
             />
-            <span className="text-[9px] text-gray-700 font-bold tracking-widest uppercase">
+            <span lang="en" className="text-[9px] text-gray-700 font-bold tracking-widest uppercase">
               Made with ♥ in Istanbul
             </span>
           </div>
