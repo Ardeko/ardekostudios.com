@@ -729,6 +729,209 @@ function ApexShiftScene() {
   );
 }
 
+const DC_CSS = `
+@keyframes dcSiege{0%{transform:scale(.5);opacity:0}20%{opacity:.85}100%{transform:scale(1.75);opacity:0}}
+@keyframes dcMarch{0%{transform:rotate(var(--rot)) translateY(0) scale(.6);opacity:0}18%{opacity:1}72%{opacity:1}100%{transform:rotate(var(--rot)) translateY(var(--dist)) scale(1);opacity:0}}
+@keyframes dcBreathe{0%,100%{opacity:.82}50%{opacity:1}}
+@keyframes dcLie{0%,60%{opacity:1}64%,86%{opacity:0}90%,100%{opacity:1}}
+@keyframes dcTruth{0%,60%{opacity:0}66%,84%{opacity:1}90%,100%{opacity:0}}
+@keyframes dcGlitch{0%,59%{transform:translateX(-50%)}62%{transform:translate(-50%) translateX(-2px)}65%{transform:translate(-50%) translateX(2px)}68%,100%{transform:translateX(-50%)}}
+@keyframes dcScan{0%{transform:translateY(-40px)}100%{transform:translateY(220px)}}
+
+@media (prefers-reduced-motion: reduce) { .dc * { animation: none !important } }
+
+.dc { position:relative;width:100%;height:190px;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#141b36,#070a16 74%) }
+.dc-grid { position:absolute;inset:0;background-image:linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px);background-size:24px 24px }
+.dc-scan { position:absolute;left:0;right:0;height:30px;background:linear-gradient(180deg,transparent,rgba(129,140,248,.09),transparent);animation:dcScan 6s linear infinite }
+.dc-vign { position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 46%,rgba(0,0,0,.5));pointer-events:none }
+
+.dc-hex { position:absolute;width:52px;height:46px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);display:flex;align-items:center;justify-content:center;animation:dcBreathe 3.6s ease-in-out infinite;z-index:4 }
+.dc-core { position:absolute;left:3px;top:2.5px;width:46px;height:41px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:#080c1b }
+.dc-num { position:relative;z-index:2;font-size:11px;font-weight:900;letter-spacing:.5px;line-height:1 }
+.dc-stack { position:relative;z-index:2;width:24px;height:12px }
+.dc-stack span { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;line-height:1 }
+
+.dc-ring { position:absolute;width:66px;height:58px;clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%);background:rgba(244,63,94,.45);animation:dcSiege 2.6s ease-out infinite;z-index:3 }
+.dc-arrow { position:absolute;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid #f43f5e;filter:drop-shadow(0 0 4px rgba(244,63,94,.85));animation:dcMarch 2.6s ease-in-out infinite;z-index:6 }
+
+.dc-tag { position:absolute;bottom:9px;left:50%;display:flex;align-items:center;gap:7px;padding:3px 9px;border-radius:999px;background:rgba(5,7,15,.82);border:1px solid rgba(255,255,255,.09);transform:translateX(-50%);animation:dcGlitch 4.6s steps(1,end) infinite;z-index:8 }
+.dc-tag-lbl { position:relative;width:62px;height:9px }
+.dc-tag-lbl span { position:absolute;left:0;top:0;font-size:7px;font-weight:900;letter-spacing:1.6px;line-height:9px;white-space:nowrap }
+.dc-tag-val { position:relative;width:20px;height:11px }
+.dc-tag-val span { position:absolute;right:0;top:0;font-size:11px;font-weight:900;line-height:11px }
+/* Animasyon kapalıyken (reduced-motion) iki katman üst üste binmesin: yalan görünür, gerçek gizli. */
+.dc-lie { opacity:1 }
+.dc-truth { opacity:0 }
+`;
+
+function DecoyScene() {
+  const { t } = useLang();
+  const words = t.games.scenes.decoy;
+  // Bal peteği: merkez + 6 komşu. Yatay adım 39px (52 * .75), dikey 23px (46 / 2).
+  const hexes = [
+    { dx: 0, dy: -46, c: '#22d3ee', n: '9' },
+    { dx: -39, dy: -23, c: '#818cf8', n: '14' },
+    { dx: 39, dy: -23, c: '#c084fc', n: '11' },
+    { dx: -39, dy: 23, c: '#34d399', n: '18' },
+    { dx: 39, dy: 23, c: '#fbbf24', n: '7' },
+    { dx: 0, dy: 46, c: '#fb7185', n: '13' },
+  ];
+  // Kuşatma: üç komşudan merkeze aynı anda yürüyen kuvvet.
+  // rot 0deg = ucu yukarı; ok kendi ucuna doğru ilerlesin diye dist negatif.
+  const marchers = [
+    { dx: -39, dy: -23, rot: 120, d: '0s' },
+    { dx: 39, dy: -23, rot: -120, d: '.35s' },
+    { dx: 0, dy: -46, rot: 180, d: '.7s' },
+  ];
+  return (
+    <div className="dc">
+      <style>{DC_CSS}</style>
+      <div className="dc-grid" />
+      <div className="dc-scan" />
+
+      {hexes.map((h, i) => (
+        <div
+          key={i}
+          className="dc-hex"
+          style={{ left: `calc(50% - 26px + ${h.dx}px)`, top: `${72 + h.dy}px`, background: h.c, animationDelay: `${i * 0.3}s` }}
+        >
+          <div className="dc-core" />
+          <span className="dc-num" style={{ color: h.c }}>{h.n}</span>
+        </div>
+      ))}
+
+      {/* Kuşatılan bölge: yayınladığı güç 27, gerçekte 12 */}
+      <div className="dc-ring" style={{ left: 'calc(50% - 33px)', top: '66px' }} />
+      <div className="dc-hex" style={{ left: 'calc(50% - 26px)', top: '72px', background: '#f43f5e', animation: 'none' }}>
+        <div className="dc-core" />
+        <div className="dc-stack">
+          <span className="dc-lie" style={{ color: '#fda4af', animation: 'dcLie 4.6s steps(1,end) infinite' }}>27</span>
+          <span className="dc-truth" style={{ color: '#f43f5e', animation: 'dcTruth 4.6s steps(1,end) infinite' }}>12</span>
+        </div>
+      </div>
+
+      {marchers.map((m, i) => (
+        <div
+          key={i}
+          className="dc-arrow"
+          style={{
+            left: `calc(50% - 5px + ${m.dx}px)`,
+            top: `${89 + m.dy}px`,
+            '--rot': `${m.rot}deg`,
+            '--dist': '-34px',
+            animationDelay: m.d,
+          }}
+        />
+      ))}
+
+      <div className="dc-vign" />
+
+      <div className="dc-tag">
+        <div className="dc-tag-lbl">
+          <span className="dc-lie" style={{ color: '#94a3b8', animation: 'dcLie 4.6s steps(1,end) infinite' }}>{words.broadcast}</span>
+          <span className="dc-truth" style={{ color: '#f43f5e', animation: 'dcTruth 4.6s steps(1,end) infinite' }}>{words.real}</span>
+        </div>
+        <div className="dc-tag-val">
+          <span className="dc-lie" style={{ color: '#e2e8f0', animation: 'dcLie 4.6s steps(1,end) infinite' }}>27</span>
+          <span className="dc-truth" style={{ color: '#f43f5e', animation: 'dcTruth 4.6s steps(1,end) infinite' }}>12</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const TD_CSS = `
+/* Mercek aracın kendi genişliği boyunca süpürür; hasar kayıtlarıyla senkron
+   kart ne kadar geniş olursa olsun bozulmasın diye yüzde değil px kullanılıyor. */
+@keyframes tdSweep{0%,6%{left:calc(50% - 86px)}64%,72%{left:calc(50% + 86px)}86%,100%{left:calc(50% - 86px)}}
+@keyframes tdLens{0%,4%{opacity:0}10%,70%{opacity:1}80%,100%{opacity:0}}
+@keyframes tdMarkA{0%,26%{opacity:0;transform:scale(.4)}32%{opacity:1;transform:scale(1.3)}38%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+@keyframes tdMarkB{0%,42%{opacity:0;transform:scale(.4)}48%{opacity:1;transform:scale(1.3)}54%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+@keyframes tdBadge{0%,54%{opacity:0;transform:translate(-50%,3px)}62%,90%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,0)}}
+@keyframes tdBand{0%{left:10%;right:10%}64%,86%{left:39%;right:39%}100%{left:10%;right:10%}}
+
+.td { position:relative;width:100%;height:190px;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#f2ece0,#ded6c4) }
+.td-rule { position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(26,79,160,.05) 0 1px,transparent 1px 15px),repeating-linear-gradient(90deg,rgba(26,79,160,.04) 0 1px,transparent 1px 15px) }
+.td-stamp { position:absolute;top:12px;right:14px;padding:2px 7px;border:1.5px dashed rgba(26,79,160,.4);border-radius:4px;font-size:6px;font-weight:900;letter-spacing:2px;color:rgba(26,79,160,.55);transform:rotate(-6deg) }
+
+.td-shadow { position:absolute;left:50%;top:112px;width:172px;height:9px;transform:translateX(-50%);border-radius:50%;background:rgba(20,35,59,.16) }
+.td-car { position:absolute;left:50%;top:62px;width:150px;height:52px;transform:translateX(-50%);z-index:3 }
+.td-body { position:absolute;left:0;bottom:9px;width:150px;height:24px;border-radius:9px 11px 6px 6px;background:linear-gradient(180deg,#2c4270,#16233d) }
+.td-roof { position:absolute;left:34px;bottom:30px;width:74px;height:22px;border-radius:12px 16px 2px 2px;background:linear-gradient(180deg,#33507f,#1d2f52) }
+.td-win { position:absolute;bottom:33px;height:14px;border-radius:5px 7px 2px 2px;background:rgba(190,222,255,.72) }
+.td-wheel { position:absolute;bottom:0;width:22px;height:22px;border-radius:50%;background:#111827;box-shadow:inset 0 0 0 3px #4b5563;z-index:4 }
+.td-hub { position:absolute;left:50%;top:50%;width:12px;height:2px;margin:-1px 0 0 -6px;background:#9ca3af;border-radius:1px }
+
+.td-mark { position:absolute;width:15px;height:15px;z-index:5 }
+.td-mark::before,.td-mark::after { content:'';position:absolute;left:50%;top:50%;width:15px;height:2px;margin:-1px 0 0 -7.5px;background:#d1443c;border-radius:1px }
+.td-mark::before { transform:rotate(45deg) }
+.td-mark::after { transform:rotate(-45deg) }
+
+.td-lens { position:absolute;top:56px;width:56px;height:56px;margin-left:-28px;z-index:6;animation:tdSweep 6.4s ease-in-out infinite }
+.td-glass { position:absolute;inset:0;border-radius:50%;border:3px solid #14233b;background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.55),rgba(120,190,255,.16));box-shadow:0 3px 8px rgba(20,35,59,.28);animation:tdLens 6.4s ease-in-out infinite }
+.td-grip { position:absolute;left:78%;top:80%;width:5px;height:20px;border-radius:3px;background:#14233b;transform:rotate(-42deg);transform-origin:top center;animation:tdLens 6.4s ease-in-out infinite }
+.td-tramer { position:absolute;left:50%;top:-14px;padding:2px 6px;border-radius:4px;background:#d1443c;color:#fff;font-size:6px;font-weight:900;letter-spacing:1.4px;white-space:nowrap;transform:translateX(-50%);animation:tdBadge 6.4s ease-in-out infinite }
+
+.td-plate { position:absolute;left:14px;bottom:13px;display:flex;align-items:stretch;height:20px;border-radius:3px;overflow:hidden;border:1.5px solid #14233b;background:#fff;box-shadow:0 2px 4px rgba(20,35,59,.2);z-index:7 }
+.td-plate-tr { display:flex;align-items:flex-end;justify-content:center;width:13px;padding-bottom:2px;background:#1a4fa0;color:#fff;font-size:5px;font-weight:900 }
+.td-plate-no { display:flex;align-items:center;padding:0 6px;color:#14233b;font-size:11px;font-weight:900;letter-spacing:1px }
+
+.td-est { position:absolute;right:14px;bottom:13px;width:42%;z-index:7 }
+.td-est-row { display:flex;align-items:center;justify-content:space-between;margin-bottom:3px }
+.td-est-lbl { font-size:6px;font-weight:900;letter-spacing:1.6px;color:rgba(20,35,59,.62) }
+.td-est-cur { font-size:9px;font-weight:900;color:#14233b;letter-spacing:1px }
+.td-est-track { position:relative;height:6px;border-radius:3px;background:rgba(20,35,59,.14);overflow:hidden }
+.td-est-band { position:absolute;top:0;bottom:0;left:39%;right:39%;border-radius:3px;background:linear-gradient(90deg,rgba(26,79,160,.35),#1a4fa0,rgba(26,79,160,.35));animation:tdBand 6.4s ease-in-out infinite }
+
+@media (prefers-reduced-motion: reduce) { .td * { animation: none !important } }
+`;
+
+function TorpidodanScene() {
+  const { t } = useLang();
+  const words = t.games.scenes.torpidodan;
+  return (
+    <div className="td">
+      <style>{TD_CSS}</style>
+      <div className="td-rule" />
+      <div className="td-stamp">{words.stamp}</div>
+
+      <div className="td-shadow" />
+      <div className="td-car">
+        <div className="td-roof" />
+        <div className="td-win" style={{ left: '38px', width: '30px' }} />
+        <div className="td-win" style={{ left: '72px', width: '32px' }} />
+        <div className="td-body" />
+        <div className="td-wheel" style={{ left: '22px' }}><div className="td-hub" /></div>
+        <div className="td-wheel" style={{ right: '22px' }}><div className="td-hub" /></div>
+        {/* Mercek üzerlerinden geçtikçe ortaya çıkan hasar kayıtları */}
+        <div className="td-mark" style={{ left: '30px', top: '20px', animation: 'tdMarkA 6.4s ease-in-out infinite' }} />
+        <div className="td-mark" style={{ left: '104px', top: '26px', animation: 'tdMarkB 6.4s ease-in-out infinite' }} />
+      </div>
+
+      <div className="td-lens">
+        <div className="td-glass" />
+        <div className="td-grip" />
+        <div className="td-tramer">{words.tramer}</div>
+      </div>
+
+      <div className="td-plate">
+        <div className="td-plate-tr">TR</div>
+        <div className="td-plate-no">34 ARD 34</div>
+      </div>
+
+      <div className="td-est">
+        <div className="td-est-row">
+          <span className="td-est-lbl">{words.inspect}</span>
+          <span className="td-est-cur">₺ ? ? ?</span>
+        </div>
+        <div className="td-est-track">
+          <div className="td-est-band" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 function StatusBadge({ status }) {
   const { t } = useLang();
@@ -822,7 +1025,9 @@ function GameCard({ game }) {
             {game.title}
           </h3>
           {words.subtitle && (
-            <p className="text-[11px] text-[#3ECFC0] font-bold tracking-wide mb-3">{words.subtitle}</p>
+            <p className="text-[11px] font-bold tracking-wide mb-3" style={{ color: game.accent || '#3ECFC0' }}>
+              {words.subtitle}
+            </p>
           )}
           <p className="text-gray-400 text-sm font-light leading-relaxed mb-8 flex-1">
             {words.desc}
@@ -1025,6 +1230,22 @@ export default function Games() {
       scene: SkylineSwingerScene,
     },
     {
+      id: 'decoy',
+      status: 'soon',
+      title: 'Decoy',
+      platforms: 'WEB · ONLINE',
+      scene: DecoyScene,
+      accent: '#F43F5E',
+    },
+    {
+      id: 'torpidodan',
+      status: 'soon',
+      title: 'Torpidodan',
+      platforms: 'IOS · ANDROID',
+      scene: TorpidodanScene,
+      accent: '#60A5FA',
+    },
+    {
       status: 'secret',
     },
   ];
@@ -1067,6 +1288,8 @@ export default function Games() {
           { id: 'kafa',      title: 'Kafa Kafaya',     meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
+          { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,      image: '/games/decoy.svg',     href: '#games' },
+          { id: 'torpidodan', title: 'Torpidodan',     meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.svg', href: '#games' },
         ]}
       />
     </section>

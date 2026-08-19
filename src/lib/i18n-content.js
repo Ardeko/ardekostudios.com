@@ -95,6 +95,18 @@ export const CONTENT = {
         skyline: {
           desc: 'Alacakaranlık şehrinde ağdan ağa savrul. Sarkaç fiziğiyle çalışan, refleks odaklı sonsuz koşu.',
         },
+        decoy: {
+          subtitle: 'Gücünü gizle, düşmanını yanılt',
+          desc: 'Yedi ulus, tek harita. Bir bölgenin yayınladığı güç ile gerçek gücü aynı şey değildir. Kazanmak için düşmanını kuşatman ve yalanı doğru anda yakalaman gerekir — gerçek zamanlı alan hakimiyeti stratejisi.',
+        },
+        torpidodan: {
+          subtitle: 'Gerçek değeri asla göremezsin',
+          desc: 'İkinci el araba alım-satım simülasyonu. Bir aracın gerçek değeri sana kapalı; elinde sadece gürültülü bir tahmin var. Ekspertize öde, gürültüyü azalt — ya da riske gir ve pazarlık masasında öde.',
+        },
+      },
+      scenes: {
+        decoy: { broadcast: 'YAYINLANAN', real: 'GERÇEK' },
+        torpidodan: { inspect: 'EKSPERTİZ', tramer: 'TRAMER', stamp: 'İKİNCİ EL' },
       },
       previewMeta: {
         switch: 'iOS · Android',
@@ -104,6 +116,8 @@ export const CONTENT = {
         kafa: 'Yakında · Mobil',
         rushville: 'Yakında · Mobil',
         skyline: 'Yakında · Mobil',
+        decoy: 'Yakında · Web',
+        torpidodan: 'Yakında · Mobil',
       },
     },
 
@@ -237,6 +251,18 @@ export const CONTENT = {
         skyline: {
           desc: 'Swing from web to web across a twilight city. A reflex-driven endless runner built on pendulum physics.',
         },
+        decoy: {
+          subtitle: 'Hide your strength, mislead your enemy',
+          desc: 'Seven nations, one map. What a region broadcasts is never what it actually holds. To win you have to surround your enemy and call the bluff at exactly the right moment — real-time area control strategy.',
+        },
+        torpidodan: {
+          subtitle: 'You never see the true value',
+          desc: 'A used-car trading simulation. A car\'s real worth stays hidden from you; all you get is a noisy estimate. Pay for an inspection to cut the noise — or take the risk and pay for it at the negotiating table.',
+        },
+      },
+      scenes: {
+        decoy: { broadcast: 'BROADCAST', real: 'ACTUAL' },
+        torpidodan: { inspect: 'INSPECTION', tramer: 'DAMAGE', stamp: 'USED CAR' },
       },
       previewMeta: {
         switch: 'iOS · Android',
@@ -246,6 +272,8 @@ export const CONTENT = {
         kafa: 'Coming soon · Mobile',
         rushville: 'Coming soon · Mobile',
         skyline: 'Coming soon · Mobile',
+        decoy: 'Coming soon · Web',
+        torpidodan: 'Coming soon · Mobile',
       },
     },
 

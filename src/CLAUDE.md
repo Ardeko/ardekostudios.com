@@ -96,7 +96,13 @@ stüdyonun görsel asset'i yok, bu yüzden canvas'ta canlı çiziliyor.
 **gerçek** (eski canlı siteden): Switch Master: Railway (App Store +
 Google Play, 2026), REVO (ardekostudios.xyz + GitHub release), Forza
 Orbit, Apex Shift (ardaguner.com), Kafa Kafaya / Rushville / Skyline
-Swinger ("yakında"). `About.jsx`'teki tarihçe: 2023 kuruluş → Legend of
+Swinger ("yakında"). 2026-08-19'da eklenen **Decoy** (yedi ulusun hileli
+savaşı — gerçek zamanlı alan hakimiyeti stratejisi, web/online, repo
+`~/Desktop/projects/decoy`) ve **Torpidodan** (ikinci el araba alım-satım
+simülasyonu, React+Capacitor mobil, repo `~/Desktop/projects/torpidodan`)
+da "yakında" durumunda — ikisinin de henüz canlı adresi ya da mağaza
+linki yok, çıkınca `status: 'live'` + `links` eklenmeli.
+`About.jsx`'teki tarihçe: 2023 kuruluş → Legend of
 Rey (2024, itch.io) → Wordeko/Protocol/Nebula - Bubble Shooter (2025,
 ardaguner.com) → Switch Master (2026). İletişim: `info@ardekostudios.com`,
 Instagram `@ardekostudios`, kurucu Arda Güner (ardaguner.com). Yeni bir
