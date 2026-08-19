@@ -51,6 +51,39 @@ scramble-decode olan bir dil kodu (`TR`/`EN`) — Hero'daki
 `TypewriterWords` ile aynı "kod çözülüyor" hissi. Navbar'da hem masaüstü
 sidebar'da (logo altında) hem mobil header'da (hamburger'in solunda) var.
 
+## Konumlandırma (2026-08-19)
+
+Hero rozeti **"Games & Interactive Media"**. Eskiden "Next-Gen Mobile
+Gaming" yazıyordu; kullanıcı "sadece mobil oyun yapmıyoruz" diye
+değiştirtti ve haklıydı — yayındaki 4 projenin 3'ü web/masaüstü
+(Forza Orbit, Apex Shift, REVO) ve **REVO bir oyun bile değil** (sesli
+sohbet uygulaması, Web + Windows). Rozet ayrıca Viewport'un OYUN/UYGULAMA
+sekmeleriyle ve Hakkımızda'daki "Mobil oyun yapmak değil, deneyim
+tasarlamak için buradayız" cümlesiyle de çelişiyordu.
+
+Aynı iddia üç yerdeydi, üçü birlikte güncellendi: `hero.badge`,
+`about.p1` (TR+EN) ve `footer.desc` (TR+EN). **Stüdyoyu bir yere
+"mobil oyun stüdyosu" diye yazma** — doğrusu "oyun ve etkileşimli medya
+stüdyosu", mobil/web/masaüstü.
+
+Bilerek DEĞİŞTİRİLMEYENLER: timeline'daki 2025 "3 farklı mini mobil
+oyun" (gerçekten mobildi), gizli projenin "yeni nesil mobil deneyim"i
+(o proje özelinde doğru) ve Hakkımızda'nın "mobil oyun yapmak değil..."
+alıntısı (zaten yeni konumlandırmayı destekliyor).
+
+### ⚠️ Türkçe büyük harf tuzağı
+
+Belge dili `tr` (varsayılan dil TR, `i18n.jsx` `documentElement.lang`'i
+set ediyor). Bu yüzden CSS `text-transform: uppercase` **Türkçe** kuralını
+uyguluyor: `i` → `İ`. Türkçe metinde doğru, ama İngilizce marka
+ifadelerinde değil — rozet "İNTERACTİVE MEDİA" diye render oluyordu
+(eskiden de "MOBİLE GAMİNG" diye çıkıyormuş). Çözüm: İngilizce kalması
+gereken uppercase metne `lang="en"` ver (bkz. `Hero.jsx` rozeti).
+**Hâlâ düzeltilmemiş bir örnek var:** REVO kartındaki `SignalR · WebRTC`
+etiketi "SİGNALR · WEBRTC" çıkıyor. Kaynağı zaten büyük harfle yazılmış
+stringler (`IOS · ANDROID` gibi) etkilenmez — sorun sadece küçük `i`
+içerip CSS ile büyütülen İngilizce metinlerde.
+
 ## Stack
 
 - React 19 + Vite 8
@@ -145,6 +178,8 @@ tekrar düşme:**
 ## Yapılacak
 
 1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
+2. REVO kartındaki `SignalR · WebRTC` etiketine `lang="en"` ekle
+   (yukarıdaki Türkçe büyük harf tuzağı).
 2. **`public/games/` 12 MB** — tek tek 1.4–2.2 MB'lık JPEG'ler, oysa en
    büyük kullanım yeri 320×220 (masaüstü hover kartı), mobilde 80×56
    thumbnail. Yeniden boyutlandır (≈640px genişlik + WebP) — mobil veri

@@ -183,7 +183,13 @@ export default function Hero() {
             transition={{ duration: 2, repeat: Infinity }}
             className="w-1.5 h-1.5 rounded-full bg-indigo-400"
           />
-          <span className="text-[10px] font-black tracking-[0.4em] text-indigo-400 uppercase">
+          {/* lang="en": rozet iki dilde de İngilizce bir marka ifadesi. Belge dili
+              `tr` olduğunda CSS `uppercase` Türkçe kuralını uygulayıp "INTERACTIVE"i
+              "İNTERACTİVE" yapıyordu. Daralan tracking 320px'de tek satırda tutuyor. */}
+          <span
+            lang="en"
+            className="text-[10px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-indigo-400 uppercase"
+          >
             {t.hero.badge}
           </span>
         </motion.div>

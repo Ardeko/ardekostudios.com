@@ -8,7 +8,7 @@
 export const CONTENT = {
   tr: {
     hero: {
-      badge: 'Next-Gen Mobile Gaming',
+      badge: 'Games & Interactive Media',
       lead: 'WE CRAFT',
       desc: 'Ardeko Studios olarak, fizik tabanlı mekanikleri ve bağımlılık yaratan minimalist bulmacaları sıra dışı görsellikle harmanlıyoruz.',
       primary: 'Oyunları Keşfet',
@@ -32,7 +32,7 @@ export const CONTENT = {
       quotePre: '"Mobil oyun yapmak değil, ',
       quoteHighlight: 'deneyim tasarlamak',
       quotePost: ' için buradayız."',
-      p1: 'Ardeko Studios, İstanbul merkezli bağımsız bir mobil oyun stüdyosudur. Fizik tabanlı mekanikler, minimalist estetik ve bağımlılık yaratan döngüler üzerine uzmanlaşıyoruz.',
+      p1: 'Ardeko Studios, İstanbul merkezli bağımsız bir oyun ve etkileşimli medya stüdyosudur. Mobil, web ve masaüstünde; fizik tabanlı mekanikler, minimalist estetik ve bağımlılık yaratan döngüler üzerine uzmanlaşıyoruz.',
       p2: 'Küçük ama odaklıyız. Her projede "bu gerçekten gerekli mi?" sorusunu soruyoruz ve cevap hayır ise çıkarıyoruz. Geri kalan her şeyi mükemmelleştiriyoruz.',
       values: [
         { icon: '⚡', title: 'Hız & Yalınlık', desc: 'Her mekanik sezgisel, her piksel kasıtlı. Gürültüyü çıkar, özü bırak.' },
@@ -154,7 +154,7 @@ export const CONTENT = {
     },
 
     footer: {
-      desc: 'İstanbul merkezli bağımsız mobil oyun stüdyosu. Minimalist mekanikler, maksimum eğlence.',
+      desc: 'İstanbul merkezli bağımsız oyun ve etkileşimli medya stüdyosu. Minimalist mekanikler, maksimum eğlence.',
       social: 'Sosyal',
       legal: 'Hukuki',
       privacy: 'Gizlilik Politikası',
@@ -164,7 +164,7 @@ export const CONTENT = {
 
   en: {
     hero: {
-      badge: 'Next-Gen Mobile Gaming',
+      badge: 'Games & Interactive Media',
       lead: 'WE CRAFT',
       desc: 'At Ardeko Studios, we blend physics-based mechanics and addictive minimalist puzzles with visuals that stand out.',
       primary: 'Explore Games',
@@ -188,7 +188,7 @@ export const CONTENT = {
       quotePre: '"We\'re not here to make mobile games, we\'re here to ',
       quoteHighlight: 'design experiences',
       quotePost: '."',
-      p1: 'Ardeko Studios is an independent mobile game studio based in Istanbul. We specialize in physics-based mechanics, minimalist aesthetics, and addictive gameplay loops.',
+      p1: 'Ardeko Studios is an independent games and interactive media studio based in Istanbul. Across mobile, web and desktop we specialize in physics-based mechanics, minimalist aesthetics, and addictive loops.',
       p2: 'We\'re small but focused. On every project we ask "is this actually necessary?" — if the answer is no, it goes. We polish everything that\'s left.',
       values: [
         { icon: '⚡', title: 'Speed & Simplicity', desc: 'Every mechanic intuitive, every pixel deliberate. Cut the noise, keep the core.' },
@@ -310,7 +310,7 @@ export const CONTENT = {
     },
 
     footer: {
-      desc: 'Independent mobile game studio based in Istanbul. Minimalist mechanics, maximum fun.',
+      desc: 'Independent games and interactive media studio based in Istanbul. Minimalist mechanics, maximum fun.',
       social: 'Social',
       legal: 'Legal',
       privacy: 'Privacy Policy',
