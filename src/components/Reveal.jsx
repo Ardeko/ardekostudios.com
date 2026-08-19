@@ -43,20 +43,27 @@ export function SplitWords({
             const i = index++;
             return (
               <Fragment key={`${li}-${i}`}>
-                <span
+                {/* whileInView TRIGGER'I MASKEDE DURMALI, kelimede değil:
+                    kelime y:115% ile kendi overflow-hidden kutusunun tamamen
+                    dışında başlıyor, dolayısıyla IntersectionObserver onu asla
+                    "görünür" saymıyordu ve başlık kalıcı olarak gizli kalıyordu.
+                    Maske ekranda olduğu için tetikleyici olarak doğru eleman o;
+                    kelime variant üzerinden sürülüyor. */}
+                <motion.span
                   className="inline-block overflow-hidden align-bottom pb-[0.14em] -mb-[0.14em]"
                   aria-hidden="true"
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once, margin: '-12% 0px -12% 0px' }}
                 >
                   <motion.span
                     className="inline-block will-change-transform"
-                    initial={{ y: '115%' }}
-                    whileInView={{ y: '0%' }}
-                    viewport={{ once, margin: '-12% 0px -12% 0px' }}
+                    variants={{ hidden: { y: '115%' }, show: { y: '0%' } }}
                     transition={{ duration, delay: delay + i * stagger, ease: EASE }}
                   >
                     {word}
                   </motion.span>
-                </span>{' '}
+                </motion.span>{' '}
               </Fragment>
             );
           })}

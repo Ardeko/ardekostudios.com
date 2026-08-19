@@ -309,11 +309,13 @@ export default function Viewport() {
         </span>
       </div>
 
-      {/* canvas */}
+      {/* canvas — touch-pan-y: `touch-none` mobilde burayı scroll tuzağına
+          çeviriyordu (canvas üzerinde parmakla kaydırınca sayfa kımıldamıyordu).
+          pan-y ile dikey scroll tarayıcıda kalır, pointer efekti korunur. */}
       <canvas
         ref={canvasRef}
         onPointerMove={onPointer}
-        className="block h-[260px] w-full touch-none sm:h-[320px]"
+        className="block h-[260px] w-full touch-pan-y sm:h-[320px]"
         aria-hidden="true"
       />
 

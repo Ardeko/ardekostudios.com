@@ -144,8 +144,10 @@ export default function Contact() {
     }
   };
 
+  // text-base (16px) mobilde şart: iOS Safari 16px altındaki bir alana
+  // odaklanınca sayfayı kendiliğinden yakınlaştırıyor. sm'den itibaren 14px.
   const inputBase =
-    'w-full bg-white/[0.03] border rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-gray-600 outline-none transition-all duration-300 focus:bg-white/[0.05]';
+    'w-full bg-white/[0.03] border rounded-xl px-4 py-3.5 text-base sm:text-sm text-white placeholder:text-gray-600 outline-none transition-all duration-300 focus:bg-white/[0.05]';
 
   return (
     <section id="contact" className="py-32 px-6 overflow-hidden">

@@ -18,6 +18,33 @@ body {
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS Safari yatay tutuşta gövde metnini kendiliğinden büyütmesin */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Safari 16 öncesi `overflow: clip` bilmiyor -> yok sayıp yatay kaydırma
+   açığa çıkarıyordu. O tarayıcılarda hidden'a düş (sticky zaten kullanılmıyor). */
+@supports not (overflow: clip) {
+  body { overflow-x: hidden; }
+}
+
+/* Tam ekran bölüm yüksekliği.
+   Mobilde 100vh adres çubuğunu da sayar; svh gerçek görünür alanı verir. */
+.adk-vh-screen { min-height: 100vh; }
+
+@supports (min-height: 100svh) {
+  .adk-vh-screen { min-height: 100svh; }
+}
+
+/* Mobilde 64px'lik sabit header var; anchor'la gelen bölüm başlığı
+   onun altında kalmasın. */
+#games, #about, #contact {
+  scroll-margin-top: 5rem;
+}
+
+@media (min-width: 1024px) {
+  #games, #about, #contact { scroll-margin-top: 2rem; }
 }
 
 ::selection {

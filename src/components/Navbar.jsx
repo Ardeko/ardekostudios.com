@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLenis } from 'lenis/react';
 import LanguageSwitch from './LanguageSwitch';
 
 const NAV_ITEMS = ['GAMES', 'ABOUT', 'CONTACT'];
@@ -7,6 +8,18 @@ const NAV_ITEMS = ['GAMES', 'ABOUT', 'CONTACT'];
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const lenis = useLenis();
+
+  // Mobil menü açıkken arkadaki sayfa kaymasın (Lenis + native, ikisi de).
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    lenis?.stop();
+    document.body.style.overflow = 'hidden';
+    return () => {
+      lenis?.start();
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, lenis]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -158,7 +171,8 @@ export default function Navbar() {
           <button
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
-            className="flex flex-col gap-1.5 p-2"
+            aria-expanded={isOpen}
+            className="flex h-11 w-11 flex-col items-center justify-center gap-1.5 -mr-2"
           >
             <motion.div animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }} className="w-5 h-0.5 bg-white origin-center" />
             <motion.div animate={isOpen ? { opacity: 0, x: -10 } : { opacity: 1, x: 0 }} className="w-5 h-0.5 bg-white" />

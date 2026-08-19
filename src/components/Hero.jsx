@@ -145,7 +145,7 @@ export default function Hero() {
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center items-center text-center px-4 overflow-hidden"
+      className="adk-vh-screen relative flex flex-col justify-center items-center text-center px-4 pt-28 pb-20 lg:pt-0 lg:pb-0 overflow-hidden"
     >
       <Particles />
 

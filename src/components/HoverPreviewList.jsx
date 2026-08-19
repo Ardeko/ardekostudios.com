@@ -72,11 +72,15 @@ export default function HoverPreviewList({ items = [], className = '' }) {
                 onBlur={() => setActive(null)}
                 className="group flex items-center gap-5 py-6 outline-none md:py-9"
               >
-                {/* Dokunmatikte önizleme kartı yerine satır içi görsel */}
+                {/* Dokunmatikte önizleme kartı yerine satır içi görsel.
+                    lazy: bu görseller sayfanın çok altında ve dosyalar ağır —
+                    eager yüklenince mobilde açılışı kilitliyorlardı. */}
                 {coarse && item.image && (
                   <img
                     src={item.image}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="h-14 w-20 shrink-0 rounded-lg object-cover"
                   />
                 )}
@@ -141,6 +145,7 @@ export default function HoverPreviewList({ items = [], className = '' }) {
                   <img
                     src={activeItem.image}
                     alt=""
+                    decoding="async"
                     className="h-[220px] w-[320px] object-cover"
                     draggable="false"
                   />

@@ -47,8 +47,10 @@ export default function SmoothScroll({ children }) {
         lerp: 0.085,
         wheelMultiplier: 0.9,
         touchMultiplier: 1.4,
-        // #games gibi anchor linkleri Lenis devralsın
-        anchors: true,
+        // #games gibi anchor linkleri Lenis devralsın.
+        // offset: Lenis `scroll-margin-top`'u okumaz — mobildeki 64px'lik
+        // sabit header'ın altına düşmemek için hedefi yukarı kaydırıyoruz.
+        anchors: { offset: -80 },
       }}
     >
       <VelocityBridge>{children}</VelocityBridge>

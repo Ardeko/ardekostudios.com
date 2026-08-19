@@ -18,6 +18,10 @@ import { useLenis } from 'lenis/react';
 
 const PANELS = 6;
 const MIN_DURATION = 1600; // ms — sayacın en hızlı bitebileceği süre
+// ms — sayacın EN GEÇ bitebileceği süre. Intro `window.load` + tüm
+// görsellerin inmesini bekliyordu; mobil bağlantıda bu 10+ saniyelik siyah
+// ekran demek ("site açılmıyor"). Bu tavan, ağ ne olursa olsun siteyi açar.
+const MAX_DURATION = 3200;
 
 function useLoadProgress() {
   const [value, setValue] = useState(0);
@@ -33,20 +37,26 @@ function useLoadProgress() {
     if (!ready) window.addEventListener('load', onLoad);
 
     const tick = () => {
-      const timeFloor = Math.min(1, (performance.now() - start) / MIN_DURATION);
-      const imgs = Array.from(document.images);
+      const elapsed = performance.now() - start;
+      const timeFloor = Math.min(1, elapsed / MIN_DURATION);
+      const timedOut = elapsed >= MAX_DURATION;
+      // lazy görseller sayılmaz: ekranın çok altındalar, hiç yüklenmeyebilirler
+      // ve sayılırlarsa oran asla 1'e ulaşmadığı için intro hep tavana dayanır.
+      const imgs = Array.from(document.images).filter((img) => img.loading !== 'lazy');
       const assetRatio = imgs.length
         ? imgs.filter((img) => img.complete).length / imgs.length
         : 1;
 
-      // Hem zaman hem varlık koşulu dolmadan 93'ün üstüne çıkma
-      const target = ready && assetRatio === 1
+      // Hem zaman hem varlık koşulu dolmadan 93'ün üstüne çıkma —
+      // ama tavana vurulduysa varlıkları beklemeyi bırak.
+      const target = (ready && assetRatio === 1) || timedOut
         ? timeFloor * 100
         : Math.min(timeFloor, assetRatio, 0.93) * 100;
 
       current += (target - current) * 0.12;
 
-      if (current > 99.4) {
+      // Üstteki lerp asimptotik; tavandan sonra takılıp kalmasın diye sert kes.
+      if (current > 99.4 || elapsed >= MAX_DURATION + 800) {
         setValue(100);
         setComplete(true);
         return;

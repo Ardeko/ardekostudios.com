@@ -108,8 +108,49 @@ ardaguner.com) → Switch Master (2026). İletişim: `info@ardekostudios.com`,
 Instagram `@ardekostudios`, kurucu Arda Güner (ardaguner.com). Yeni bir
 proje eklerken bu listeleri güncelle, uydurma placeholder yazma.
 
+## Mobil uyumluluk (2026-08-19)
+
+"Site mobilden açılmıyor" şikayeti üzerine gerçek cihaz profilinde
+(iPhone 12, 320–430px, yavaş 3G) ölçülüp düzeltilenler. **Bu tuzaklara
+tekrar düşme:**
+
+1. **`Preloader` açılışı kilitliyordu.** Sayaç `window.load` + *tüm*
+   `document.images` tamamlanmasını bekliyordu; `public/games/` 12 MB
+   olduğu için yavaş 3G'de intro 60 sn'de bile kapanmıyordu — kullanıcının
+   gördüğü "açılmıyor" tam olarak buydu. Artık `MAX_DURATION` (3200ms)
+   tavanı var ve **`loading="lazy"` görseller orana dahil edilmiyor**
+   (dahil edilirse oran asla 1 olmaz, her açılış tavana dayanır).
+2. **`Viewport` canvas'ı scroll tuzağıydı.** `touch-none` yüzünden
+   hero'daki 260px'lik alanda parmakla kaydırma hiç çalışmıyordu.
+   `touch-pan-y` oldu. Canvas'a bir daha `touch-none` verme.
+3. **Hero sabit header'ın altında kalıyordu.** `min-h-screen` +
+   `justify-center` içerik ekrandan uzun olunca üstü 64px'lik mobil
+   header'a giriyordu. `pt-28 pb-20 lg:py-0` eklendi; yükseklik
+   `.adk-vh-screen` sınıfıyla (`100svh`, adres çubuğu hesaba katılır).
+4. **Mobil menü açıkken arka sayfa kayıyordu** — `Navbar` artık Lenis'i
+   `stop()`/`start()` ile kilitliyor (`Preloader` ile aynı desen).
+5. **Anchor'lar header'ın altına düşüyordu.** Lenis `scroll-margin-top`
+   okumaz; `SmoothScroll` içinde `anchors: { offset: -80 }` verildi
+   (CSS'teki `scroll-margin-top` Lenis devre dışıyken yedek).
+6. **iOS form zoom'u** — 16px altındaki alana odaklanınca Safari sayfayı
+   yakınlaştırıyor. `Contact` input'ları `text-base sm:text-sm`.
+7. **`SplitWords` başlığı hiç görünmüyordu** (mobil/masaüstü fark etmez):
+   kelime `y:115%` ile kendi `overflow-hidden` maskesinin tamamen dışında
+   başladığı için IntersectionObserver onu asla "görünür" saymıyor,
+   `whileInView` tetiklenmiyordu. Tetikleyici maskeye taşındı, kelime
+   variant'la sürülüyor. Maskeli reveal yazarken bunu unutma.
+8. Eski Safari (<16) `overflow: clip` bilmiyor; `index.css`'te
+   `@supports not (overflow: clip)` ile `hidden`'a düşülüyor.
+
 ## Yapılacak
 
 1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
-2. Lighthouse: LCP, CLS ve mobil kontrast (özellikle `Preloader` +
-   ağır `framer-motion` animasyonları mobilde maliyetli olabilir).
+2. **`public/games/` 12 MB** — tek tek 1.4–2.2 MB'lık JPEG'ler, oysa en
+   büyük kullanım yeri 320×220 (masaüstü hover kartı), mobilde 80×56
+   thumbnail. Yeniden boyutlandır (≈640px genişlik + WebP) — mobil veri
+   için en büyük kazanç burada. Şimdilik sadece `loading="lazy"` ile
+   açılış yolundan çıkarıldı.
+3. JS bundle 484 KB (gzip 144 KB); yavaş 3G'de açılışın kalan ~9 sn'si
+   bu transferden geliyor. framer-motion kullanımını gözden geçir / kod
+   bölme düşün.
+4. Lighthouse: LCP, CLS ve mobil kontrast.
