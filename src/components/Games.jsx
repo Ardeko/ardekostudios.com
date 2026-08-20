@@ -948,6 +948,41 @@ function StatusBadge({ status }) {
   );
 }
 
+/**
+ * LORE — diğer sahnelerden farklı olarak elle çizilmiş SVG değil, hazır
+ * anahtar görsel. Diğer kartların sahne kutusuyla aynı ölçüde durması için
+ * çerçeve birebir aynı (h-190, rounded-2xl, alt kenar çizgisi).
+ *
+ * `image-rendering: pixelated` BİLEREK yok: görsel 1536px genişlikte ve karta
+ * ~600px olarak küçülüyor. pixelated yalnızca BÜYÜTÜRKEN doğru sonuç verir;
+ * küçültmede en-yakın-komşu piksel atlar ve pixel art titreşir. Tarayıcının
+ * varsayılan yumuşak küçültmesi burada doğru olan.
+ *
+ * loading="lazy" şart: Preloader ekrandaki eager görselleri sayıyor, bu kart
+ * ekranın çok altında ve sayaca girmemeli.
+ */
+function LoreScene() {
+  return (
+    <div
+      className="relative h-[190px] overflow-hidden rounded-2xl border-b border-white/5"
+      style={{ background: '#0A0714' }}
+    >
+      <img
+        src="/games/lore-wide.webp"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        width={1536}
+        height={486}
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      {/* Alt kenarı kart zeminine bağlayan geçiş — sert kesim olmasın */}
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#05070F]/80 to-transparent pointer-events-none" />
+    </div>
+  );
+}
+
 function GameCard({ game }) {
   const { t } = useLang();
   const tilt = useTilt();
@@ -1121,7 +1156,10 @@ function GameCard({ game }) {
                 />
               </div>
               <span className="text-[9px] text-gray-500 font-black tracking-[0.3em] uppercase">
-                {t.games.comingToStores}
+                {/* Ortak metin "mağazalarda yakında" diyor; mobil oyunlar için
+                    doğru ama mağazasız çıkacak yapımlar için değil. Oyun kendi
+                    soonNote'unu verirse o kazanır. */}
+                {words.soonNote || t.games.comingToStores}
               </span>
             </>
           )}
@@ -1208,6 +1246,14 @@ export default function Games() {
       links: { primary: 'https://ardaguner.com/apex-shift' },
     },
     {
+      id: 'lore',
+      status: 'soon',
+      title: 'LORE: Legend of Rey',
+      platforms: 'WINDOWS · PC',
+      scene: LoreScene,
+      accent: '#A78BFA',
+    },
+    {
       id: 'kafa',
       status: 'soon',
       title: 'Kafa Kafaya',
@@ -1284,6 +1330,7 @@ export default function Games() {
           { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
           { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
           { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
+          { id: 'lore',      title: 'LORE: Legend of Rey', meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
           { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },

@@ -182,6 +182,11 @@ export const CONTENT = {
           desc: 'Sınırları zorlayan, yüksek tempoya ve anlık kararlara dayanan yeni nesil arcade deneyimi.',
           linkPrimary: 'OYNA',
         },
+        lore: {
+          subtitle: 'Echoes',
+          desc: 'Yıkık sütunların arasında hâlâ yankılanan bir geçmişin izini sür. Elde işlenmiş piksel bir dünyada keşif, dövüş ve hikâyeyi birleştiren karanlık fantezi macerası.',
+          soonNote: 'Windows için çok yakında',
+        },
         kafa: {
           desc: 'İki oyuncunun kıyasıya çarpıştığı, fizik tabanlı hızlı bir kafa topu oyunu. Kupalar, yetenek kartları ve çevrimiçi sıralamayla rekabetçi mobil deneyim.',
         },
@@ -209,6 +214,7 @@ export const CONTENT = {
         revo: 'WEB · WINDOWS',
         forza: 'WEB · BROWSER',
         apex: 'WEB · BROWSER',
+        lore: 'Yakında · Windows',
         kafa: 'Yakında · Mobil',
         rushville: 'Yakında · Mobil',
         skyline: 'Yakında · Mobil',
@@ -434,6 +440,11 @@ export const CONTENT = {
           desc: 'A next-gen arcade experience built on pushing limits, high tempo, and split-second decisions.',
           linkPrimary: 'PLAY',
         },
+        lore: {
+          subtitle: 'Echoes',
+          desc: 'Follow the echoes of a past that still lingers among the broken pillars. A dark fantasy adventure weaving exploration, combat and story through a handcrafted pixel world.',
+          soonNote: 'Coming soon for Windows',
+        },
         kafa: {
           desc: 'A fast, physics-based head-to-head ball game where two players collide head-on. A competitive mobile experience with trophies, skill cards, and online ranking.',
         },
@@ -461,6 +472,7 @@ export const CONTENT = {
         revo: 'WEB · WINDOWS',
         forza: 'WEB · BROWSER',
         apex: 'WEB · BROWSER',
+        lore: 'Coming soon · Windows',
         kafa: 'Coming soon · Mobile',
         rushville: 'Coming soon · Mobile',
         skyline: 'Coming soon · Mobile',
