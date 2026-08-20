@@ -181,6 +181,28 @@ repodan doğrulandı: `~/Desktop/projects/sarteks/sarteks-web` ilk commit
 2026-06-03, son sürüm 2026-08-11 (v2.4). Next.js 16 + TypeScript, 10 dil
 (Arapça/Farsça RTL dahil), Adana merkezli tekstil makinesi firması.
 
+### `Games.jsx` → `LoreScene` — hareketlendirildi (2026-08-20)
+
+*LORE: Legend of Rey* kartı tek animasyonsuz karttı (diğerlerinin hepsi elle
+çizilmiş CSS/SVG sahne). Anahtar görsel gerçek bir asset olduğu için çizim
+yerine **görselin üstüne ışık/parçacık katmanları** bindirildi: iki meşale
+alevi (halo + alev dili, farklı sürelerle titriyor), yükselen 2px közler,
+sürüklenen sis, gökyüzü nefesi, kılıcın üzerinden geçen parıltı ve 26sn'lik
+çok yavaş bir kamera kayması. Hepsi CSS; `filter: blur()` yok (iOS'ta geniş
+alanlı blur pahalı), ışıklar `radial-gradient` + `mix-blend-mode: screen`.
+
+**Asıl çözülen problem — hizalama.** Katmanlar görselin belirli piksellerine
+çivili (alevler %17.1/%48 ve %80.3/%55, kılıç %50-60 × %58-85). Kart genişliği
+327px (mobil) ile 975px (lg altı tek sütun) arasında değişiyor ve
+`object-cover` bu aralıkta kâh yanları kâh alt/üstü kırpıyor — yüzdeler sahne
+kutusuna göre verilseydi hizalama her ekranda kayardı. `.lr-stage` bu yüzden
+cover geometrisini yeniden üretiyor (`width:max(100%,601px)` +
+`aspect-ratio:1536/486`, taşanı `.lr` kırpıyor) ve tüm katmanlar onun çocuğu.
+**Yeni katman eklerken konumu görselin 1536×486 koordinatından yüzdeye çevir.**
+Alev/parıltı şiddetleri bir tur kısıldı: ilk değerlerde meşaleler mor bir
+lekeye, kılıç da ışın kılıcına dönüyordu — katman sanat eserinin kendi ışığını
+titretmeli, ikinci bir ışık kaynağı gibi durmamalı.
+
 ## ⚠️ Favicon — Vite logosu tuzağı (2026-08-20)
 
 Sekmede stüdyonun ikonu yerine **Vite'ın mor şimşeği** çıkıyordu.

@@ -948,12 +948,87 @@ function StatusBadge({ status }) {
   );
 }
 
+const LORE_CSS = `
+@keyframes lrCam{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(calc(-50% - 9px),calc(-50% + 4px)) scale(1.045)}}
+@keyframes lrHalo{0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}22%{opacity:.58;transform:translate(-50%,-50%) scale(1.12)}46%{opacity:.36;transform:translate(-50%,-50%) scale(.94)}72%{opacity:.66;transform:translate(-50%,-50%) scale(1.06)}}
+@keyframes lrFlame{0%,100%{opacity:.32;transform:translate(-50%,-50%) scale(1,1)}28%{opacity:.68;transform:translate(-50%,-50%) scale(.87,1.2)}58%{opacity:.42;transform:translate(-50%,-50%) scale(1.12,.9)}}
+@keyframes lrEmber{0%{opacity:0;transform:translate(0,0)}14%{opacity:.9}100%{opacity:0;transform:translate(var(--dx,0px),-54px)}}
+@keyframes lrMist{0%{transform:translateX(-6%)}100%{transform:translateX(0)}}
+@keyframes lrSpark{0%,100%{opacity:.06}50%{opacity:.8}}
+@keyframes lrSky{0%,100%{opacity:.16}50%{opacity:.4}}
+@keyframes lrGlint{0%,56%{opacity:0;transform:translateX(-70%) rotate(41deg)}64%{opacity:.5}80%,100%{opacity:0;transform:translateX(470%) rotate(41deg)}}
+
+/* Görselin cover geometrisini birebir yeniden üretir: en az kutu kadar geniş,
+   en boy oranı 1536/486 sabit, taşan kısmı .lr kırpıyor. 601px = 190px × 3.1605
+   (kutu yüksekliğinde cover için gereken genişlik). aspect-ratio desteklemeyen
+   eski Safari'de height:100%'e düşer — hizalama bozulur ama sahne çalışır. */
+.lr-stage { position:absolute;left:50%;top:50%;width:max(100%,601px);height:100%;transform:translate(-50%,-50%);animation:lrCam 26s ease-in-out infinite }
+@supports (aspect-ratio:1/1){ .lr-stage { height:auto;aspect-ratio:1536/486 } }
+.lr-art { position:absolute;inset:0;width:100%;height:100%;object-fit:cover }
+
+/* Meşaleler — halo geniş ve yumuşak, alev dili dar ve parlak; ikisi farklı
+   sürede titreyince mekanik senkron hissi kayboluyor. */
+.lr-halo { position:absolute;width:11%;height:34%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle,rgba(186,142,255,.3),rgba(139,92,246,.11) 45%,transparent 70%) }
+.lr-flame { position:absolute;width:3.6%;height:21%;transform:translate(-50%,-50%);border-radius:50% 50% 44% 44%;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 62%,rgba(236,224,255,.42),rgba(178,124,255,.2) 48%,transparent 76%) }
+
+/* Köz ve parıltılar 2px kare — görsel pixel art, yuvarlak parçacık sırıtırdı. */
+.lr-ember { position:absolute;width:2px;height:2px;pointer-events:none;background:#d9b8ff;box-shadow:0 0 4px rgba(186,142,255,.8);animation:lrEmber 5s linear infinite }
+.lr-spark { position:absolute;width:2px;height:2px;pointer-events:none;background:#e3ccff;animation:lrSpark 5.4s ease-in-out infinite }
+
+.lr-mist { position:absolute;left:-3%;top:38%;width:112%;height:44%;pointer-events:none;background:radial-gradient(ellipse 20% 55% at 16% 52%,rgba(163,146,214,.11),transparent 72%),radial-gradient(ellipse 16% 48% at 46% 62%,rgba(163,146,214,.09),transparent 72%),radial-gradient(ellipse 24% 60% at 76% 48%,rgba(163,146,214,.1),transparent 72%);animation:lrMist 34s ease-in-out infinite alternate }
+.lr-sky { position:absolute;left:55%;top:0;width:36%;height:42%;transform:translateX(-50%);pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 0%,rgba(198,206,255,.26),transparent 68%);animation:lrSky 9.5s ease-in-out infinite }
+
+/* Kılıç parıltısı: kutu kılıcın sınırlayıcı dikdörtgeni, maske de o kutunun
+   sol-üst → sağ-alt köşegeni (41°, namlunun eğimi). Parıltı çubuğu namluya
+   dik duruyor, maske sayesinde yalnızca bıçağın üstünde görünüyor. */
+.lr-blade { position:absolute;left:50.2%;top:57.5%;width:10.6%;height:28%;overflow:hidden;pointer-events:none;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(41deg,transparent 43%,#000 48.5%,#000 53.5%,transparent 59%);mask-image:linear-gradient(41deg,transparent 43%,#000 48.5%,#000 53.5%,transparent 59%) }
+.lr-glint { position:absolute;left:0;top:-40%;width:15%;height:180%;background:linear-gradient(90deg,transparent,rgba(226,234,255,.75),transparent);animation:lrGlint 7.2s ease-in-out infinite }
+
+@media (prefers-reduced-motion: reduce) { .lr, .lr * { animation: none !important } }
+`;
+
+/* Köz kaynakları meşale alevlerinin tepesi; sıçrama yönü ve süre elle
+   dağıtıldı ki altı köz ritmik bir sıra gibi görünmesin. */
+const LORE_EMBERS = [
+  { left: '16.3%', top: '43%', dx: '-6px', delay: '0s', dur: '5.2s' },
+  { left: '17.4%', top: '41%', dx: '5px', delay: '1.7s', dur: '4.4s' },
+  { left: '18.2%', top: '44%', dx: '-3px', delay: '3.2s', dur: '5.8s' },
+  { left: '79.6%', top: '51%', dx: '5px', delay: '.9s', dur: '4.8s' },
+  { left: '80.6%', top: '49%', dx: '-5px', delay: '2.4s', dur: '5.5s' },
+  { left: '81.5%', top: '52%', dx: '4px', delay: '3.9s', dur: '4.2s' },
+];
+
+/* Görselde zaten mor toz zerreleri var; bunlar onların üstünde yanıp sönüyor. */
+const LORE_SPARKS = [
+  { left: '30%', top: '22%', delay: '0s' },
+  { left: '44%', top: '64%', delay: '1.3s' },
+  { left: '66%', top: '30%', delay: '2.6s' },
+  { left: '93%', top: '46%', delay: '3.4s' },
+  { left: '7%', top: '76%', delay: '4.1s' },
+];
+
 /**
  * LORE — diğer sahnelerden farklı olarak elle çizilmiş SVG değil, hazır
  * anahtar görsel. Diğer kartların sahne kutusuyla aynı ölçüde durması için
  * çerçeve birebir aynı (h-190, rounded-2xl, alt kenar çizgisi).
  *
- * `image-rendering: pixelated` BİLEREK yok: görsel 1536px genişlikte ve karta
+ * Görsel hazır olduğu için canlandırma da diğerlerinden farklı: çizimin kendisi
+ * animasyonlu değil, görselin ÜSTÜNE ışık ve parçacık katmanları biniyor — iki
+ * meşale alevi, yükselen közler, sürüklenen sis, gökyüzü nefesi, kılıcın
+ * üzerinden geçen parıltı ve çok yavaş bir kamera kayması. Hepsi CSS.
+ * `filter: blur()` BİLEREK yok (iOS'ta geniş alanlı blur pahalı); ışıklar
+ * radial-gradient + `mix-blend-mode: screen` ile yapılıyor, animasyonlar
+ * yalnızca transform/opacity sürüyor.
+ *
+ * ⚠️ Katmanlar görselin belirli PİKSELLERİNE çivili (alevler 17.1%/48% ve
+ * 80.3%/55%, kılıç 50-60% × 58-85%). Kart genişliği 327px–975px arasında
+ * değişiyor ve `object-cover` bu aralıkta kâh yanları kâh alt/üstü kırpıyor;
+ * yüzdeler sahne kutusuna göre verilseydi hizalama her ekranda kayardı.
+ * `.lr-stage` bu yüzden cover geometrisini yeniden üretiyor ve katmanlar
+ * onun çocuğu. Yeni katman eklerken konumu görselin 1536×486 koordinatından
+ * yüzdeye çevir.
+ *
+ * `image-rendering: pixelated` BİLEREK yok: görsel 1536px genişliğinde ve karta
  * ~600px olarak küçülüyor. pixelated yalnızca BÜYÜTÜRKEN doğru sonuç verir;
  * küçültmede en-yakın-komşu piksel atlar ve pixel art titreşir. Tarayıcının
  * varsayılan yumuşak küçültmesi burada doğru olan.
@@ -964,19 +1039,48 @@ function StatusBadge({ status }) {
 function LoreScene() {
   return (
     <div
-      className="relative h-[190px] overflow-hidden rounded-2xl border-b border-white/5"
+      className="lr relative h-[190px] overflow-hidden rounded-2xl border-b border-white/5"
       style={{ background: '#0A0714' }}
     >
-      <img
-        src="/games/lore-wide.webp"
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        width={1536}
-        height={486}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      <style>{LORE_CSS}</style>
+      <div className="lr-stage">
+        <img
+          src="/games/lore-wide.webp"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          width={1536}
+          height={486}
+          className="lr-art"
+        />
+
+        <div className="lr-sky" />
+        <div className="lr-mist" />
+
+        {/* Sol meşale */}
+        <div className="lr-halo" style={{ left: '17.1%', top: '48%', animation: 'lrHalo 3.4s ease-in-out infinite' }} />
+        <div className="lr-flame" style={{ left: '17.1%', top: '46%', animation: 'lrFlame 1.9s ease-in-out infinite' }} />
+        {/* Sağ meşale — aynı animasyon, farklı süre; ikisi asla senkron olmuyor */}
+        <div className="lr-halo" style={{ left: '80.3%', top: '55%', animation: 'lrHalo 4.1s ease-in-out infinite .6s' }} />
+        <div className="lr-flame" style={{ left: '80.3%', top: '54%', animation: 'lrFlame 2.3s ease-in-out infinite .4s' }} />
+
+        {LORE_EMBERS.map((e, i) => (
+          <div
+            key={i}
+            className="lr-ember"
+            style={{ left: e.left, top: e.top, '--dx': e.dx, animationDelay: e.delay, animationDuration: e.dur }}
+          />
+        ))}
+        {LORE_SPARKS.map((s, i) => (
+          <div key={i} className="lr-spark" style={{ left: s.left, top: s.top, animationDelay: s.delay }} />
+        ))}
+
+        <div className="lr-blade">
+          <div className="lr-glint" />
+        </div>
+      </div>
+
       {/* Alt kenarı kart zeminine bağlayan geçiş — sert kesim olmasın */}
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#05070F]/80 to-transparent pointer-events-none" />
     </div>
