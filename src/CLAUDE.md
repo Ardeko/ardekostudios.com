@@ -194,15 +194,42 @@ tekrar düşme:**
 8. Eski Safari (<16) `overflow: clip` bilmiyor; `index.css`'te
    `@supports not (overflow: clip)` ile `hidden`'a düşülüyor.
 
+## ⚠️ Görsel bütçesi — iPhone'u kilitleyen şey buydu (2026-08-20)
+
+Kullanıcı bildirdi: iOS 17+ Safari'de (normal sekme, gizli sekme, Instagram
+uygulama içi tarayıcı — hepsinde) site ya sayacın **"000"**'ında ya da siyah
+ekranda kalıyor, "çok uzun süre bekleyince açılıyor". Masaüstünde hiç
+görünmüyordu.
+
+Sebep çökme değil, **bellek**. Dosya boyutu değil, **çözülmüş bitmap**
+boyutu belirleyici — iOS her görseli `genişlik × yükseklik × 4 bayt` olarak
+RAM'e açar ve sekme başına bütçesi masaüstünün çok altında:
+
+| Dosya | Diskte | Piksel | iOS'ta RAM |
+|---|---|---|---|
+| `games/*.jpg` ×7 | 12 MB | 1536×1024 | 6 MB × 7 = **42 MB** |
+| `ardeko.png` | 72 KB | 2490×2490 | **23.7 MB** (32px'te gösteriliyor!) |
+
+Toplam ~66 MB. Sekme indirip kod çözerken ana iş parçacığı doluyor,
+`requestAnimationFrame` duruyor (sayaç 000'da donuyor), iş bitince site
+açılıyor. `ardeko.png` en sinsisi: 72 KB'lık masum bir dosya ama 2490²
+piksel — logo `h-8` (32px) olarak render ediliyor.
+
+Yapılan: hepsi 720px uzun kenara indirildi (`games/` 12 MB → 292 KB,
+gerçek JPEG'e yeniden kodlandı — dosyalar `.jpg` uzantılıydı ama içerik
+PNG'ydi, bu yüzden kayıpsız ve devasaydılar), logo 512×512'ye düştü.
+Dağıtılan site toplamı **13 MB → 0.92 MB**.
+
+**Orijinaller silinmedi**: `assets-src/` altında duruyorlar. Vite sadece
+`public/`'i kopyaladığı için oraya taşınmak onları dağıtımdan çıkarır ama
+repoda tutar. Yeni key art eklerken **önce `assets-src/`'e tam boyutu koy,
+sonra `public/games/`'e 720px sürümünü üret.** `public/`'e 1000px'ten
+büyük hiçbir şey koyma.
+
 ## Yapılacak
 
 1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
-2. **`public/games/` 12 MB** — tek tek 1.4–2.2 MB'lık JPEG'ler, oysa en
-   büyük kullanım yeri 320×220 (masaüstü hover kartı), mobilde 80×56
-   thumbnail. Yeniden boyutlandır (≈640px genişlik + WebP) — mobil veri
-   için en büyük kazanç burada. Şimdilik sadece `loading="lazy"` ile
-   açılış yolundan çıkarıldı.
-3. JS bundle 484 KB (gzip 144 KB); yavaş 3G'de açılışın kalan ~9 sn'si
+2. JS bundle 484 KB (gzip 144 KB); yavaş 3G'de açılışın kalan ~9 sn'si
    bu transferden geliyor. framer-motion kullanımını gözden geçir / kod
    bölme düşün.
-4. Lighthouse: LCP, CLS ve mobil kontrast.
+3. Lighthouse: LCP, CLS ve mobil kontrast.

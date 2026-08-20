@@ -22,10 +22,39 @@ const MIN_DURATION = 1600; // ms — sayacın en hızlı bitebileceği süre
 // görsellerin inmesini bekliyordu; mobil bağlantıda bu 10+ saniyelik siyah
 // ekran demek ("site açılmıyor"). Bu tavan, ağ ne olursa olsun siteyi açar.
 const MAX_DURATION = 3200;
+// Son güvenlik ağı. requestAnimationFrame durursa (iOS Safari düşük güç modunda,
+// arka plana atılan sekmede ya da bellek baskısı altında rAF'ı boğuyor) yukarıdaki
+// mantığın tamamı ölür ve perde ekranda kalır. setTimeout bu koşullarda da tetiklenir.
+const HARD_STOP = MAX_DURATION + 1500;
+
+// Gizli sekmede / uygulama içi tarayıcıda (Instagram, vb.) sessionStorage'a
+// erişmek istisna fırlatabilir. Korumasız erişim render sırasında patlarsa
+// React tüm ağacı söker ve geriye siyah ekran kalır — i18n.jsx'teki desenin aynısı.
+function readIntroDone() {
+  try {
+    return sessionStorage.getItem('adk-intro') === 'done';
+  } catch {
+    return false;
+  }
+}
+
+function markIntroDone() {
+  try {
+    sessionStorage.setItem('adk-intro', 'done');
+  } catch {
+    // sessizce yut — intro bu oturumda bir daha görünmese de sorun değil
+  }
+}
 
 function useLoadProgress() {
   const [value, setValue] = useState(0);
   const [complete, setComplete] = useState(false);
+
+  // rAF'tan bağımsız kesin çıkış.
+  useEffect(() => {
+    const t = setTimeout(() => setComplete(true), HARD_STOP);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const start = performance.now();
@@ -47,11 +76,17 @@ function useLoadProgress() {
         ? imgs.filter((img) => img.complete).length / imgs.length
         : 1;
 
+      // Görseller inerken assetRatio 0'dır; ham haliyle hedef de 0 olur ve sayaç
+      // mobil bağlantıda saniyelerce "000"da çakılı kalır (masaüstünde görseller
+      // milisaniyede indiği için bu hiç fark edilmiyordu). Varlık oranı sayacı
+      // zaman tabanının altına çekemesin — bar her koşulda ilerlemeye devam etsin.
+      const assetFloor = Math.max(assetRatio, timeFloor * 0.6);
+
       // Hem zaman hem varlık koşulu dolmadan 93'ün üstüne çıkma —
       // ama tavana vurulduysa varlıkları beklemeyi bırak.
       const target = (ready && assetRatio === 1) || timedOut
         ? timeFloor * 100
-        : Math.min(timeFloor, assetRatio, 0.93) * 100;
+        : Math.min(timeFloor, assetFloor, 0.93) * 100;
 
       current += (target - current) * 0.12;
 
@@ -81,7 +116,7 @@ export default function Preloader({ onDone }) {
   const [skip] = useState(() =>
     typeof window === 'undefined' ||
     window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-    sessionStorage.getItem('adk-intro') === 'done'
+    readIntroDone()
   );
 
   const [visible, setVisible] = useState(!skip);
@@ -101,9 +136,12 @@ export default function Preloader({ onDone }) {
   useEffect(() => {
     if (skip || !complete) return undefined;
     const t = setTimeout(() => {
-      sessionStorage.setItem('adk-intro', 'done');
+      // Perdeyi kaldırmak HER ŞEYDEN önce gelir: storage yazımı istisna
+      // fırlatırsa (gizli sekme) setVisible'a hiç sıra gelmiyordu ve
+      // perde ekranda kalıyordu.
       setVisible(false);
       onDone?.();
+      markIntroDone();
     }, 320);
     return () => clearTimeout(t);
   }, [complete, skip, onDone]);
