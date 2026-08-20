@@ -201,7 +201,7 @@ export default function Preloader({ onDone }) {
               className="font-black leading-none tracking-tighter text-white tabular-nums"
               style={{ fontSize: 'clamp(4rem, 16vw, 11rem)' }}
             >
-              {String(shown).padStart(3, '0')}
+              %{shown}
             </div>
 
             <div className="h-[2px] w-[min(62vw,420px)] overflow-hidden rounded-full bg-white/10">
