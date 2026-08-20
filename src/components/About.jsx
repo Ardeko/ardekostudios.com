@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useLang } from '../lib/i18n';
+import Journey from './Journey';
 
 const valuesContainer = {
   hidden: {},
@@ -14,31 +15,6 @@ const valueItem = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
-const timelineContainer = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
-  },
-};
-
-const timelineItemLeft = {
-  hidden: { opacity: 0, x: -40 },
-  show: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
-const timelineItemRight = {
-  hidden: { opacity: 0, x: 40 },
-  show: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
@@ -120,55 +96,7 @@ export default function About() {
           viewport={{ once: true, margin: '-60px' }}
           transition={{ duration: 0.8 }}
         >
-          <p className="text-[11px] font-black tracking-[0.4em] text-gray-500 uppercase mb-10 text-center">
-            {t.about.journey}
-          </p>
-
-          <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5 hidden sm:block" />
-            <motion.div
-              initial={{ scaleY: 0 }}
-              whileInView={{ scaleY: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.5, ease: 'easeOut' }}
-              className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-indigo-500/40 to-transparent origin-top hidden sm:block"
-            />
-
-            <motion.div
-              variants={timelineContainer}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: '-40px' }}
-              className="flex flex-col gap-8"
-            >
-              {t.about.timeline.map((item, i) => (
-                <motion.div
-                  key={i}
-                  variants={i % 2 === 0 ? timelineItemLeft : timelineItemRight}
-                  className={`flex items-center gap-6 ${
-                    i % 2 === 0 ? 'sm:flex-row' : 'sm:flex-row-reverse'
-                  } flex-row`}
-                >
-                  <div className={`flex-1 ${i % 2 === 0 ? 'sm:text-right text-left' : 'text-left'}`}>
-                    <span className="text-[10px] font-black tracking-widest text-indigo-400 uppercase">
-                      {item.year}
-                    </span>
-                    <h4 className="text-base font-black text-white mt-1">{item.event}</h4>
-                    <p className="text-xs text-gray-500 font-light mt-0.5">{item.sub}</p>
-                  </div>
-
-                  <motion.div
-                    whileInView={{ scale: [0, 1.3, 1] }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.1 + 0.2 }}
-                    className="w-3 h-3 rounded-full bg-indigo-500 border-2 border-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.5)] flex-shrink-0 z-10"
-                  />
-
-                  <div className="flex-1 hidden sm:block" />
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+          <Journey />
         </motion.div>
       </div>
     </section>

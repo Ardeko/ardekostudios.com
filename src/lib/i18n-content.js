@@ -41,14 +41,106 @@ export const CONTENT = {
         { icon: '🌍', title: 'Küresel Vizyon', desc: 'İstanbul\'dan dünyanın her köşesine ulaşan oyunlar kodluyoruz.' },
       ],
       journey: 'Yolculuğumuz',
-      timeline: [
-        { year: '2023', event: 'Ardeko Studios kuruldu', sub: '1 geliştirici, 0 ödün.' },
-        { year: '2024', event: 'Legend of Rey', sub: 'Itch.io\'da ilk oyunumuz yayınlandı.' },
-        { year: '2025', event: 'Wordeko, Protocol ve Nebula - Bubble Shooter', sub: '3 farklı mini mobil oyun ardaguner.com\'da yayınlandı.' },
-        { year: '2026', event: 'Switch Master: Railway', sub: 'İlk oyun Google Play ve App Store\'da yayına girdi.' },
-        { year: '2026', event: 'Yeni projelere başlandı', sub: 'Yeni nesil mekanikler geliştiriliyor.' },
-        { year: '2026', event: 'Büyüme dönemi', sub: 'Ekip genişliyor, vizyon büyüyor.' },
-      ],
+      journeyLead: '2023\'ten bugüne yayınlanan oyunlar, uygulamalar, kurumsal işler ve AR-GE projeleri. Listeyi süz, detay için bir karta dokun.',
+      journeyStatProjects: 'kilometre taşı',
+      journeyStatYears: 'yıl',
+      journeyStatShipped: 'yayında',
+      journeyExpand: 'Detay',
+      months: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+      journeyFilters: {
+        all: 'TÜMÜ',
+        studio: 'STÜDYO',
+        game: 'OYUN',
+        app: 'UYGULAMA',
+        corporate: 'KURUMSAL',
+        rnd: 'AR-GE',
+      },
+      journeyBadges: {
+        studio: 'STÜDYO',
+        game: 'OYUN',
+        app: 'UYGULAMA',
+        web: 'WEB',
+        corporate: 'KURUMSAL',
+        rnd: 'AR-GE',
+      },
+      journeyLinks: {
+        github: 'Kaynak kodu',
+        live: 'Canlı',
+        appStore: 'App Store',
+        googlePlay: 'Google Play',
+        restricted: 'Telif nedeniyle paylaşılmıyor',
+        inProgress: 'Geliştiriliyor',
+      },
+      journeyItems: {
+        studioFounded: {
+          title: 'Ardeko Studios kuruldu',
+          desc: 'Bağımsız bir oyun ve etkileşimli medya stüdyosu olarak yola çıkıldı — 1 geliştirici, 0 ödün.',
+        },
+        protocol: {
+          title: 'Protocol',
+          desc: 'Heyecan dolu bir hız ve strateji yarışı. Stüdyonun ilk oyun denemelerinden biri.',
+        },
+        ardobot: {
+          title: 'Ardobot',
+          desc: 'Yapay zeka destekli, özelleştirilebilir bir Discord botu.',
+        },
+        teknofest: {
+          title: 'Teknofest Otonom Su Altı Dronu',
+          desc: 'Otonom görüntü işleme teknolojisiyle tasarlanan su altı dronu. Yazılım tarafı gerçek zamanlı görüntü analizi üzerine kuruldu.',
+        },
+        wordeko: {
+          title: 'Wordeko',
+          desc: 'Eğlenceli bir kelime tahmin oyunu.',
+        },
+        legendOfRey: {
+          title: 'Legend of Rey',
+          desc: 'Python tabanlı macera platform oyunu. itch.io\'da yayınlanan ilk oyunumuz.',
+        },
+        renault: {
+          title: 'Renault Randevu & Muayene',
+          desc: 'Renault MAIS için geliştirilen randevu ve muayene uygulaması.',
+        },
+        ardaguner: {
+          title: 'ardaguner.com',
+          desc: 'Kurucunun kişisel portfolyo sitesi yayına alındı — projeler, yetenekler ve iletişim tek adreste.',
+        },
+        stok: {
+          title: 'Stok Ekstresi Web Uygulaması',
+          desc: 'MSSQL veritabanı ile çalışan, filtrelenebilir ASP.NET Core MVC tabanlı stok takibi uygulaması.',
+        },
+        revo: {
+          title: 'REVO',
+          desc: 'SignalR ve WebRTC ile geliştirilen, tarayıcı üzerinden sesli ve yazılı iletişim sağlayan uygulama. Uçtan uca şifreli, düşük gecikmeli.',
+        },
+        nebula: {
+          title: 'Nebula — Balon Patlatma',
+          desc: '50 seviyelik ve sonsuz modlu, kozmik temalı bir bubble shooter. React, Phaser 3, FastAPI ve MongoDB ile geliştirildi.',
+        },
+        switchMaster: {
+          title: 'Switch Master: Railway',
+          desc: 'İlk oyun App Store ve Google Play\'de yayına girdi. Demiryolu makaslarını doğru zamanda çevirmeye dayanan minimalist bulmaca.',
+        },
+        ardekostudios: {
+          title: 'ardekostudios.com',
+          desc: 'Stüdyonun kendi sitesi yayına alındı — React 19, Vite 8 ve Tailwind v4 üzerine kurulu, TR/EN iki dilli.',
+        },
+        dny: {
+          title: 'DNY Bilişim',
+          desc: 'DNY Bilişim için kurumsal web sitesi: hizmetler, referanslar, SSS ve uzaktan destek sayfaları.',
+        },
+        decoy: {
+          title: 'Decoy',
+          desc: 'Yedi ulusun hileli savaşı. Gerçek zamanlı alan hakimiyeti stratejisi: bir bölgenin yayınladığı güç ile gerçek gücü aynı şey değildir.',
+        },
+        torpidodan: {
+          title: 'Torpidodan',
+          desc: 'İkinci el araba alım-satım simülasyonu. Aracın gerçek değerini asla göremezsin — ekspertize öde, gürültüyü azalt.',
+        },
+        growth: {
+          title: 'Büyüme dönemi',
+          desc: 'Ekip genişliyor, vizyon büyüyor. Decoy ve Torpidodan geliştirme aşamasında, yeni nesil mekanikler test ediliyor.',
+        },
+      },
     },
 
     games: {
@@ -197,14 +289,106 @@ export const CONTENT = {
         { icon: '🌍', title: 'Global Vision', desc: 'We code games that travel from Istanbul to every corner of the world.' },
       ],
       journey: 'Our Journey',
-      timeline: [
-        { year: '2023', event: 'Ardeko Studios founded', sub: '1 developer, 0 compromises.' },
-        { year: '2024', event: 'Legend of Rey', sub: 'Our first game shipped on itch.io.' },
-        { year: '2025', event: 'Wordeko, Protocol and Nebula - Bubble Shooter', sub: '3 different mini mobile games shipped on ardaguner.com.' },
-        { year: '2026', event: 'Switch Master: Railway', sub: 'Our first game launched on Google Play and the App Store.' },
-        { year: '2026', event: 'New projects underway', sub: 'Next-gen mechanics in development.' },
-        { year: '2026', event: 'Growth phase', sub: 'The team is expanding, the vision is growing.' },
-      ],
+      journeyLead: 'Games, apps, client work and R&D shipped from 2023 to today. Filter the list, tap a card for the details.',
+      journeyStatProjects: 'milestones',
+      journeyStatYears: 'years',
+      journeyStatShipped: 'shipped',
+      journeyExpand: 'Details',
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      journeyFilters: {
+        all: 'ALL',
+        studio: 'STUDIO',
+        game: 'GAME',
+        app: 'APP',
+        corporate: 'CLIENT WORK',
+        rnd: 'R&D',
+      },
+      journeyBadges: {
+        studio: 'STUDIO',
+        game: 'GAME',
+        app: 'APP',
+        web: 'WEB',
+        corporate: 'CLIENT WORK',
+        rnd: 'R&D',
+      },
+      journeyLinks: {
+        github: 'Source',
+        live: 'Live',
+        appStore: 'App Store',
+        googlePlay: 'Google Play',
+        restricted: 'Not shared due to copyright',
+        inProgress: 'In development',
+      },
+      journeyItems: {
+        studioFounded: {
+          title: 'Ardeko Studios founded',
+          desc: 'Started out as an independent game and interactive media studio — 1 developer, 0 compromises.',
+        },
+        protocol: {
+          title: 'Protocol',
+          desc: 'An exciting race of speed and strategy. One of the studio\'s earliest game experiments.',
+        },
+        ardobot: {
+          title: 'Ardobot',
+          desc: 'An AI-powered, fully customizable Discord bot.',
+        },
+        teknofest: {
+          title: 'Teknofest Autonomous Underwater Drone',
+          desc: 'An underwater drone built around autonomous computer vision. The software side centred on real-time image analysis.',
+        },
+        wordeko: {
+          title: 'Wordeko',
+          desc: 'A fun word guessing game.',
+        },
+        legendOfRey: {
+          title: 'Legend of Rey',
+          desc: 'A Python-based adventure platformer. Our first game shipped on itch.io.',
+        },
+        renault: {
+          title: 'Renault Appointment & Inspection',
+          desc: 'An appointment and vehicle inspection app built for Renault MAIS.',
+        },
+        ardaguner: {
+          title: 'ardaguner.com',
+          desc: 'The founder\'s personal portfolio site went live — projects, skills and contact in one place.',
+        },
+        stok: {
+          title: 'Stock Statement Web App',
+          desc: 'A filterable stock tracking application on ASP.NET Core MVC, backed by an MSSQL database.',
+        },
+        revo: {
+          title: 'REVO',
+          desc: 'Browser-based voice and text communication built with SignalR and WebRTC. End-to-end encrypted, low latency.',
+        },
+        nebula: {
+          title: 'Nebula — Bubble Shooter',
+          desc: 'A cosmic-themed bubble shooter with 50 levels and an endless mode. Built with React, Phaser 3, FastAPI and MongoDB.',
+        },
+        switchMaster: {
+          title: 'Switch Master: Railway',
+          desc: 'Our first game launched on the App Store and Google Play. A minimalist puzzle built on flipping railway switches at the right moment.',
+        },
+        ardekostudios: {
+          title: 'ardekostudios.com',
+          desc: 'The studio\'s own site went live — built on React 19, Vite 8 and Tailwind v4, bilingual TR/EN.',
+        },
+        dny: {
+          title: 'DNY Bilişim',
+          desc: 'A corporate website for DNY Bilişim: services, references, FAQ and remote support pages.',
+        },
+        decoy: {
+          title: 'Decoy',
+          desc: 'The deceitful war of seven nations. Real-time area control strategy: what a region broadcasts is not what it actually holds.',
+        },
+        torpidodan: {
+          title: 'Torpidodan',
+          desc: 'A used-car trading simulation. You never see a car\'s true value — pay for an inspection to cut the noise.',
+        },
+        growth: {
+          title: 'Growth phase',
+          desc: 'The team is expanding, the vision is growing. Decoy and Torpidodan are in development, next-gen mechanics in testing.',
+        },
+      },
     },
 
     games: {

@@ -142,6 +142,51 @@ Altında gerçek fps/frame HUD'u var. `prefers-reduced-motion`'a saygı
 duyar (tek kare, pointer etkisi kapalı). Stok video/görsel kullanmıyor —
 stüdyonun görsel asset'i yok, bu yüzden canvas'ta canlı çiziliyor.
 
+### `src/components/Journey.jsx` — Yolculuk (2026-08-20'de yeniden yazıldı)
+
+`About.jsx` içindeki 6 satırlık almaşık zaman çizelgesinin yerini aldı.
+Artık **17 kilometre taşı** var; veri iki dosyaya bölünmüş durumda:
+
+- `src/lib/journey.js` — **yapısal** veri: `id`, `year`, `month`, `category`,
+  `tech[]`, `links{}`, `inProgress`/`restricted`/`highlight`. Hiçbiri çevrilmez.
+- `i18n-content.js` → `about.journeyItems[id]` — **çevrilen** metin
+  (`title`, `desc`). `Games.jsx`'in yapı/metin ayrımıyla aynı desen.
+
+Yeni kilometre taşı eklerken **iki dosyayı da** güncelle; `journey.js`'e
+eklenip i18n'e eklenmeyen bir id render sırasında `undefined.title` ile
+patlar. Doğrulama tek satır:
+
+```bash
+node --input-type=module -e "const {MILESTONES}=await import('./src/lib/journey.js');const {CONTENT}=await import('./src/lib/i18n-content.js');for(const l of ['tr','en'])for(const m of MILESTONES)if(!CONTENT[l].about.journeyItems[m.id])console.log('EKSIK',l,m.id)"
+```
+
+Etkileşim: kategori çipleriyle süzme (sayaçlar canlı), karta tıklayınca
+açılan detay (tam açıklama + teknoloji + linkler), scroll'a bağlı dolan sol
+şerit. **Sürekli çalışan animasyon bilerek YOK** — iOS bellek/boyama
+bütçesi yüzünden (bkz. "Görsel bütçesi"). `prefers-reduced-motion` hepsini
+kapatır.
+
+⚠️ Teknoloji çiplerine `uppercase` verme: belge dili `tr`, CSS büyütmesi
+`iOS` → `İOS` yapar. Rozet ve filtre metinleri kaynakta zaten büyük harf.
+
+⚠️ `About.jsx`'in `<section>`'ı `overflow-hidden`; bu yüzden yıl
+başlıklarında `position: sticky` çalışmaz, denenip vazgeçildi.
+
+**Kaynaklar** (hepsi doğrulandı): GitHub `api.github.com/users/Ardeko/repos`
+(repo oluşturma tarihleri), ardaguner.com paketinden çıkarılan proje
+kataloğu (açıklamalar Arda'nın kendi metinleri), eski sitedeki stüdyo
+tarihçesi. Teknofest (2023) ve Renault (2024) tarihleri Arda'ya soruldu —
+bu ikisinin repo kaydı yok.
+
+**Bilinen boşluk:** ardaguner.com'daki *Unichain Blockchain İzleme Zinciri*
+çizelgede YOK — ne repo ne tarih var, uydurulmuş yıl basmamak için dışarıda
+bırakıldı. Yılı öğrenilince `journey.js` + iki i18n bloğuna bir satır.
+
+**Bilinen çelişki:** Eski site *Legend of Rey*'i 2024 (itch.io) diyor, ama
+`Legend-Of-Rey` reposu 2025-02'de açılmış. Eski sitenin tarihi korundu
+(repo açılışı yayın tarihi olmak zorunda değil) — doğrusu 2025 ise
+`journey.js`'te `year` alanını değiştirmek yeterli.
+
 ## Gerçek içerik — uydurma, kaynağı kontrol et
 
 `Games.jsx` ve `About.jsx`'teki proje adları, tarihler ve linkler
