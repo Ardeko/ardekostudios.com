@@ -124,6 +124,10 @@ export const CONTENT = {
           title: 'ardekostudios.com',
           desc: 'Stüdyonun kendi sitesi yayına alındı — React 19, Vite 8 ve Tailwind v4 üzerine kurulu, TR/EN iki dilli.',
         },
+        sarteks: {
+          title: 'Sarteks Makina',
+          desc: 'Adana merkezli, 50 yılı aşkın süredir Türk iplik sektörüne tekstil makinesi, sarfiyat ve satış sonrası servis sağlayan Sarteks Makina\'nın kurumsal sitesi. Next.js 16 üzerine kurulu; RTL desteğiyle birlikte 10 dilde yayında.',
+        },
         dny: {
           title: 'DNY Bilişim',
           desc: 'DNY Bilişim için kurumsal web sitesi: hizmetler, referanslar, SSS ve uzaktan destek sayfaları.',
@@ -371,6 +375,10 @@ export const CONTENT = {
         ardekostudios: {
           title: 'ardekostudios.com',
           desc: 'The studio\'s own site went live — built on React 19, Vite 8 and Tailwind v4, bilingual TR/EN.',
+        },
+        sarteks: {
+          title: 'Sarteks Makina',
+          desc: 'The corporate site for Sarteks Makina — Adana-based, supplying the world\'s leading textile machinery, consumables and after-sales service to the Turkish spinning industry for over 50 years. Built on Next.js 16, shipped in 10 languages with RTL support.',
         },
         dny: {
           title: 'DNY Bilişim',

@@ -145,7 +145,7 @@ stüdyonun görsel asset'i yok, bu yüzden canvas'ta canlı çiziliyor.
 ### `src/components/Journey.jsx` — Yolculuk (2026-08-20'de yeniden yazıldı)
 
 `About.jsx` içindeki 6 satırlık almaşık zaman çizelgesinin yerini aldı.
-Artık **17 kilometre taşı** var; veri iki dosyaya bölünmüş durumda:
+Artık **18 kilometre taşı** var; veri iki dosyaya bölünmüş durumda:
 
 - `src/lib/journey.js` — **yapısal** veri: `id`, `year`, `month`, `category`,
   `tech[]`, `links{}`, `inProgress`/`restricted`/`highlight`. Hiçbiri çevrilmez.
@@ -176,7 +176,27 @@ başlıklarında `position: sticky` çalışmaz, denenip vazgeçildi.
 (repo oluşturma tarihleri), ardaguner.com paketinden çıkarılan proje
 kataloğu (açıklamalar Arda'nın kendi metinleri), eski sitedeki stüdyo
 tarihçesi. Teknofest (2023) ve Renault (2024) tarihleri Arda'ya soruldu —
-bu ikisinin repo kaydı yok.
+bu ikisinin repo kaydı yok. *Sarteks Makina* (sarteks.com.tr) tarihi yerel
+repodan doğrulandı: `~/Desktop/projects/sarteks/sarteks-web` ilk commit
+2026-06-03, son sürüm 2026-08-11 (v2.4). Next.js 16 + TypeScript, 10 dil
+(Arapça/Farsça RTL dahil), Adana merkezli tekstil makinesi firması.
+
+## ⚠️ Favicon — Vite logosu tuzağı (2026-08-20)
+
+Sekmede stüdyonun ikonu yerine **Vite'ın mor şimşeği** çıkıyordu.
+`public/favicon.svg`, `npm create vite` iskeletinden kalan Vite logosuydu
+(`fill:#863bff`, 48×46) ve ilk commit'ten beri repoda duruyordu.
+
+566a54a'ya kadar `index.html`'de tek bir etiket vardı ve `type` yanlıştı
+(`type="image/svg+xml"` derken `href="/favicon.png"`); tarayıcılar hoşgörü
+gösterip PNG'yi kullanıyordu. O commit MIME uyuşmazlığını "düzeltirken"
+gerçek bir `/favicon.svg` etiketi ekledi — **PNG'den önce**. Tarayıcılar
+SVG'yi tercih ettiği için ikon Vite'a geçti.
+
+Çözüm: `public/favicon.svg` silindi, SVG etiketi kaldırıldı. Gerçek ikon
+`public/favicon.png` (500×500, mavi D-pad). **Buraya yeniden bir SVG
+favicon eklemeden önce dosyayı gözünle aç** — iskeletten kalan dosyalar
+doğru isimde olabilir ama yanlış içerikte.
 
 **Bilinen boşluk:** ardaguner.com'daki *Unichain Blockchain İzleme Zinciri*
 çizelgede YOK — ne repo ne tarih var, uydurulmuş yıl basmamak için dışarıda

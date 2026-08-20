@@ -4,9 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- favicon: SVG önce, desteklemeyen tarayıcılar PNG'ye düşer.
-         (Eskiden tek etiket vardı ve type="image/svg+xml" derken .png gösteriyordu.) -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- favicon: stüdyonun mavi D-pad ikonu (favicon.png).
+         SVG etiketi YOK ve public/favicon.svg SİLİNDİ — o dosya
+         `npm create vite` iskeletinden kalan Vite logosuydu (mor şimşek).
+         SVG etiketi PNG'den önce durduğu için tarayıcılar onu tercih
+         ediyor ve sekmede Vite'ın logosu çıkıyordu. Buraya tekrar bir
+         SVG eklemeden önce dosyanın gerçekten Ardeko ikonu olduğunu gör. -->
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
 

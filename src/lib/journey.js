@@ -133,6 +133,14 @@ export const MILESTONES = [
     links: { github: `${GH}/ardekostudios.com`, live: 'https://ardekostudios.com' },
   },
   {
+    id: 'sarteks',
+    year: 2026,
+    month: 6,
+    category: 'corporate',
+    tech: ['Next.js 16', 'TypeScript', 'Tailwind v4', 'Matter.js'],
+    links: { live: 'https://sarteks.com.tr' },
+  },
+  {
     id: 'dny',
     year: 2026,
     month: 8,
