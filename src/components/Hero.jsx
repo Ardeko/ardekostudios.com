@@ -149,26 +149,35 @@ export default function Hero() {
     >
       <Particles />
 
+      {/* Glow'lar gradient, blur DEĞİL — bilerek.
+          Önceden `bg-indigo-600 blur-[180px]` idi: 180px yarıçap devasa bir
+          gaussian çekirdeği demek ve `scale` animasyonu blur'lu katmanı her
+          karede yeniden rasterize ettiriyor. iOS Safari bunu CPU'da yapıyor,
+          hero ilk boyanana kadar ana thread'i kilitliyordu. Radial-gradient
+          aynı yumuşak ışıltıyı filtre olmadan verir; scale/opacity animasyonu
+          da saf compositor işine döner. Parlaklığı `opacity` dizisinden ayarla. */}
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
-          opacity: [0.08, 0.15, 0.08],
+          opacity: [0.14, 0.26, 0.14],
           x: ['-50%', '-47%', '-53%', '-50%'],
           y: ['-50%', '-53%', '-47%', '-50%'],
         }}
         transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/2 left-1/2 w-[500px] h-[500px] md:w-[800px] md:h-[800px] bg-indigo-600 rounded-full blur-[180px] pointer-events-none"
+        className="absolute top-1/2 left-1/2 w-[500px] h-[500px] md:w-[800px] md:h-[800px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #4f46e5 0%, transparent 70%)' }}
       />
 
       <motion.div
         animate={{
           scale: [1, 1.3, 1],
-          opacity: [0.04, 0.08, 0.04],
+          opacity: [0.07, 0.14, 0.07],
           x: ['-30%', '-28%', '-32%', '-30%'],
           y: ['-30%', '-32%', '-28%', '-30%'],
         }}
         transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-        className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-purple-600 rounded-full blur-[120px] pointer-events-none"
+        className="absolute top-1/3 left-1/4 w-[300px] h-[300px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #9333ea 0%, transparent 70%)' }}
       />
 
       <motion.div style={{ y, opacity }} className="flex flex-col items-center">

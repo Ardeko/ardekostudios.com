@@ -46,6 +46,61 @@
     <meta name="twitter:image" content="https://ardekostudios.com/ardeko.png" />
   </head>
   <body>
+    <!-- Boot ekranı.
+         <Preloader> React içinde yaşıyor, yani bundle inip parse edilip tüm
+         ağaç render olana kadar kullanıcı bomboş bir sayfaya bakıyor. Bu blok
+         HTML'in kendisinde olduğu için ilk boyamada görünür. main.jsx React
+         mount olur olmaz siler; oradan sonra <Preloader> devralır. Zemin ve
+         wordmark aynı olduğu için geçiş fark edilmez.
+         Buraya ağır bir şey ekleme — tüm mesele bunun bedava boyanması. -->
+    <div
+      id="boot"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 998;
+        background: #05070f;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        font-family: Inter, system-ui, sans-serif;
+      "
+    >
+      <span
+        style="
+          font-size: 10px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.5em;
+          color: rgba(129, 140, 248, 0.7);
+        "
+        >Ardeko Studios</span
+      >
+      <div
+        style="
+          font-size: clamp(4rem, 16vw, 11rem);
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: -0.05em;
+          color: #fff;
+          font-variant-numeric: tabular-nums;
+        "
+      >
+        000
+      </div>
+      <div
+        style="
+          height: 2px;
+          width: min(62vw, 420px);
+          overflow: hidden;
+          border-radius: 9999px;
+          background: rgba(255, 255, 255, 0.1);
+        "
+      ></div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

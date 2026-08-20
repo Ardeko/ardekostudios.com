@@ -621,10 +621,10 @@ function ApexShiftScene() {
             <rect width="4" height="4" fill="#f5f5f5" />
             <rect x="4" y="4" width="4" height="4" fill="#f5f5f5" />
           </pattern>
-          <filter id="asGrain">
-            <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" result="n" />
-            <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0" />
-          </filter>
+          {/* Buradaki <filter id="asGrain"> (feTurbulence) kaldırıldı — pist
+              üstünde %5 alfayla neredeyse görünmüyordu ama WebKit turbulence'ı
+              CPU'da rasterize ettiği için mount anında bedelini ödüyorduk.
+              Grain gerekiyorsa App.jsx'teki /noise.png katmanı zaten var. */}
           <clipPath id="asTrackClip">
             <path
               d="M155,20 L645,20 A130,130 0 1 1 645,280 L155,280 A130,130 0 1 1 155,20 Z M245,80 L555,80 A70,70 0 1 1 555,220 L245,220 A70,70 0 1 1 245,80 Z"
@@ -665,7 +665,6 @@ function ApexShiftScene() {
           fillRule="evenodd"
           fill="url(#asAsphalt)"
         />
-        <rect x="0" y="0" width="800" height="300" clipPath="url(#asTrackClip)" filter="url(#asGrain)" opacity=".5" />
 
         <path d="M555,80 A70,70 0 1 1 555,220" fill="none" stroke="#f2f2f0" strokeWidth="9" />
         <path d="M555,80 A70,70 0 1 1 555,220" fill="none" stroke="#d81e2c" strokeWidth="9" strokeDasharray="13 13" />

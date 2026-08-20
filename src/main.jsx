@@ -12,3 +12,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </ErrorBoundary>
   </React.StrictMode>,
 )
+
+// index.html'deki statik boot ekranını kaldır. React mount oldu; buradan
+// sonrasını <Preloader> devralıyor (ya da intro atlanıyorsa doğrudan site).
+// Bir kare bekliyoruz ki Preloader'ın perdesi silinmeden önce boyanmış olsun,
+// arada beyaz/boş bir kare çakmasın.
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    document.getElementById('boot')?.remove()
+  })
+})

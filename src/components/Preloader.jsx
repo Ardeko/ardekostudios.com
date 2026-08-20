@@ -65,15 +65,31 @@ function useLoadProgress() {
     const onLoad = () => { ready = true; };
     if (!ready) window.addEventListener('load', onLoad);
 
+    // lazy görseller sayılmaz: ekranın çok altındalar, hiç yüklenmeyebilirler
+    // ve sayılırlarsa oran asla 1'e ulaşmadığı için intro hep tavana dayanır.
+    //
+    // Bu liste rAF'ın DIŞINDA, bir kez alınıyor. Eskiden her karede
+    // Array.from(document.images) + iki filter çalışıyordu; tam da ana thread'in
+    // zaten tıkalı olduğu anda saniyede 60 kez tüm DOM'u tarıyorduk.
+    let imgs = Array.from(document.images).filter((img) => img.loading !== 'lazy');
+    let imgsCounted = imgs.length;
+    // Ağaç henüz mount olmadıysa liste boş çıkabilir; ilk birkaç karede bir
+    // kez daha bak, sonra sabitle.
+    let recheck = 5;
+
     const tick = () => {
       const elapsed = performance.now() - start;
       const timeFloor = Math.min(1, elapsed / MIN_DURATION);
       const timedOut = elapsed >= MAX_DURATION;
-      // lazy görseller sayılmaz: ekranın çok altındalar, hiç yüklenmeyebilirler
-      // ve sayılırlarsa oran asla 1'e ulaşmadığı için intro hep tavana dayanır.
-      const imgs = Array.from(document.images).filter((img) => img.loading !== 'lazy');
-      const assetRatio = imgs.length
-        ? imgs.filter((img) => img.complete).length / imgs.length
+
+      if (recheck > 0) {
+        recheck -= 1;
+        imgs = Array.from(document.images).filter((img) => img.loading !== 'lazy');
+        imgsCounted = imgs.length;
+      }
+
+      const assetRatio = imgsCounted
+        ? imgs.filter((img) => img.complete).length / imgsCounted
         : 1;
 
       // Görseller inerken assetRatio 0'dır; ham haliyle hedef de 0 olur ve sayaç
