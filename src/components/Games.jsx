@@ -1334,6 +1334,17 @@ export default function Games() {
       },
     },
     {
+      id: 'decoy',
+      status: 'live',
+      title: 'Decoy',
+      platforms: 'WEB · ONLINE',
+      scene: DecoyScene,
+      accent: '#F43F5E',
+      // Oyun sitenin KENDI icinde barinir (public/decoy/index.html), disarida
+      // degil. Guncellemek icin decoy projesinde: npm run deploy:site
+      links: { primary: '/decoy/' },
+    },
+    {
       id: 'forza',
       status: 'live',
       title: 'Forza Orbit',
@@ -1377,14 +1388,6 @@ export default function Games() {
       title: 'Skyline Swinger',
       platforms: 'IOS · ANDROID',
       scene: SkylineSwingerScene,
-    },
-    {
-      id: 'decoy',
-      status: 'soon',
-      title: 'Decoy',
-      platforms: 'WEB · ONLINE',
-      scene: DecoyScene,
-      accent: '#F43F5E',
     },
     {
       id: 'torpidodan',
@@ -1432,13 +1435,13 @@ export default function Games() {
         items={[
           { id: 'switch',    title: 'Switch Master',   meta: t.games.previewMeta.switch,    image: '/games/switch.jpg',    href: '#games' },
           { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
+          { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,     image: '/games/decoy.svg',     href: '#games' },
           { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
           { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
           { id: 'lore',      title: 'LORE: Legend of Rey', meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
           { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
-          { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,      image: '/games/decoy.svg',     href: '#games' },
           { id: 'torpidodan', title: 'Torpidodan',     lang: 'tr', meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.svg', href: '#games' },
         ]}
       />

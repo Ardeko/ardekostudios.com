@@ -199,6 +199,7 @@ export const CONTENT = {
         decoy: {
           subtitle: 'Gücünü gizle, düşmanını yanılt',
           desc: 'Yedi ulus, tek harita. Bir bölgenin yayınladığı güç ile gerçek gücü aynı şey değildir. Kazanmak için düşmanını kuşatman ve yalanı doğru anda yakalaman gerekir — gerçek zamanlı alan hakimiyeti stratejisi.',
+          linkPrimary: 'OYNA',
         },
         torpidodan: {
           subtitle: 'Gerçek değeri asla göremezsin',
@@ -218,7 +219,7 @@ export const CONTENT = {
         kafa: 'Yakında · Mobil',
         rushville: 'Yakında · Mobil',
         skyline: 'Yakında · Mobil',
-        decoy: 'Yakında · Web',
+        decoy: 'WEB · ONLINE',
         torpidodan: 'Yakında · Mobil',
       },
     },
@@ -457,6 +458,7 @@ export const CONTENT = {
         decoy: {
           subtitle: 'Hide your strength, mislead your enemy',
           desc: 'Seven nations, one map. What a region broadcasts is never what it actually holds. To win you have to surround your enemy and call the bluff at exactly the right moment — real-time area control strategy.',
+          linkPrimary: 'PLAY',
         },
         torpidodan: {
           subtitle: 'You never see the true value',
@@ -476,7 +478,7 @@ export const CONTENT = {
         kafa: 'Coming soon · Mobile',
         rushville: 'Coming soon · Mobile',
         skyline: 'Coming soon · Mobile',
-        decoy: 'Coming soon · Web',
+        decoy: 'WEB · ONLINE',
         torpidodan: 'Coming soon · Mobile',
       },
     },
