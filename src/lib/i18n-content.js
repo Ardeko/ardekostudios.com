@@ -159,7 +159,7 @@ export const CONTENT = {
       secret: {
         codename: 'Project Codename: ERAFRONT',
         title: 'YENİ PROJE',
-        desc: 'Sınırları zorlayan yeni nesil bir mobil deneyim için AR-GE süreçlerimiz devam ediyor. Çok yakında burada listelenecek — takipte kal.',
+        desc: 'Sınırları zorlayan yeni nesil bir deneyim için AR-GE süreçlerimiz devam ediyor. Çok yakında burada listelenecek — takipte kal.',
         soon: 'Yakında...',
         folderLabel: 'Gizli proje dosyası — aç/kapat',
       },
@@ -419,7 +419,7 @@ export const CONTENT = {
       secret: {
         codename: 'Project Codename: ERAFRONT',
         title: 'NEW PROJECT',
-        desc: 'We\'re deep in R&D on a boundary-pushing, next-gen mobile experience. It\'ll be listed here soon — stay tuned.',
+        desc: 'We\'re deep in R&D on a boundary-pushing, next-gen experience. It\'ll be listed here soon — stay tuned.',
         soon: 'Coming soon...',
         folderLabel: 'Classified project folder — open/close',
       },
