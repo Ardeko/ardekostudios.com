@@ -51,30 +51,49 @@
 /* ── 1 · taban ─────────────────────────────────────────────────────────── */
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
+/**
+ * UYGULAMA GÖRÜNTÜ ALANINA KİLİTLİ — belge asla kaymaz.
+ *
+ * Bu tek karar, "aşağıda devamı var mı?" belirsizliğini yapısal olarak yok
+ * ediyor. Her ekran tam olarak ekran yüksekliği kadardır; kaydırma gerekiyorsa
+ * o ekranın KENDİ İÇİNDE olur ve kenarındaki soluk gölge bunu görünür kılar.
+ * Belge kaydırması açık kaldığında oyun tahtası menünün altında gizli kalıyor
+ * ve oyuncu bunu göremiyordu.
+ */
 body{
   background:var(--bg-deep);
   color:var(--parchment);
   font-family:var(--sans);
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  overflow:hidden;
 }
 button{font-family:inherit;}
 :focus-visible{outline:2px solid var(--brass-bright);outline-offset:2px;border-radius:4px;}
 
 /* ── 2 · ekran mimarisi ────────────────────────────────────────────────── */
-/* Aynı anda tek ekran görünür; hangisi olduğunu body[data-screen] söyler.
-   Böylece maç başlamadan boş bir harita ya da boş bir skor tablosu görünmez. */
-.screen{display:none;}
-body[data-screen="menu"]        #screenMenu,
+/**
+ * GÖRÜNÜRLÜĞÜ YALNIZCA BU BLOK YÖNETİR.
+ *
+ * Tip sınıfları (.screen-panel vb.) `display` BELİRTMEZ — yalnızca yerleşim
+ * ayrıntılarını taşır. Sebebi acı bir deneyim: `.screen-panel{display:grid}`
+ * yazıldığında, `.screen{display:none}` ile aynı özgüllükte olduğu ama dosyada
+ * sonra geldiği için onu eziyordu. Sonuç: kurulum paneli hiçbir zaman
+ * gizlenmiyor, oyun tahtası onun altında kalıyordu — oyuncu oyunun başlamadığını
+ * sanıyordu. Bu kural bir daha bölünmemeli.
+ */
+.screen{ display:none; }
+body[data-screen="menu"]        #screenMenu{ display:block; }
 body[data-screen="local-setup"] #screenLocalSetup,
 body[data-screen="online"]      #screenOnline,
-body[data-screen="lobby"]       #screenLobby,
-body[data-screen="game"]        #screenGame{ display:block; animation:screenIn .38s var(--ease); }
+body[data-screen="lobby"]       #screenLobby{ display:grid; }
+body[data-screen="game"]        #screenGame{ display:block; }
+
+.screen{ animation:screenIn .34s var(--ease); }
 
 @keyframes screenIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* ── 3 · ana menü ──────────────────────────────────────────────────────── */
-.screen-menu{position:relative;min-height:100dvh;overflow:hidden;}
+.screen-menu{position:relative;height:100dvh;overflow-y:auto;overflow-x:hidden;}
 
 .backdrop{
   position:fixed;inset:-6%;width:112%;height:112%;
@@ -91,9 +110,9 @@ body[data-screen="game"]        #screenGame{ display:block; animation:screenIn .
 
 .menu-inner{
   position:relative;z-index:2;
-  min-height:100dvh;max-width:660px;margin:0 auto;
-  padding:clamp(28px,6vh,64px) 22px clamp(24px,5vh,48px);
-  display:flex;flex-direction:column;justify-content:center;gap:clamp(20px,4vh,34px);
+  min-height:100%;max-width:620px;margin:0 auto;
+  padding:clamp(24px,5vh,52px) 22px clamp(20px,4vh,40px);
+  display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,3.2vh,28px);
 }
 
 .menu-head{text-align:center;}
@@ -182,38 +201,46 @@ body[data-screen="game"]        #screenGame{ display:block; animation:screenIn .
 .ghost-btn:hover{background:rgba(201,161,90,.14);border-color:var(--brass);}
 
 /* ── 4 · panel ekranları (kurulum · çevrimiçi · lobi) ──────────────────── */
-.screen-panel{min-height:100dvh;display:grid;place-items:center;padding:24px 18px;}
+/* display BELİRTMEZ — bkz. ekran mimarisi bloğundaki gerekçe. */
+.screen-panel{
+  height:100dvh;overflow-y:auto;
+  align-content:center;justify-items:center;
+  padding:clamp(20px,5vh,56px) 18px;
+}
 .panel{
-  width:100%;max-width:460px;position:relative;
-  padding:30px 28px;border-radius:var(--r-lg);
+  width:100%;max-width:440px;position:relative;
+  padding:26px 26px 24px;border-radius:var(--r-lg);
   border:1px solid var(--line);
   background:linear-gradient(160deg,#1d1610,#120d08);
-  box-shadow:0 30px 70px rgba(0,0,0,.6);
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
 }
 .panel-back{
   background:none;border:none;color:var(--parchment-dim);cursor:pointer;
-  font-size:.72rem;padding:0;margin-bottom:16px;transition:color .18s;
+  font-size:.72rem;padding:0;margin-bottom:14px;transition:color .18s;
 }
 .panel-back:hover{color:var(--brass-bright);}
-.panel-title{font-family:var(--serif);font-size:1.5rem;margin:0 0 6px;color:var(--brass-bright);font-weight:400;}
-.panel-lead{font-size:.82rem;color:var(--parchment-dim);line-height:1.6;margin:0 0 22px;}
+/* Hiyerarşi: başlık büyük ve tek satır, açıklama küçük ve kısa. */
+.panel-title{font-family:var(--serif);font-size:1.45rem;margin:0 0 5px;color:var(--brass-bright);font-weight:400;letter-spacing:.01em;}
+.panel-lead{font-size:.8rem;color:var(--parchment-dim);line-height:1.55;margin:0 0 20px;}
 .panel-lead b{color:var(--parchment);}
 
-.field{margin-bottom:20px;}
+/* Alanlar arası boşluk tek bir ölçüye bağlı: gözle "orantısız" görünmesin. */
+.field{margin-bottom:16px;}
 .field-label{
-  display:block;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--parchment-dim);margin-bottom:8px;
+  display:flex;align-items:baseline;gap:8px;
+  font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--parchment-dim);margin-bottom:7px;
 }
-.field-label .opt{opacity:.55;letter-spacing:.06em;text-transform:none;}
+.field-label .opt{opacity:.5;letter-spacing:.04em;text-transform:none;font-size:.66rem;}
 .field-row{display:flex;align-items:center;gap:14px;}
 .field-value{
-  font-family:var(--mono);font-size:1.3rem;color:var(--brass-bright);
-  min-width:32px;text-align:right;
+  font-family:var(--mono);font-size:1.15rem;color:var(--brass-bright);
+  min-width:26px;text-align:right;
 }
-.field-note{font-size:.72rem;color:var(--parchment-dim);margin:8px 0 0;line-height:1.5;min-height:1em;}
+.field-note{font-size:.7rem;color:var(--parchment-dim);margin:6px 0 0;line-height:1.45;min-height:1.45em;}
 .field-input{
-  width:100%;background:rgba(0,0,0,.35);border:1px solid var(--line);
-  border-radius:var(--r-sm);color:var(--parchment);font-size:.88rem;padding:11px 13px;
+  width:100%;background:rgba(0,0,0,.32);border:1px solid var(--line);
+  border-radius:var(--r-sm);color:var(--parchment);font-size:.86rem;padding:10px 12px;
 }
 .field-input:focus{outline:none;border-color:var(--brass);}
 .field-input.code{
@@ -225,9 +252,9 @@ input[type=range]{
 }
 
 .cta{
-  display:block;width:100%;padding:14px 20px;border-radius:var(--r-md);cursor:pointer;
+  display:block;width:100%;margin-top:4px;padding:13px 20px;border-radius:var(--r-md);cursor:pointer;
   background:var(--brass);border:1px solid var(--brass);color:#120d08;
-  font-size:.72rem;font-weight:800;letter-spacing:.2em;
+  font-size:.7rem;font-weight:800;letter-spacing:.18em;
   transition:background .18s,transform .12s;
 }
 .cta:hover{background:var(--brass-bright);}
@@ -259,10 +286,10 @@ input[type=range]{
 .lobby-player-row em{font-style:normal;opacity:.55;font-size:.72rem;margin-left:6px;}
 
 /* ── 5 · oyun HUD ──────────────────────────────────────────────────────── */
-.screen-game{min-height:100dvh;}
+.screen-game{height:100dvh;overflow:hidden;}
 .game{
-  max-width:1320px;margin:0 auto;padding:14px 16px 18px;
-  display:flex;flex-direction:column;gap:10px;min-height:100dvh;
+  max-width:1320px;height:100%;margin:0 auto;padding:12px 14px 14px;
+  display:flex;flex-direction:column;gap:9px;
 }
 
 .hud-top{
@@ -585,31 +612,60 @@ svg#map.panning{cursor:grabbing;}
 
 /* ── 9 · duyarlılık ────────────────────────────────────────────────────── */
 @media (max-width:1040px){
-  .game-body{flex-direction:column;}
-  .side-card{width:auto;max-height:none;}
-  .side-pane{max-height:230px;}
-  svg#map{min-height:300px;}
+  .game-body{flex-direction:column;min-height:0;}
+  /* Harita OYUNUN KENDİSİ: kalan alanı o alır. Paneller sabit ve sınırlı. */
+  .map-card{flex:1 1 auto;min-height:min(46vh,340px);}
+  .side-card{width:auto;flex:0 0 auto;max-height:34vh;}
+  .side-pane{padding:11px 13px;}
+  svg#map{min-height:0;}
 }
 @media (max-width:680px){
-  .game{padding:10px 10px 14px;}
-  .hud-top{gap:10px;padding:9px 11px;}
+  .game{padding:8px 8px 10px;gap:7px;}
+  .hud-top{gap:9px;padding:8px 10px;}
   .hud-brand{display:none;}
   .hud-res{order:5;width:100%;justify-content:space-between;gap:8px;
-    border-top:1px solid var(--line);padding-top:9px;}
-  .mode-hint{display:none;}
-  .mode-btn{min-width:0;flex:1;padding:7px 4px;}
-  .mode-btn .mc{display:none;}
-  .command-bar{gap:10px;}
+    border-top:1px solid var(--line);padding-top:8px;}
+  .res-icon{width:18px;height:18px;}
+  .status-line{font-size:.74rem;padding:6px 11px;min-height:0;}
+
+  /* Arazi lejantı telefonda çok yer yiyor; aynı bilgi yardım penceresinde var. */
+  .terrain-legend{display:none;}
+  .side-card{max-height:30vh;}
+  .side-tab{padding:9px 4px;font-size:.6rem;}
+
+  /* Harita: ekranın en büyük parçası olmalı. */
+  .map-card{padding:8px;min-height:min(44vh,300px);}
+  .map-tools{right:8px;bottom:8px;}
+  .map-tools button{width:28px;height:28px;}
+
+  /* Büyüme göstergesi ve önizleme haritanın üstünde kalır — yer açmazlar. */
+  .growth-meter{width:150px;left:8px;bottom:8px;padding:7px 9px;}
+  .gm-note{display:none;}
+  .preview{left:8px;top:8px;width:min(230px,72vw);}
+
+  .command-bar{gap:8px;padding:9px 10px;}
   .cmd-commit{width:100%;}
   .commit-steps{flex:1;}
-  .commit-step{flex:1;text-align:center;}
+  .commit-step{flex:1;text-align:center;padding:8px 4px;}
   .mode-buttons{width:100%;}
-  .preview{position:static;width:auto;margin-bottom:10px;transform:none;}
-  .preview:not(.show){display:none;}
-  .growth-meter{position:static;width:auto;margin-top:10px;}
-  .map-tools{right:10px;bottom:10px;}
-  .menu-title{font-size:clamp(3rem,17vw,4rem);}
-  .panel{padding:24px 20px;}
+  .mode-btn{min-width:0;flex:1;padding:6px 3px;gap:2px;}
+  .mode-btn .mc{display:none;}
+  .mode-btn .ml{font-size:.54rem;}
+  .mode-btn svg{width:16px;height:16px;}
+  .mode-hint{display:none;}
+
+  .menu-title{font-size:clamp(2.8rem,16vw,4rem);}
+  .menu-crest{width:52px;height:52px;margin-bottom:10px;}
+  .panel{padding:22px 18px;}
+}
+
+/* Alçak ama geniş ekranlar (yatay telefon): dikey alan kritik. */
+@media (max-height:560px) and (min-width:681px){
+  .status-line{display:none;}
+  .terrain-legend{display:none;}
+  .menu-crest{display:none;}
+  .menu-title{font-size:clamp(2.4rem,7vh,3.2rem);}
+  .menu-tagline{display:none;}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -619,6 +675,30 @@ svg#map.panning{cursor:grabbing;}
   .overlay.show .dispatch,.screen{animation:none !important;}
   .bd-hex{transition:none;}
 }
+
+
+/* ── kaydırma ipucu ────────────────────────────────────────────────────────
+   Bir kap kendi içinde kayabiliyorsa, alt kenarında soluk bir gölge ve küçük
+   bir ok belirir. "Aşağıda devamı var mı?" sorusunun görsel cevabı budur;
+   JS yalnızca .has-more sınıfını ekler/çıkarır (bkz. boot.js). */
+.scroll-host{position:relative;}
+.scroll-host::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:56px;
+  pointer-events:none;opacity:0;transition:opacity .25s var(--ease);
+  background:linear-gradient(to top, var(--bg-deep) 8%, transparent 100%);
+}
+.scroll-host.has-more::after{opacity:.92;}
+.scroll-cue{
+  position:absolute;left:50%;bottom:10px;transform:translateX(-50%);
+  z-index:5;pointer-events:none;opacity:0;transition:opacity .25s var(--ease);
+  display:flex;align-items:center;gap:6px;
+  font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);
+  text-shadow:0 2px 8px rgba(0,0,0,.9);
+}
+.scroll-host.has-more .scroll-cue{opacity:.85;animation:cueBob 1.9s ease-in-out infinite;}
+.scroll-cue svg{width:12px;height:12px;}
+@keyframes cueBob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(3px);}}
+@media (prefers-reduced-motion: reduce){ .scroll-host.has-more .scroll-cue{animation:none;} }
 
 </style>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='20' fill='%230d0906' stroke='%23c9a15a' stroke-width='3'/><polygon points='24,8 31,22 17,22' fill='%23f2895a'/><polygon points='24,40 31,26 17,26' fill='%236fa8d8'/></svg>">
@@ -4546,7 +4626,10 @@ function startSession(adapter, refs) {
       ui.setStatus('Başkentini kaybettin: gelirin yarıya düştü. Geri al ya da yeni topraklarla telafi et.');
       return;
     }
-    ui.setStatus(MODES[ui.mode].hint);
+    // Söylenecek önemli bir şey yoksa durum satırı GİZLENİR (.status-line:empty).
+    // Seçili kipin açıklaması zaten komut çubuğunda duruyor; aynı cümleyi iki
+    // yerde göstermek hem yer yiyor hem de gözü yoruyordu.
+    ui.setStatus('');
   }
 
   function snapshotOwners(state) {
@@ -5520,6 +5603,117 @@ function esc(s) {
 return { bootOnline };
 })();
 
+const __m_src_client_router_js = (function(){
+/**
+ * Adres yönlendirmesi ve kaydırma ipucu.
+ *
+ * ─── NEDEN TEK SAYFA, AYRI ADRESLER ───────────────────────────────────────
+ * Oyunun "ayrı bir sayfa" gibi hissettirmesi doğru bir istek; ama gerçekten
+ * ayrı bir HTML dosyasına GİTMEK burada zararlı olurdu:
+ *
+ *   - Çevrimiçi modda maçın SUNUCUSU kurucunun sekmesidir (host.js). Sayfa
+ *     değiştirmek otoriteyi öldürür, yani herkesin maçını bitirir.
+ *   - Firestore aboneliği, anonim oturum ve ses bağlamı sayfa geçişinde sıfırlanır.
+ *   - Oyun varlıkları yeniden indirilir.
+ *
+ * Tarayıcı oyunlarının neredeyse tamamı (territorial.io, generals.io, agar.io)
+ * bu yüzden tek belge + görünüm değişimi kullanır. Eksik olan şey "sayfa"
+ * hissiydi: adres çubuğunda karşılığı ve geri tuşu. Bu modül onu ekliyor —
+ * her ekranın kendi adresi var, geri tuşu beklendiği gibi çalışıyor, oyun
+ * bağlantısı hiç kopmuyor.
+ */
+
+/** Ekran adı ⇄ adres parçası. */
+const ROUTES = {
+  'menu': '#/',
+  'local-setup': '#/sefer',
+  'online': '#/cevrimici',
+  'lobby': '#/lobi',
+  'game': '#/oyun'
+};
+
+const BY_HASH = {};
+for (const k in ROUTES) BY_HASH[ROUTES[k]] = k;
+function screenFromHash(hash) {
+  const h = (hash || '').replace(/\/$/, '') || '#';
+  return BY_HASH[hash] || BY_HASH[h + '/'] || BY_HASH[hash + '/'] || null;
+}
+function createRouter(onNavigate) {
+  let suppress = false;
+
+  /** Ekran değişince adresi güncelle (geçmişe yeni giriş ekler). */
+  function push(screen) {
+    const route = ROUTES[screen];
+    if (!route || location.hash === route) return;
+    suppress = true;
+    try { history.pushState({ screen }, '', route); } catch (_) { location.hash = route; }
+    suppress = false;
+  }
+
+  /** İlk yükleniş: geçmişe giriş ekleme, sadece adresi düzelt. */
+  function replace(screen) {
+    const route = ROUTES[screen];
+    if (!route) return;
+    suppress = true;
+    try { history.replaceState({ screen }, '', route); } catch (_) { location.hash = route; }
+    suppress = false;
+  }
+
+  function handle() {
+    if (suppress) return;
+    onNavigate(screenFromHash(location.hash));
+  }
+
+  window.addEventListener('popstate', handle);
+  window.addEventListener('hashchange', handle);
+
+  return { push, replace, current: () => screenFromHash(location.hash) };
+}
+
+/**
+ * KAYDIRMA İPUCU — "aşağıda devamı var mı?" sorusunun görsel cevabı.
+ *
+ * Verilen kabı izler; içeriği görünenden uzunsa `has-more` sınıfını ekler ve
+ * CSS alt kenarda soluk bir gölge + küçük bir ok gösterir. Kap sona kaydırılınca
+ * ipucu kaybolur. İçerik zaten sığıyorsa hiç görünmez — yani ipucu yalnızca
+ * gerçekten gerektiğinde ortaya çıkar.
+ */
+function attachScrollHint(host, label) {
+  if (!host || host.dataset.scrollHint) return () => {};
+  host.dataset.scrollHint = '1';
+  host.classList.add('scroll-host');
+
+  const cue = document.createElement('div');
+  cue.className = 'scroll-cue';
+  cue.innerHTML = (label ? `<span>${label}</span>` : '<span>devamı var</span>') +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
+    'stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+  host.appendChild(cue);
+
+  function update() {
+    const more = host.scrollHeight - host.scrollTop - host.clientHeight > 8;
+    host.classList.toggle('has-more', more);
+  }
+
+  host.addEventListener('scroll', update, { passive: true });
+  const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
+  if (ro) ro.observe(host);
+  window.addEventListener('resize', update);
+  // İçerik sonradan dolabilir (paneller her tur yeniden çiziliyor).
+  const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(update) : null;
+  if (mo) mo.observe(host, { childList: true, subtree: true });
+
+  update();
+  return () => {
+    if (ro) ro.disconnect();
+    if (mo) mo.disconnect();
+    window.removeEventListener('resize', update);
+  };
+}
+
+return { ROUTES, screenFromHash, createRouter, attachScrollHint };
+})();
+
 const __m_src_client_boot_js = (function(){
 /**
  * Uygulama kabuğu — ekran yöneticisi ve mod yönlendirmesi.
@@ -5541,6 +5735,7 @@ const { createBackdrop } = __m_src_client_backdrop_js;
 const { bootLocal } = __m_src_client_local_js;
 const { bootOnline } = __m_src_client_online_js;
 const { sfx } = __m_src_client_audio_js;
+const { createRouter, attachScrollHint } = __m_src_client_router_js;
 const $ = (id) => document.getElementById(id);
 
 const FIREBASE_VERSION = '10.14.1';
@@ -5569,18 +5764,36 @@ function bootApp() {
 
   let local = null;
   let online = null;
+  let router = null;
+
+  // Kaydırma ipucu: yalnızca gerçekten kayabilen kaplara takılır. İçerik
+  // sığıyorsa hiç görünmez, yani ipucu bir gürültü değil bir cevap oluyor.
+  for (const id of ['screenLocalSetup', 'screenOnline', 'screenLobby', 'screenMenu']) {
+    attachScrollHint($(id));
+  }
+  // Oyun içinde asıl kayan yer yan panel: skor tablosu ve cephe akışı uzayabilir.
+  for (const pane of document.querySelectorAll('.side-pane')) attachScrollHint(pane);
+  attachScrollHint(document.querySelector('.help-panel'));
 
   // ------------------------------------------------------------- ekranlar
   /**
    * Görünür ekranı değiştirir. Menü dışındaki ekranlarda dekoratif arka plan
    * durdurulur — arkada boşuna dönen bir zamanlayıcı bırakmıyoruz.
    */
-  function showScreen(name) {
+  function showScreen(name, opts) {
     document.body.dataset.screen = name;
     if (name === 'menu') backdrop.start(); else backdrop.stop();
-    // Ekran değişince sayfanın başına dön (mobilde kaydırma pozisyonu kalıyor).
-    // Her ortamda bulunmayabilir: gömülü çerçeveler ve test taklitleri.
-    if (typeof window.scrollTo === 'function') window.scrollTo(0, 0);
+    // Ekranın kendi kaydırması varsa başa sar — önceki ekranın konumu kalmasın.
+    const el = $({
+      'menu': 'screenMenu', 'local-setup': 'screenLocalSetup',
+      'online': 'screenOnline', 'lobby': 'screenLobby', 'game': 'screenGame'
+    }[name]);
+    if (el && typeof el.scrollTo === 'function') el.scrollTo(0, 0);
+    else if (el) el.scrollTop = 0;
+
+    // Adres çubuğu ekranı yansıtsın: oyun kendi adresine sahip olur ve
+    // tarayıcının geri tuşu beklendiği gibi çalışır.
+    if (router && !(opts && opts.fromRouter)) router.push(name);
   }
 
   function showMenu() {
@@ -5705,7 +5918,36 @@ function bootApp() {
   }
   paintSound();
 
+  /**
+   * Geri/ileri tuşu. Oyun ekranı adresten CANLANDIRILAMAZ (maç durumu bellekte),
+   * bu yüzden aktif maç yokken #/oyun adresine düşülürse menüye alınır.
+   */
+  router = createRouter((screen) => {
+    if (!screen || screen === 'menu') { showMenu(); return; }
+    if (screen === 'game' && !local && !online) { showMenu(); return; }
+    if (screen === 'local-setup') {
+      showScreen('local-setup', { fromRouter: true });
+      if (!local) local = bootLocal(host);
+      return;
+    }
+    if (screen === 'online' || screen === 'lobby') {
+      // Çevrimiçi akış sunucu durumuna bağlı; adresten doğrudan lobiye girilmez.
+      showScreen('online', { fromRouter: true });
+      return;
+    }
+    showScreen(screen, { fromRouter: true });
+  });
+
+  // İlk açılış: adreste bir ekran varsa oraya git, yoksa menü.
+  const initial = router.current();
   showMenu();
+  router.replace('menu');
+  if (initial === 'local-setup') {
+    showScreen('local-setup');
+    local = bootLocal(host);
+  } else if (initial === 'online') {
+    $('modeOnlineBtn').click();
+  }
 }
 
 return { bootApp };

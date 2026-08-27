@@ -157,10 +157,11 @@ export const CONTENT = {
       comingToStores: 'Mağazalarda çok yakında',
       reviewsSuffix: 'değerlendirme',
       secret: {
-        codename: 'Project Codename: Unknown',
+        codename: 'Project Codename: ERAFRONT',
         title: 'YENİ PROJE',
         desc: 'Sınırları zorlayan yeni nesil bir mobil deneyim için AR-GE süreçlerimiz devam ediyor. Çok yakında burada listelenecek — takipte kal.',
         soon: 'Yakında...',
+        folderLabel: 'Gizli proje dosyası — aç/kapat',
       },
       items: {
         switch: {
@@ -416,10 +417,11 @@ export const CONTENT = {
       comingToStores: 'Coming soon to app stores',
       reviewsSuffix: 'reviews',
       secret: {
-        codename: 'Project Codename: Unknown',
+        codename: 'Project Codename: ERAFRONT',
         title: 'NEW PROJECT',
         desc: 'We\'re deep in R&D on a boundary-pushing, next-gen mobile experience. It\'ll be listed here soon — stay tuned.',
         soon: 'Coming soon...',
+        folderLabel: 'Classified project folder — open/close',
       },
       items: {
         switch: {

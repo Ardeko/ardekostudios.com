@@ -3,7 +3,48 @@ import { useRef } from 'react';
 import RevoScene from './RevoScene';
 import { SplitWords } from './Reveal';
 import HoverPreviewList from './HoverPreviewList';
+import Spotlight from './Spotlight';
+import Folder from './Folder';
 import { useLang } from '../lib/i18n';
+
+// Gizli proje klasöründen çıkan üç "karartılmış belge". Metin YOK — ne
+// yazsak uydurma olurdu; satırlar sadece belge dokusu. İlk satır indigo
+// (başlık), gerisi soluk. Modül seviyesinde sabit: her render'da yeniden
+// üretilmesinin anlamı yok.
+const REDACTED_SHEETS = [
+  ['70%', '92%', '55%'],
+  ['85%', '60%', '78%'],
+  ['66%', '84%', '48%'],
+].map((widths, sheet) => (
+  <div key={sheet} className="flex h-full w-full flex-col justify-center gap-[5px] p-2.5">
+    {widths.map((w, line) => (
+      <span
+        key={line}
+        className="h-[3px] rounded-full"
+        style={{
+          width: w,
+          background: line === 0 ? 'rgba(129,140,248,0.5)' : 'rgba(255,255,255,0.13)',
+        }}
+      />
+    ))}
+  </div>
+));
+
+// Kartın imleç ışığı, o projenin kendi vurgu rengini alsın — REVO'nun
+// teal'i, Decoy'un kırmızısı vs. Listede olmayan proje varsayılan indigoya
+// düşer. Buradaki alfa bilerek düşük: ışık camsı zemini aydınlatmalı,
+// kartı boyamamalı.
+const SPOTLIGHT_COLORS = {
+  revo: 'rgba(62, 207, 192, 0.42)',
+  decoy: 'rgba(244, 63, 94, 0.38)',
+  lore: 'rgba(167, 139, 250, 0.45)',
+  torpidodan: 'rgba(96, 165, 250, 0.42)',
+  kafa: 'rgba(52, 211, 153, 0.42)',
+  // Beyaz diğer renklerle aynı alfada gözü alıyor — koyu zeminde doygunluğu
+  // olmayan tek renk o, bu yüzden bilerek daha kısık.
+  rushville: 'rgba(255, 255, 255, 0.26)',
+  apex: 'rgba(251, 191, 36, 0.40)',
+};
 
 const cardVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -1104,14 +1145,29 @@ function GameCard({ game }) {
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
           </div>
-          <div className="flex flex-col flex-1 p-8 items-center justify-center text-center">
-            <motion.div
-              animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-16 h-16 rounded-2xl bg-indigo-500/5 border border-indigo-500/15 flex items-center justify-center text-2xl mb-6"
-            >
-              🔒
-            </motion.div>
+          <Spotlight size={380} color="rgba(129, 140, 248, 0.40)" />
+          <div className="relative z-10 flex flex-col flex-1 p-8 items-center justify-center text-center">
+            {/* Yükseklik bilerek sabit ve klasör dibe hizalı: açılınca
+                kâğıtlar ~60px yukarı savruluyor, o boşluk önceden ayrılmazsa
+                üstteki kod adı satırının üstüne biniyorlar. */}
+            <div className="relative mb-4 flex h-[150px] w-[100px] items-end justify-center">
+              <motion.span
+                aria-hidden="true"
+                animate={{ opacity: [0.25, 0.6, 0.25] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="pointer-events-none absolute bottom-1 left-1/2 h-20 w-20 -translate-x-1/2 rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, rgba(99,102,241,0.45), transparent 70%)',
+                }}
+              />
+              {/* z-10: glow DOM'da önce ama konumlanmış, yani klasörü
+                  boyamada geçerdi. Işık arkada kalsın. */}
+              <Folder
+                className="relative z-10"
+                label={t.games.secret.folderLabel}
+                items={REDACTED_SHEETS}
+              />
+            </div>
             <span className="text-[9px] font-black tracking-[0.4em] text-indigo-400/60 uppercase mb-2">
               {t.games.secret.codename}
             </span>
@@ -1152,9 +1208,15 @@ function GameCard({ game }) {
         </div>
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+        {/* Sahnelerin zemini opak, üstelik DOM'da Spotlight'tan SONRA
+            geliyor — yani ışık anahtar görselin/çiziminin üstüne binmez,
+            sadece altındaki camsı gövdeyi aydınlatır. Bilerek böyle:
+            sahne kendi ışığını taşıyor, ikinci bir kaynak istemiyoruz. */}
+        <Spotlight color={SPOTLIGHT_COLORS[game.id]} />
+
         {Scene && <Scene />}
 
-        <div className="flex flex-col flex-1 p-8">
+        <div className="relative z-10 flex flex-col flex-1 p-8">
           <div className="flex items-center justify-between mb-5">
             <StatusBadge status={game.status} />
             <span className="text-[9px] text-gray-600 font-bold tracking-widest">{game.platforms}</span>

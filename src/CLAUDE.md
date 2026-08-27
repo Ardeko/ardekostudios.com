@@ -203,6 +203,52 @@ Alev/parıltı şiddetleri bir tur kısıldı: ilk değerlerde meşaleler mor bi
 lekeye, kılıç da ışın kılıcına dönüyordu — katman sanat eserinin kendi ışığını
 titretmeli, ikinci bir ışık kaynağı gibi durmamalı.
 
+### React Bits bileşenleri — üçü alındı, beşi reddedildi (2026-08-27)
+
+Kullanıcı sekiz React Bits / shadcn bileşeni için entegrasyon promptu
+getirdi. **Sekizinin de promptu "shadcn + TypeScript + `/components/ui`"
+varsayıyor; bu proje düz JSX ve shadcn kurulu değil.** Bir daha böyle bir
+prompt gelirse:
+
+- `/components/ui` klasörü AÇMA — düzen `src/components/` düz.
+- Promptların içindeki CSS bloklarını **yapıştırma**. İkinci bir
+  `@import "tailwindcss"` `index.css`'i bozar; hero-scrub'ınki ayrıca
+  bozuk (`var(----ease-out-back)`, dört tire).
+
+**Alınanlar:**
+
+- **`Spotlight.jsx`** (ibelick) — `Games.jsx`'te oyun kartlarında.
+  Konumlanmış+kırpan bir kabın doğrudan çocuğu olarak bırakılır, kabı
+  kendi bulur; **içerik sarmalayıcısına `relative z-10` vermeyi unutma**,
+  yoksa ışık metnin üstüne biner. Kart rengi `SPOTLIGHT_COLORS`'tan.
+  Dokunmatikte ve reduced-motion'da `null` döner (hiç mount olmaz).
+  `filter: blur()` bilerek yok — yumuşaklık gradient'in kendisinden.
+- **`GooeyTabs.jsx`** (React Bits GooeyNav'dan) — `Viewport.jsx`
+  sekmelerinde. **Navbar'a KOYMA**: nav dikey sidebar ve aktif bölüm
+  scroll-spy'dan geliyor, GooeyNav ise yatay ve aktif indeksi kendi
+  tutuyor. Kontrollü yazıldı, parçacıklar React'ten çıkıyor, goo filtre
+  katmanı **sadece patlama süresince** mount (boştayken maliyet sıfır —
+  hero'da duruyor, bkz. "Görsel bütçesi"). Orijinaldeki
+  `var(--color-1..4)` bu projede tanımsız, renk `tabs[].color`'dan.
+- **`Folder.jsx` + `Folder.css`** — sadece `Games.jsx`'teki **gizli
+  proje** kartında, oradaki 🔒 emojisinin yerine. Diğer kartlara yayma:
+  hepsinde projeye özel elle çizilmiş sahne var, genel bir klasör ikonu
+  onların yanında yavan kalır. Kâğıtlar koyu (beyaz olsa kartın en parlak
+  öğesi olurdu). Klasör açılınca kâğıtlar ~60px yukarı savruluyor, o
+  yüzden kartta `h-[150px]` sabit bir yuva ayrıldı. Upstream'de
+  `--magnet-x/y` JS'te set edilip CSS'te hiç okunmuyor (ölü kod); burada
+  transform zincirine eklendi.
+
+**Reddedilenler ve nedenleri** (tekrar gündeme gelirse):
+
+| Bileşen | Neden |
+|---|---|
+| scroll-locked-video-hero | `body.position=fixed` kuruyor ve **hiç bırakmıyor** — Games/About/Contact erişilemez olur. Ayrıca `window` wheel/touch'ı `passive:false` ile eziyor → Lenis'le kavga; `video.currentTime` scrub'ı iOS'ta çalışmaz; hero'ya üçüncü şahsın imzası gömülü. |
+| hero-scrub (GSAP) | 300 kareyi `new Image()` ile RAM'e alıyor ≈ 1 GB çözülmüş bitmap. "Görsel bütçesi"nin aynısı. + GSAP/ScrollTrigger ~70 KB ve Lenis'e bağlanmadığı için scrub desenkron. |
+| mac-book-neo-hero | Aynısının ağırı (`eagerCount=140`, sonra hepsi), üstelik canvas yerine `<img src>` takas ediyor. Kendi loader'ı ve nav'ı `Preloader`/`Navbar` ile çakışıyor. |
+| progressive-hero | `fixed inset-0` + `autoPlay loop` = sayfa açık oldukça çözülen video. Pexels'ten hotlink (stok — lisansımız yok), kırmızı tema. Tek fikri dönen başlık, karşılığı Hero'da `TypewriterWords` olarak zaten var. |
+| Spline 3D | `@splinetool/runtime` tek başına bundle'dan büyük + `.splinecode` 3–10 MB + telefonda WebGL. Elde sahne de yok. |
+
 ## ⚠️ Favicon — Vite logosu tuzağı (2026-08-20)
 
 Sekmede stüdyonun ikonu yerine **Vite'ın mor şimşeği** çıkıyordu.

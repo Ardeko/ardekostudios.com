@@ -1,0 +1,129 @@
+/* Folder.jsx'in stilleri. Sınıflar `adk-` önekli — React Bits'in orijinali
+   `.folder` / `.paper` gibi son derece genel adlar kullanıyor ve bu isimler
+   ileride başka bir yerde çakışmaya davetiye. */
+
+.adk-folder {
+  cursor: pointer;
+  transition: transform 0.2s ease-in;
+}
+
+.adk-folder:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 6px;
+  border-radius: 10px;
+}
+
+/* --- kapalı, hover: kapak hafif aralanıyor --- */
+
+.adk-folder:hover {
+  transform: translateY(-8px);
+}
+
+.adk-folder:hover .adk-paper {
+  transform: translate(-50%, 0%);
+}
+
+.adk-folder:hover .adk-folder__front {
+  transform: skew(15deg) scaleY(0.6);
+}
+
+.adk-folder:hover .adk-folder__front--right {
+  transform: skew(-15deg) scaleY(0.6);
+}
+
+/* --- açık --- */
+
+.adk-folder.is-open {
+  transform: translateY(-8px);
+}
+
+/* Orijinalin ölü kodu: `--magnet-x/y` JS'te set ediliyor ama CSS'te hiçbir
+   yerde OKUNMUYOR, yani upstream'de manyetik kâğıt efekti hiç çalışmıyor.
+   Burada transform zincirine ikinci bir translate olarak ekleniyor. */
+
+.adk-folder.is-open .adk-paper:nth-child(1) {
+  transform: translate(-120%, -70%) translate(var(--magnet-x, 0px), var(--magnet-y, 0px))
+    rotateZ(-15deg);
+}
+
+.adk-folder.is-open .adk-paper:nth-child(2) {
+  height: 80%;
+  transform: translate(10%, -70%) translate(var(--magnet-x, 0px), var(--magnet-y, 0px))
+    rotateZ(15deg);
+}
+
+.adk-folder.is-open .adk-paper:nth-child(3) {
+  height: 80%;
+  transform: translate(-50%, -100%) translate(var(--magnet-x, 0px), var(--magnet-y, 0px))
+    rotateZ(5deg);
+}
+
+.adk-folder.is-open .adk-folder__front {
+  transform: skew(15deg) scaleY(0.6);
+}
+
+.adk-folder.is-open .adk-folder__front--right {
+  transform: skew(-15deg) scaleY(0.6);
+}
+
+/* --- parçalar --- */
+
+.adk-folder__back {
+  position: relative;
+  width: 100px;
+  height: 80px;
+  background: var(--folder-back-color);
+  border-radius: 0 10px 10px 10px;
+}
+
+/* klasörün üst sekmesi */
+.adk-folder__back::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  bottom: 98%;
+  left: 0;
+  width: 30px;
+  height: 10px;
+  background: var(--folder-back-color);
+  border-radius: 5px 5px 0 0;
+}
+
+.adk-paper {
+  position: absolute;
+  z-index: 2;
+  bottom: 10%;
+  left: 50%;
+  width: 70%;
+  height: 80%;
+  /* içerideki karartılmış satırlar kâğıdın dışına taşmasın */
+  overflow: hidden;
+  background: var(--paper-1);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  transform: translate(-50%, 10%);
+  transition: transform 0.3s ease-in-out, height 0.3s ease-in-out;
+}
+
+.adk-paper:nth-child(2) {
+  width: 80%;
+  height: 70%;
+  background: var(--paper-2);
+}
+
+.adk-paper:nth-child(3) {
+  width: 90%;
+  height: 60%;
+  background: var(--paper-3);
+}
+
+.adk-folder__front {
+  position: absolute;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  background: var(--folder-color);
+  border-radius: 5px 10px 10px 10px;
+  transform-origin: bottom;
+  transition: transform 0.3s ease-in-out;
+}

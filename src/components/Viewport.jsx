@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import GooeyTabs from './GooeyTabs';
 import { useLang } from '../lib/i18n';
 
 /* ------------------------------------------------------------------
@@ -170,8 +171,8 @@ function drawSkeleton(ctx, w, h, time, color, pointer) {
 export default function Viewport() {
   const { t } = useLang();
   const TABS = [
-    { key: 'game', label: t.viewport.tabs.game },
-    { key: 'app', label: t.viewport.tabs.app },
+    { key: 'game', label: t.viewport.tabs.game, color: COLORS.game },
+    { key: 'app', label: t.viewport.tabs.app, color: COLORS.app },
   ];
   const [mode, setMode] = useState('game');
   const [hud, setHud] = useState({ fps: 60, frame: 0, w: 0, h: 0 });
@@ -279,35 +280,20 @@ export default function Viewport() {
       data-cursor="soft"
       className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.12)] backdrop-blur-sm"
     >
-      {/* sekme çubuğu */}
-      <div className="flex items-stretch border-b border-white/8">
-        {TABS.map(({ key, label }) => {
-          const active = mode === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setMode(key)}
-              aria-pressed={active}
-              className={[
-                'cursor-pointer px-4 py-3 text-[10px] font-black tracking-[0.25em] uppercase transition-colors duration-200',
-                'border-r border-white/8',
-                active ? 'text-white bg-white/[0.06]' : 'text-gray-500 hover:text-gray-300',
-              ].join(' ')}
-            >
-              <span
-                className="mr-2 inline-block h-1.5 w-1.5 rounded-full align-middle"
-                style={{ background: active ? COLORS[key] : 'currentColor' }}
-                aria-hidden="true"
-              />
-              {label}
-            </button>
-          );
-        })}
-        <span className="ml-auto hidden items-center px-4 text-[10px] font-bold tracking-widest text-gray-600 uppercase sm:flex">
-          {t.viewport.hint}
-        </span>
-      </div>
+      {/* sekme çubuğu — kayan pill + sekme değişiminde parçacık patlaması,
+          bkz. GooeyTabs.jsx. Aktif sekme burada (`mode`) tutuluyor,
+          GooeyTabs kontrollü: kendi doğrusunu üretmiyor. */}
+      <GooeyTabs
+        className="border-b border-white/8"
+        tabs={TABS}
+        value={mode}
+        onChange={setMode}
+        trailing={
+          <span className="ml-auto hidden items-center px-4 text-[10px] font-bold tracking-widest text-gray-600 uppercase sm:flex">
+            {t.viewport.hint}
+          </span>
+        }
+      />
 
       {/* canvas — touch-pan-y: `touch-none` mobilde burayı scroll tuzağına
           çeviriyordu (canvas üzerinde parmakla kaydırınca sayfa kımıldamıyordu).
