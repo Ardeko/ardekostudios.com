@@ -93,7 +93,7 @@ export const CONTENT = {
           desc: 'Eğlenceli bir kelime tahmin oyunu.',
         },
         legendOfRey: {
-          title: 'Legend of Rey',
+          title: 'REY - Rey Efsanesi: Yankılar',
           desc: 'Python tabanlı macera platform oyunu. itch.io\'da yayınlanan ilk oyunumuz.',
         },
         renault: {
@@ -184,10 +184,11 @@ export const CONTENT = {
           linkPrimary: 'OYNA',
         },
         lore: {
-          subtitle: 'Echoes',
-          desc: 'Yıkık sütunların arasında hâlâ yankılanan bir geçmişin izini sür. Elde işlenmiş piksel bir dünyada keşif, dövüş ve hikâyeyi birleştiren karanlık fantezi macerası.',
-          soonNote: 'Windows için çok yakında',
-        },
+  title: 'REY - Rey Efsanesi: Yankılar',
+  subtitle: 'Her yankı, unutulmuş bir gerçeği fısıldar.',
+  desc: 'Yıkık sütunların arasında hâlâ yankılanan bir geçmişin izini sür. Elde işlenmiş piksel bir dünyada keşif, dövüş ve hikâyeyi birleştiren karanlık fantezi macerası.',
+  soonNote: 'Windows için çok yakında',
+},
         kafa: {
           desc: 'İki oyuncunun kıyasıya çarpıştığı, fizik tabanlı hızlı bir kafa topu oyunu. Kupalar, yetenek kartları ve çevrimiçi sıralamayla rekabetçi mobil deneyim.',
         },
@@ -353,7 +354,7 @@ export const CONTENT = {
           desc: 'A fun word guessing game.',
         },
         legendOfRey: {
-          title: 'Legend of Rey',
+          title: 'LORE - Legend of Rey: Echoes',
           desc: 'A Python-based adventure platformer. Our first game shipped on itch.io.',
         },
         renault: {
@@ -444,10 +445,11 @@ export const CONTENT = {
           linkPrimary: 'PLAY',
         },
         lore: {
-          subtitle: 'Echoes',
-          desc: 'Follow the echoes of a past that still lingers among the broken pillars. A dark fantasy adventure weaving exploration, combat and story through a handcrafted pixel world.',
-          soonNote: 'Coming soon for Windows',
-        },
+  title: 'LORE - Legend of Rey: Echoes',
+  subtitle: 'Every echo whispers a forgotten truth.',
+  desc: 'Follow the echoes of a past that still lingers among the broken pillars. A dark fantasy adventure weaving exploration, combat and story through a handcrafted pixel world.',
+  soonNote: 'Coming soon for Windows',
+},
         kafa: {
           desc: 'A fast, physics-based head-to-head ball game where two players collide head-on. A competitive mobile experience with trophies, skill cards, and online ranking.',
         },

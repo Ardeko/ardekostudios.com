@@ -1193,6 +1193,10 @@ function GameCard({ game }) {
 
   const isLive = game.status === 'live';
   const words = t.games.items[game.id] || {};
+  const displayTitle =
+  game.id === 'lore'
+    ? words.title || game.title
+    : game.title;
   return (
     <motion.div variants={cardVariants}>
       <div
@@ -1222,8 +1226,8 @@ function GameCard({ game }) {
             <span className="text-[9px] text-gray-600 font-bold tracking-widest">{game.platforms}</span>
           </div>
           <h3 className={`text-2xl font-black text-white tracking-tight ${words.subtitle ? 'mb-1' : 'mb-3'}`}>
-            {game.title}
-          </h3>
+  {displayTitle}
+</h3>
           {words.subtitle && (
             <p className="text-[11px] font-bold tracking-wide mb-3" style={{ color: game.accent || '#3ECFC0' }}>
               {words.subtitle}
@@ -1423,13 +1427,13 @@ export default function Games() {
       links: { primary: 'https://ardaguner.com/apex-shift' },
     },
     {
-      id: 'lore',
-      status: 'soon',
-      title: 'LORE: Legend of Rey',
-      platforms: 'WINDOWS · PC',
-      scene: LoreScene,
-      accent: '#A78BFA',
-    },
+  id: 'lore',
+  status: 'soon',
+  title: 'LORE - Legend of Rey: Echoes',
+  platforms: 'WINDOWS · PC',
+  scene: LoreScene,
+  accent: '#A78BFA',
+},
     {
       id: 'kafa',
       status: 'soon',
@@ -1500,7 +1504,7 @@ export default function Games() {
           { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,     image: '/games/decoy.svg',     href: '#games' },
           { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
           { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
-          { id: 'lore',      title: 'LORE: Legend of Rey', meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
+          { id: 'lore',      title: t.games.items.lore.title, meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
           { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
