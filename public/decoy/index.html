@@ -315,9 +315,9 @@ input[type=range]{
 .hud-res{display:flex;gap:14px;}
 .res{display:flex;align-items:center;gap:6px;}
 .res-icon{
-  width:20px;height:20px;border-radius:5px;display:grid;place-items:center;flex-shrink:0;
-  font-size:.62rem;font-weight:800;letter-spacing:0;
+  width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex-shrink:0;
 }
+.res-icon svg{width:14px;height:14px;}
 .res-supply .res-icon{background:rgba(127,201,160,.16);color:var(--good);}
 .res-iron   .res-icon{background:rgba(216,212,232,.14);color:#cfcbe0;}
 .res-coin   .res-icon{background:rgba(233,198,126,.16);color:var(--brass-bright);}
@@ -367,12 +367,13 @@ svg#map.panning{cursor:grabbing;}
 .cell{transform-box:fill-box;transform-origin:center;transition:transform .16s var(--ease);}
 .hex-fill{stroke:rgba(8,5,3,.5);stroke-width:.8;}
 .hex-sheen{pointer-events:none;}
+/* Sayılar oyunun DİLİ: küçük olurlarsa oyun okunamaz hale geliyor. */
 .cell text.str{
-  font-family:var(--mono);font-size:10px;font-weight:600;text-anchor:middle;dominant-baseline:central;
-  pointer-events:none;paint-order:stroke;stroke:rgba(8,5,3,.75);stroke-width:2.4px;stroke-linejoin:round;
+  font-family:var(--mono);font-size:11.5px;font-weight:700;text-anchor:middle;dominant-baseline:central;
+  pointer-events:none;paint-order:stroke;stroke:rgba(8,5,3,.85);stroke-width:2.8px;stroke-linejoin:round;
   user-select:none;
 }
-.terrain-glyph{opacity:.42;fill:#f6ecd6;stroke:#f6ecd6;pointer-events:none;stroke-linecap:round;stroke-linejoin:round;}
+.terrain-glyph{opacity:.55;fill:#f6ecd6;stroke:#f6ecd6;pointer-events:none;stroke-linecap:round;stroke-linejoin:round;}
 .badge-glyph{fill:#fff3d6;stroke:#fff3d6;pointer-events:none;
   filter:drop-shadow(0 0 2px rgba(0,0,0,.9));stroke-linecap:round;stroke-linejoin:round;}
 .b-capital{fill:var(--brass-bright);stroke:none;}
@@ -380,7 +381,9 @@ svg#map.panning{cursor:grabbing;}
 .b-decoyStrong{fill:#ffd9a8;stroke:none;}
 
 /* İSTİHBARAT HİYERARŞİSİ — sayının rengi ne kadar güvenilir olduğunu söyler. */
-.cell text.str.own{fill:#fff8e4;opacity:1;}
+/* Kendi toprağın gözden kaçmamalı: en parlak sayı, en belirgin çerçeve. */
+.cell text.str.own{fill:#fff8e4;opacity:1;font-size:12.5px;}
+.cell.mine .hex-fill{stroke:rgba(255,246,221,.85);stroke-width:1.5;}
 .cell text.str.verified{fill:var(--verified);opacity:1;}
 .cell text.str.live{fill:#f4ead4;opacity:.94;}
 .cell text.str.stale{fill:var(--parchment-dim);opacity:.55;font-size:9px;font-weight:400;}
@@ -403,9 +406,9 @@ svg#map.panning{cursor:grabbing;}
 
 /* İmparatorluk sınırı: haritayı siyasi harita gibi okunur kılan çizgi. */
 .owner-edge{
-  fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;
-  opacity:.95;pointer-events:none;
-  filter:drop-shadow(0 0 3px rgba(0,0,0,.55));
+  fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+  opacity:1;pointer-events:none;
+  filter:drop-shadow(0 0 4px rgba(0,0,0,.6));
 }
 .region-edge{fill:none;stroke-width:1.4;opacity:.3;stroke-linecap:round;pointer-events:none;stroke-dasharray:5 4;}
 .bridge-line{stroke:var(--brass);stroke-width:1.5;stroke-dasharray:3 3;opacity:.38;pointer-events:none;}
@@ -3324,7 +3327,23 @@ const BADGE_GLYPHS = {
 };
 const BADGE_STROKED = { decoyWeak: true };
 
-return { TERRAIN_GLYPHS, TERRAIN_STROKED, BADGE_GLYPHS, BADGE_STROKED };
+/**
+ * Kaynak simgeleri — 16×16.
+ *
+ * İlk sürümde kaynaklar "E / D / A" baş harfleriyle gösteriliyordu; oyuna yeni
+ * başlayan biri için üç anlamsız harf demekti. Simge dile de bağlı değil.
+ */
+const RESOURCE_GLYPHS = {
+  // Erzak: başak
+  supply: 'M8 14.5V5M8 5.2C6.4 4 5.4 4.2 4.2 3.6c.2 1.8 1 2.8 3.8 3M8 5.2c1.6-1.2 2.6-1 3.8-1.6-.2 1.8-1 2.8-3.8 3M8 9.4c-1.6-1.2-2.6-1-3.8-1.6.2 1.8 1 2.8 3.8 3M8 9.4c1.6-1.2 2.6-1 3.8-1.6-.2 1.8-1 2.8-3.8 3',
+  // Demir: örs
+  iron: 'M2.5 5.5h5.2c1.8 0 2.4 1.6 4.6 1.6h1.2c0 2.2-1.8 3.4-4 3.4H6.4L5 14.2h6.2v1.3H3.6L6 9.2H4.2c-1 0-1.7-.6-1.7-1.6z',
+  // Altın: sikke
+  coin: 'M8 1.8a6.2 6.2 0 1 1 0 12.4 6.2 6.2 0 0 1 0-12.4zM8 4.6v6.8M6.2 6.2h2.6a1.3 1.3 0 0 1 0 2.6H6.2h2.8a1.3 1.3 0 0 1 0 2.6H6.2'
+};
+const RESOURCE_STROKED = { supply: true, coin: true };
+
+return { TERRAIN_GLYPHS, TERRAIN_STROKED, BADGE_GLYPHS, BADGE_STROKED, RESOURCE_GLYPHS, RESOURCE_STROKED };
 })();
 
 const __m_src_client_render_js = (function(){
@@ -3856,6 +3875,45 @@ function createRenderer(opts) {
     applyView();
   }
 
+  /**
+   * Bir hücrenin çevresine YAKLAŞIR — açılışta oyuncunun kendini bulması için.
+   *
+   * Maç başladığında oyuncunun tek hücresi, 150 hücrelik gri bir denizin
+   * içinde birkaç piksellik bir lekedir; "neredeyim, ne yapacağım?" sorusunun
+   * cevabı yok. Kamerayı başkentin çevresine çekmek bu sorunun yarısını tek
+   * başına çözüyor: kendi toprağını, komşularını ve üzerlerindeki sayıları
+   * okunur boyutta görüyorsun.
+   *
+   * radiusHexes: görüş alanına kaç altıgen sığsın (yarıçap olarak).
+   */
+  function focusOn(k, radiusHexes) {
+    const node = cellNodes.get(k);
+    if (!node || !homeView) return;
+    const r = Math.max(2, radiusHexes || 5);
+    // Altıgen genişliği 1.5*SIZE, yüksekliği sqrt(3)*SIZE.
+    const w = Math.min(homeView.w, r * 2 * SIZE * 1.5);
+    const aspect = homeView.h / homeView.w;
+    view.w = w;
+    view.h = w * aspect;
+    view.x = node.center[0] - view.w / 2;
+    view.y = node.center[1] - view.h / 2;
+
+    // Görüşü dünyanın sınırlarına SIKIŞTIR. Başkent haritanın köşesindeyse
+    // kamera yarı yarıya boşluğa bakıyor ve oyuncu kendini kenara itilmiş
+    // hissediyor; kaydırmak ekranı doldurmaktan daha iyi.
+    if (view.w < homeView.w) {
+      view.x = Math.min(Math.max(view.x, homeView.x), homeView.x + homeView.w - view.w);
+    } else {
+      view.x = homeView.x + (homeView.w - view.w) / 2;
+    }
+    if (view.h < homeView.h) {
+      view.y = Math.min(Math.max(view.y, homeView.y), homeView.y + homeView.h - view.h);
+    } else {
+      view.y = homeView.y + (homeView.h - view.h) / 2;
+    }
+    applyView();
+  }
+
   function centerZoom(factor) {
     const rect = svg.getBoundingClientRect();
     zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
@@ -3869,7 +3927,7 @@ function createRenderer(opts) {
 
   return {
     setWorld, update, flash, tracers, startEmbers, destroy,
-    resetView, centerOn,
+    resetView, centerOn, focusOn,
     zoomIn: () => centerZoom(1 / 1.25),
     zoomOut: () => centerZoom(1.25),
     has: (k) => cellNodes.has(k)
@@ -3894,7 +3952,7 @@ const {
 const { planSource, defenseMultOf, terrainOf } = __m_src_core_rules_js;
 const { neighborKeys } = __m_src_core_hex_js;
 const { INTEL } = __m_src_core_intel_js;
-const { TERRAIN_GLYPHS, TERRAIN_STROKED } = __m_src_client_glyphs_js;
+const { TERRAIN_GLYPHS, TERRAIN_STROKED, RESOURCE_GLYPHS, RESOURCE_STROKED } = __m_src_client_glyphs_js;
 /** Komut çubuğu simgeleri — 24×24, emoji yerine tutarlı SVG. */
 const MODE_ICONS = {
   attack:      '<path d="M4 20 L14 10 M14 4h6v6 M20 4l-9 9 M4 6l5 5 M8 16l-4 4"/>',
@@ -4045,8 +4103,12 @@ function createUI(refs) {
       const income = stats ? stats.income[r] : 0;
       const d = document.createElement('div');
       d.className = 'res res-' + r;
+      const stroked = RESOURCE_STROKED[r];
       d.innerHTML =
-        '<span class="res-icon">' + meta.name.charAt(0) + '</span>' +
+        '<span class="res-icon"><svg viewBox="0 0 16 16" ' +
+          'fill="' + (stroked ? 'none' : 'currentColor') + '" stroke="currentColor" ' +
+          'stroke-width="' + (stroked ? 1.5 : 0) + '" stroke-linecap="round" ' +
+          'stroke-linejoin="round"><path d="' + RESOURCE_GLYPHS[r] + '"/></svg></span>' +
         '<span class="res-num">' +
           '<span class="res-val">' + fmt(purse ? purse[r] : 0) + '</span>' +
           '<span class="res-rate">+' + income.toFixed(1) + '</span>' +
@@ -4398,6 +4460,7 @@ function startSession(adapter, refs) {
   let lastPhase = null;
   let lastRegionsHeld = new Set();
   let ended = false;
+  let focused = false;
 
   /**
    * Bu oturumun açtığı HER dinleyici bu sinyale bağlanır ve destroy() ile
@@ -4543,12 +4606,18 @@ function startSession(adapter, refs) {
       renderer.setWorld(state, bridgeMap);
       worldBuilt = true;
       snapshotOwners(state);
-      const me = state.players.find(p => p.id === adapter.youId);
-      if (me && me.capitalKey) renderer.centerOn(me.capitalKey);
     }
 
     const v = viewFor(state, adapter.youId, verified());
     currentIntel = v.intel;
+
+    // Başkent belirlenir belirlenmez kamerayı oraya YAKLAŞTIR. Açılışta oyuncunun
+    // tek hücresi 150 hücrelik gri bir denizde birkaç piksel; "neredeyim?"
+    // sorusunun cevabı olmadan oyun başlamıyor bile.
+    if (!focused && v.me && v.me.capitalKey && renderer.has(v.me.capitalKey)) {
+      renderer.focusOn(v.me.capitalKey, 6);
+      focused = true;
+    }
 
     const total = Object.keys(state.cells).length;
     const me = v.me;
@@ -4626,10 +4695,39 @@ function startSession(adapter, refs) {
       ui.setStatus('Başkentini kaybettin: gelirin yarıya düştü. Geri al ya da yeni topraklarla telafi et.');
       return;
     }
-    // Söylenecek önemli bir şey yoksa durum satırı GİZLENİR (.status-line:empty).
-    // Seçili kipin açıklaması zaten komut çubuğunda duruyor; aynı cümleyi iki
-    // yerde göstermek hem yer yiyor hem de gözü yoruyordu.
-    ui.setStatus('');
+    // Acil bir uyarı yoksa OYUNCUYA NE YAPACAĞINI söyle. Burayı boş bırakmak
+    // en çok rehberliğin gerektiği anda — maçın ilk saniyelerinde — oyuncuyu
+    // yalnız bırakıyordu: tek hücresi var, hiçbir şey yapamıyor ve sebebini
+    // bilmiyor.
+    ui.setStatus(nextObjective(state, v));
+  }
+
+  /**
+   * "Şimdi ne yapmalıyım?" — duruma bakarak tek cümlelik hedef üretir.
+   *
+   * En kritik durum açılış: oyuncunun garnizonu komşu tarafsız bölgelerin
+   * hiçbirini alamayacak kadar zayıfken ekranda hiçbir şey olmuyor. Bunu
+   * "bekle" değil, "şu kadar güce ulaşınca şurayı alacaksın" diye anlatmak
+   * ölü zamanı beklentiye çeviriyor.
+   */
+  function nextObjective(state, v) {
+    const targets = frontierKeys(state.cells, bridgeMap, adapter.youId);
+    if (!targets.length) return 'Sınırın yok — haritada ilerleyecek yol ara.';
+
+    let best = null;
+    for (const k of targets) {
+      const prev = previewAssault(state.cells, bridgeMap, k, adapter.youId,
+        ui.fraction, state.tick, currentIntel[k]);
+      if (!prev || !prev.valid || !prev.known) continue;
+      if (prev.willCapture) return 'Sınırındaki bir bölgeye tıkla — komşu tüm bölgelerinden kuvvet toplanır.';
+      const need = Math.ceil(prev.defense - prev.totalPower);
+      if (!best || need < best.need) best = { need };
+    }
+    if (best) {
+      return 'Garnizonların büyüyor. Yaklaşık ' + best.need +
+             ' güç daha birikince ilk bölgeni alabilirsin.';
+    }
+    return 'Sınırındaki bir bölgeye tıkla — komşu tüm bölgelerinden kuvvet toplanır.';
   }
 
   function snapshotOwners(state) {

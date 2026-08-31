@@ -193,7 +193,7 @@ export default function Preloader({ onDone }) {
             className="absolute inset-0 flex flex-col items-center justify-center gap-6"
             exit={{ opacity: 0, y: -24, transition: { duration: 0.4, ease: 'easeIn' } }}
           >
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-indigo-400/70">
+            <span lang="en" className="text-[10px] font-black uppercase tracking-[0.5em] text-indigo-400/70">
               Ardeko Studios
             </span>
 
