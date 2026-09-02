@@ -41,6 +41,18 @@ import { motion } from 'framer-motion';
    6. **Renkler tanımlı.** Orijinal `var(--color-1..4, white)` okuyor ve
       bu değişkenler bu projede TANIMSIZ — olduğu gibi alınsa bütün
       parçacıklar beyaz çıkardı. Renk artık `colors` prop'undan geliyor.
+   7. **Goo, CSS `contrast()` ile değil SVG filtresiyle.** ⚠️ Orijinalin
+      `filter:blur() contrast(100)` numarası ancak OPAK bir zemin üzerinde
+      çalışır; bu yüzden katmanın altına `::before` ile `inset:-48px` siyah
+      bir plaka koyup `mix-blend-mode:lighten` ile siyahı yok saydırıyor.
+      Burada işlemedi: `Viewport` kartı `backdrop-blur-sm` taşıyor, yani
+      kendi izole karışım grubunu açıyor ve harmanlama kartın dışına
+      inemiyor. Grubun içindeki tek zemin `bg-white/[0.03]` — lighten'ın
+      tutunacağı bir şey yok, plaka olduğu gibi görünüyor: sekmeye her
+      basışta kartın arkası siyah bir dikdörtgen oluyordu.
+      SVG goo (blur → alpha eşiği) rengi değil ALFA'yı harmanlıyor;
+      şeffaf zeminde çalışır, plakaya da lighten'a da gerek kalmıyor.
+      **Buraya `contrast()` tabanlı goo'yu geri getirme.**
 
    Etiketler hakkında: `uppercase` veriyoruz ama i18n string'leri zaten
    büyük harf (OYUN/UYGULAMA/GAME/APP), yani Türkçe `i → İ` tuzağı
@@ -48,9 +60,9 @@ import { motion } from 'framer-motion';
    koymayı unutma.
 ------------------------------------------------------------------- */
 
-const GOOEY_CSS = `
-.gt-goo{position:absolute;pointer-events:none;display:grid;place-items:center;z-index:1;filter:blur(7px) contrast(100) blur(0);mix-blend-mode:lighten}
-.gt-goo::before{content:'';position:absolute;inset:-48px;z-index:-2;background:#000}
+const gooeyCss = (filterId) => `
+.gt-goo{position:absolute;pointer-events:none;display:grid;place-items:center;z-index:1;filter:url(#${filterId})}
+.gt-defs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
 .gt-particle,.gt-point{display:block;width:20px;height:20px;border-radius:100%;transform-origin:center}
 .gt-particle{position:absolute;top:calc(50% - 10px);left:calc(50% - 10px);opacity:0;animation:gt-particle var(--t) ease 1 -260ms}
 .gt-point{background:var(--c);opacity:1;animation:gt-point var(--t) ease 1 -260ms}
@@ -105,6 +117,9 @@ function buildParticles(colors) {
 
 const BURST_LIFETIME = ANIM_MS * 2 + VARIANCE_MS * 2;
 
+// Aynı sayfada birden fazla GooeyTabs olursa filtre id'leri çakışmasın.
+let gooSeq = 0;
+
 export default function GooeyTabs({ tabs, value, onChange, className = '', trailing }) {
   const barRef = useRef(null);
   const btnRefs = useRef([]);
@@ -112,6 +127,9 @@ export default function GooeyTabs({ tabs, value, onChange, className = '', trail
 
   const [box, setBox] = useState(null); // aktif sekmenin çubuğa göre kutusu
   const [burst, setBurst] = useState(null);
+  // useId() değil: React 19 `«r0»` üretiyor ve o karakterler url(#…) içinde
+  // tırnak istiyor. Sayaç hem CSS'te hem attribute'ta sorunsuz.
+  const [filterId] = useState(() => `gt-goo-${++gooSeq}`);
 
   const index = Math.max(
     0,
@@ -176,7 +194,7 @@ export default function GooeyTabs({ tabs, value, onChange, className = '', trail
 
   return (
     <div ref={barRef} className={`relative flex items-stretch ${className}`}>
-      <style>{GOOEY_CSS}</style>
+      <style>{gooeyCss(filterId)}</style>
 
       {box && (
         <motion.span
@@ -201,36 +219,57 @@ export default function GooeyTabs({ tabs, value, onChange, className = '', trail
       )}
 
       {burst && (
-        <span
-          key={burst.id}
-          aria-hidden="true"
-          className="gt-goo"
-          style={{
-            left: burst.rect.x,
-            top: burst.rect.y,
-            width: burst.rect.w,
-            height: burst.rect.h,
-          }}
-        >
-          {burst.particles.map((p, i) => (
-            <span
-              key={i}
-              className="gt-particle"
-              style={{
-                '--sx': `${p.sx}px`,
-                '--sy': `${p.sy}px`,
-                '--ex': `${p.ex}px`,
-                '--ey': `${p.ey}px`,
-                '--t': `${p.t}ms`,
-                '--s': p.s,
-                '--c': p.c,
-                '--r': `${p.r}deg`,
-              }}
+        <>
+          {/* Goo filtresi. Katman sadece patlama süresince mount olduğu için
+              tanım da onunla birlikte gelip gidiyor. */}
+          <svg className="gt-defs" aria-hidden="true" focusable="false">
+            <filter
+              id={filterId}
+              colorInterpolationFilters="sRGB"
+              x="-100%"
+              y="-200%"
+              width="300%"
+              height="500%"
             >
-              <span className="gt-point" />
-            </span>
-          ))}
-        </span>
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+              <feColorMatrix
+                in="blur"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9"
+              />
+            </filter>
+          </svg>
+
+          <span
+            key={burst.id}
+            aria-hidden="true"
+            className="gt-goo"
+            style={{
+              left: burst.rect.x,
+              top: burst.rect.y,
+              width: burst.rect.w,
+              height: burst.rect.h,
+            }}
+          >
+            {burst.particles.map((p, i) => (
+              <span
+                key={i}
+                className="gt-particle"
+                style={{
+                  '--sx': `${p.sx}px`,
+                  '--sy': `${p.sy}px`,
+                  '--ex': `${p.ex}px`,
+                  '--ey': `${p.ey}px`,
+                  '--t': `${p.t}ms`,
+                  '--s': p.s,
+                  '--c': p.c,
+                  '--r': `${p.r}deg`,
+                }}
+              >
+                <span className="gt-point" />
+              </span>
+            ))}
+          </span>
+        </>
       )}
 
       {tabs.map((tab, i) => {

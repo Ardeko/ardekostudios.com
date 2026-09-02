@@ -230,6 +230,14 @@ prompt gelirse:
   katmanı **sadece patlama süresince** mount (boştayken maliyet sıfır —
   hero'da duruyor, bkz. "Görsel bütçesi"). Orijinaldeki
   `var(--color-1..4)` bu projede tanımsız, renk `tabs[].color`'dan.
+  ⚠️ **Goo SVG filtresiyle yapılıyor, CSS `contrast()` ile değil**
+  (2026-09-02'de değişti). Orijinalin `blur()+contrast(100)` numarası opak
+  zemin ister ve altına `inset:-48px` siyah bir plaka koyup
+  `mix-blend-mode:lighten` ile gizler; `Viewport` kartı `backdrop-blur-sm`
+  taşıdığı için kendi izole karışım grubunu açıyor, lighten kartın
+  arkasındaki içeriğe inemiyor ve plaka görünür kalıyordu — sekmeye her
+  basışta arka taraf siyah bir dikdörtgen oluyordu. SVG goo (blur → alfa
+  eşiği) şeffaf zeminde çalışır. `contrast()` tabanlı goo'yu geri getirme.
 - **`Folder.jsx` + `Folder.css`** — sadece `Games.jsx`'teki **gizli
   proje** kartında, oradaki 🔒 emojisinin yerine. Diğer kartlara yayma:
   hepsinde projeye özel elle çizilmiş sahne var, genel bir klasör ikonu
