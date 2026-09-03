@@ -190,6 +190,11 @@ export const CONTENT = {
   soonNote: 'Windows için çok yakında',
 },
         kafa: {
+          // Ortak rozet "Çok Yakında"; bu projenin tarihi belirsiz, o yüzden
+          // bir tık geri çekildi. EN tarafında karşılığı zaten "Coming Soon",
+          // yani orada "çok" vurgusu hiç yoktu — override gerekmiyor.
+          statusLabel: 'Yakında',
+          soonNote: 'Mağazalarda yakında',
           desc: 'İki oyuncunun kıyasıya çarpıştığı, fizik tabanlı hızlı bir kafa topu oyunu. Kupalar, yetenek kartları ve çevrimiçi sıralamayla rekabetçi mobil deneyim.',
         },
         rushville: {

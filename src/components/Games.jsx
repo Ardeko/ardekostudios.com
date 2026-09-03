@@ -973,7 +973,7 @@ function TorpidodanScene() {
 }
 
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, label }) {
   const { t } = useLang();
   if (status === 'live') {
     return (
@@ -984,7 +984,10 @@ function StatusBadge({ status }) {
   }
   return (
     <span className="inline-flex items-center text-[10px] font-black tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1 rounded-full uppercase">
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 animate-pulse" />{t.games.statusSoon}
+      {/* Ortak rozet "Çok Yakında" diyor; tarihi belirsizleşen yapımlar
+          i18n'den kendi `statusLabel`'ını verip bunu yumuşatabilir. */}
+      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1.5 animate-pulse" />
+      {label || t.games.statusSoon}
     </span>
   );
 }
@@ -1222,7 +1225,7 @@ function GameCard({ game }) {
 
         <div className="relative z-10 flex flex-col flex-1 p-8">
           <div className="flex items-center justify-between mb-5">
-            <StatusBadge status={game.status} />
+            <StatusBadge status={game.status} label={words.statusLabel} />
             <span className="text-[9px] text-gray-600 font-bold tracking-widest">{game.platforms}</span>
           </div>
           <h3 className={`text-2xl font-black text-white tracking-tight ${words.subtitle ? 'mb-1' : 'mb-3'}`}>
@@ -1435,13 +1438,6 @@ export default function Games() {
   accent: '#A78BFA',
 },
     {
-      id: 'kafa',
-      status: 'soon',
-      title: 'Kafa Kafaya',
-      platforms: 'IOS · ANDROID',
-      scene: KafaKafayaScene,
-    },
-    {
       id: 'rushville',
       status: 'soon',
       title: 'Rushville',
@@ -1462,6 +1458,17 @@ export default function Games() {
       platforms: 'IOS · ANDROID',
       scene: TorpidodanScene,
       accent: '#60A5FA',
+    },
+    // Kafa Kafaya listenin sonunda: proje rafa kalkma yolunda, yakın
+    // zamanda çıkmayacak. Diğer "soon" yapımların önünde durup onların
+    // sırasını yemesin diye en arkada. Rozeti de daha yumuşak: i18n'de
+    // `items.kafa.statusLabel` ortak "Çok Yakında"yı eziyor.
+    {
+      id: 'kafa',
+      status: 'soon',
+      title: 'Kafa Kafaya',
+      platforms: 'IOS · ANDROID',
+      scene: KafaKafayaScene,
     },
     {
       status: 'secret',
@@ -1505,10 +1512,10 @@ export default function Games() {
           { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
           { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
           { id: 'lore',      title: t.games.items.lore.title, meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
-          { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
           { id: 'torpidodan', title: 'Torpidodan',     lang: 'tr', meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.svg', href: '#games' },
+          { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
         ]}
       />
     </section>
