@@ -101,15 +101,27 @@ body[data-screen="game"]        #screenGame{ display:block; }
   pointer-events:none;z-index:0;
 }
 .bd-hex{transition:fill 2.4s var(--ease);}
+
+/**
+ * MENÜ SANCAĞI — rüzgârda dalgalanan, oyuncunun kendi renginde kumaş.
+ * Harita dokusunun üstünde, içeriğin altında durur; hafif bulanıklık ve
+ * karışım modu onu arka plan yapar, dikkat çeken bir nesne değil.
+ */
+.banner{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:1;pointer-events:none;
+  opacity:.34;filter:blur(0.4px);
+  mix-blend-mode:soft-light;
+}
 .backdrop-veil{
-  position:fixed;inset:0;pointer-events:none;z-index:1;
+  position:fixed;inset:0;pointer-events:none;z-index:2;
   background:
     radial-gradient(ellipse 70% 55% at 50% 42%, transparent 0%, rgba(13,9,6,.72) 62%, var(--bg-deep) 100%),
     linear-gradient(180deg, rgba(13,9,6,.55) 0%, transparent 22%, transparent 74%, var(--bg-deep) 100%);
 }
 
 .menu-inner{
-  position:relative;z-index:2;
+  position:relative;z-index:3;
   min-height:100%;max-width:620px;margin:0 auto;
   padding:clamp(24px,5vh,52px) 22px clamp(20px,4vh,40px);
   display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,3.2vh,28px);
@@ -726,6 +738,7 @@ svg#map.panning{cursor:grabbing;}
 <!-- ═══════════════════════════════════════════════════════ 1 · ANA MENÜ ═══ -->
 <section class="screen screen-menu" id="screenMenu">
   <svg class="backdrop" id="backdrop" aria-hidden="true"></svg>
+  <canvas class="banner" id="banner" aria-hidden="true"></canvas>
   <div class="backdrop-veil" aria-hidden="true"></div>
 
   <div class="menu-inner">
@@ -1122,6 +1135,26 @@ const FORTIFY = {
   amount: 25       // anında güç - acil durum düğmesi
 };
 
+/**
+ * BOMBARDIMAN — menzilli topçu vuruşu. Toprak el değiştirmez, garnizon erir.
+ *
+ * Saldırıdan farkı: kendi kuvvetin yerinden oynamaz (cephen boşalmaz) ama
+ * demir yer ve topçunun yeniden dolması gerekir. Böylece "kırılamayan cepheyi
+ * yumuşat" kararı, "cepheyi boşaltıp yüklen" kararından ayrı bir alet olur.
+ *
+ * Hasar BİRİM cinsindendir ve savunma çarpanını UMURSAMAZ — top mermisi surun
+ * ardındakini de bulur. Kale yine de yarı yarıya korur (sığınak). Menzil 2:
+ * sınırın bir arkasındaki hücreyi de dövebilirsin, yani "güçlü göster" blöfüyle
+ * caydırılan bir bot bile topçundan kaçamaz.
+ */
+const STRIKE = {
+  cost: { iron: 30 },
+  damage: 24,       // hedef garnizondan silinen birim
+  fortShield: 0.5,  // kale varsa hasar bu çarpanla azalır
+  range: 2,         // kendi toprağından en fazla bu kadar altıgen uzağı vurabilirsin
+  cooldown: 20      // oyuncu başına yeniden dolum (tick)
+};
+
 // --- aldatma (oyunun kalbi) ------------------------------------------------
 /**
  * SAHTE GARNİZON: bir hücrenin düşmana YAYINLADIĞI sayıyı yalanlar.
@@ -1213,7 +1246,7 @@ const INTERIOR_RESERVE = 7;
 const DEFENSE_FATIGUE_STEP = 0.06;
 const DEFENSE_FATIGUE_FLOOR = 0.45;
 
-return { TICK_MS, MATCH_TICK_LIMIT, BASE_MAX_STR, BASE_GROWTH, START_STR, NEUTRAL_STR_MIN, NEUTRAL_STR_MAX, FATIGUE_START_TICK, FATIGUE_STEP_TICKS, FATIGUE_STEP_AMOUNT, FATIGUE_FLOOR, RESOURCES, RESOURCE_META, BASE_INCOME, SUPPLY_PER_GROWTH, OVEREXTEND, TERRAINS, TERRAIN_IDS, FORT, FORTIFY, DECOY, SCOUT, INTEL_STALE_TICKS, CONTINENT_YIELD_MULT, CONTINENT_FLAT_BONUS, CAPITAL, DOMINATION_SHARE, DOMINATION_TICKS, TOTAL_SLOTS, COMMIT_STEPS, BANNERS, FACTIONS, NEUTRAL_COLOR, SUPPLY_FLOW_RATE, INTERIOR_RESERVE, DEFENSE_FATIGUE_STEP, DEFENSE_FATIGUE_FLOOR };
+return { TICK_MS, MATCH_TICK_LIMIT, BASE_MAX_STR, BASE_GROWTH, START_STR, NEUTRAL_STR_MIN, NEUTRAL_STR_MAX, FATIGUE_START_TICK, FATIGUE_STEP_TICKS, FATIGUE_STEP_AMOUNT, FATIGUE_FLOOR, RESOURCES, RESOURCE_META, BASE_INCOME, SUPPLY_PER_GROWTH, OVEREXTEND, TERRAINS, TERRAIN_IDS, FORT, FORTIFY, STRIKE, DECOY, SCOUT, INTEL_STALE_TICKS, CONTINENT_YIELD_MULT, CONTINENT_FLAT_BONUS, CAPITAL, DOMINATION_SHARE, DOMINATION_TICKS, TOTAL_SLOTS, COMMIT_STEPS, BANNERS, FACTIONS, NEUTRAL_COLOR, SUPPLY_FLOW_RATE, INTERIOR_RESERVE, DEFENSE_FATIGUE_STEP, DEFENSE_FATIGUE_FLOOR };
 })();
 
 const __m_src_client_identity_js = (function(){
@@ -1865,6 +1898,220 @@ function createBackdrop(svg) {
 return { createBackdrop };
 })();
 
+const __m_src_client_banner_js = (function(){
+/**
+ * Menü sancağı — rüzgârda dalgalanan kumaş, Verlet fiziğiyle.
+ *
+ * NEDEN KENDİMİZ YAZIYORUZ: hazır "kinetik kumaş" bileşenleri Three.js + React
+ * + Tailwind gerektiriyor ve bir iframe içinde ~1 MB harici betik yüklüyor.
+ * Decoy'un tamamı sıfır bağımlılık ve tek dosyalık bir HTML olarak dağıtılıyor
+ * (çevrimdışı da açılıyor); bunu bir arka plan efekti için feda etmek yanlış
+ * takas olurdu. Bir bayrak, kafaya yakın bir açıdan bakıldığında 3B motora
+ * ihtiyaç duymaz: ızgarayı 2B'de simüle edip derinliği yalnızca GÖLGELEME için
+ * kullanmak yeterli.
+ *
+ * Asıl kazanç şu: bu sancak SENİN sancağın. Menüde bir renk seçtiğinde kumaş
+ * o renge dönüyor — jenerik bir doku yerine oyunun kendi diline ait bir nesne.
+ */
+
+const GX = 26;             // yatay bölüm
+const GY = 17;             // dikey bölüm
+const ITER = 3;            // kısıt çözüm turu
+const DAMP = 0.982;
+const GRAV = 90;
+const DT = 1 / 60;
+function createBanner(canvas) {
+  if (!canvas || !canvas.getContext) return { start() {}, stop() {}, setColors() {} };
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return { start() {}, stop() {}, setColors() {} };
+
+  const reduceMotion = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W = 0, H = 0, dpr = 1;
+  let cw = 0, ch = 0, ox = 0, oy = 0;   // kumaşın ekrandaki kutusu
+  let raf = 0, running = false, t = 0;
+
+  let light = '#f5d78e', dark = '#a9782f';
+
+  const N = (GX + 1) * (GY + 1);
+  const cur = new Float32Array(N * 3);
+  const prev = new Float32Array(N * 3);
+  const rest = new Float32Array(N * 3);
+  const idx = (ix, iy) => ix + iy * (GX + 1);
+
+  function layout() {
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Kumaş ekranı taşsın: kenarları görünmesin, doku gibi dursun.
+    cw = W * 1.25;
+    ch = H * 0.92;
+    ox = -W * 0.12;
+    oy = (H - ch) / 2;
+  }
+
+  function reset() {
+    for (let iy = 0; iy <= GY; iy++) {
+      for (let ix = 0; ix <= GX; ix++) {
+        const i = idx(ix, iy) * 3;
+        const x = ox + (ix / GX) * cw;
+        const y = oy + (iy / GY) * ch;
+        cur[i] = prev[i] = rest[i] = x;
+        cur[i + 1] = prev[i + 1] = rest[i + 1] = y;
+        cur[i + 2] = prev[i + 2] = rest[i + 2] = 0;
+      }
+    }
+  }
+
+  /** Sol kenar direğe bağlı; rüzgâr soldan sağa ilerleyen bir dalga. */
+  function wind(ix, iy, time) {
+    const u = ix / GX, v = iy / GY;
+    const travel = time * 2.1 - u * 5.4;
+    const gust = 0.75 + 0.35 * Math.sin(time * 0.55) + 0.16 * Math.sin(time * 1.7 + 1.1);
+    const amp = 120 * u;                       // direğe yakın kısım az oynar
+    const fz = (Math.sin(travel) + 0.45 * Math.sin(travel * 1.9 + v * 4.2)) * amp * gust;
+    const fy = Math.sin(travel * 0.8 + v * 2.0) * 26 * u;
+    return [fz, fy];
+  }
+
+  function step(time) {
+    for (let iy = 0; iy <= GY; iy++) {
+      for (let ix = 1; ix <= GX; ix++) {          // ix=0 sabit (direk)
+        const i = idx(ix, iy) * 3;
+        const [fz, fy] = wind(ix, iy, time);
+        // x: yay gibi dinlenme konumuna dönme eğilimi
+        const ax = (rest[i] - cur[i]) * 1.4;
+        const ay = GRAV * 0.25 + fy + (rest[i + 1] - cur[i + 1]) * 1.1;
+        const az = fz - cur[i + 2] * 1.6;
+        for (let k = 0; k < 3; k++) {
+          const j = i + k;
+          const a = k === 0 ? ax : k === 1 ? ay : az;
+          const vlt = (cur[j] - prev[j]) * DAMP;
+          prev[j] = cur[j];
+          cur[j] = cur[j] + vlt + a * DT * DT * 60;
+        }
+      }
+    }
+
+    const rh = cw / GX, rv = ch / GY;
+    for (let it = 0; it < ITER; it++) {
+      for (let iy = 0; iy <= GY; iy++) {
+        for (let ix = 0; ix < GX; ix++) solve(idx(ix, iy), idx(ix + 1, iy), rh);
+      }
+      for (let iy = 0; iy < GY; iy++) {
+        for (let ix = 0; ix <= GX; ix++) solve(idx(ix, iy), idx(ix, iy + 1), rv);
+      }
+      for (let iy = 0; iy <= GY; iy++) {        // direği geri sabitle
+        const i = idx(0, iy) * 3;
+        cur[i] = rest[i]; cur[i + 1] = rest[i + 1]; cur[i + 2] = rest[i + 2];
+      }
+    }
+  }
+
+  function solve(a, b, rl) {
+    const ai = a * 3, bi = b * 3;
+    let dx = cur[bi] - cur[ai], dy = cur[bi + 1] - cur[ai + 1], dz = cur[bi + 2] - cur[ai + 2];
+    const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-6;
+    const f = ((d - rl) / d) * 0.5;
+    dx *= f; dy *= f; dz *= f;
+    const pinnedA = a % (GX + 1) === 0;
+    const pinnedB = b % (GX + 1) === 0;
+    if (!pinnedA && !pinnedB) {
+      cur[ai] += dx; cur[ai + 1] += dy; cur[ai + 2] += dz;
+      cur[bi] -= dx; cur[bi + 1] -= dy; cur[bi + 2] -= dz;
+    } else if (pinnedA && !pinnedB) {
+      cur[bi] -= dx * 2; cur[bi + 1] -= dy * 2; cur[bi + 2] -= dz * 2;
+    } else if (!pinnedA && pinnedB) {
+      cur[ai] += dx * 2; cur[ai + 1] += dy * 2; cur[ai + 2] += dz * 2;
+    }
+  }
+
+  function mix(c1, c2, k) {
+    const p = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    const a = p(c1), b = p(c2);
+    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * k) + ',' +
+      Math.round(a[1] + (b[1] - a[1]) * k) + ',' +
+      Math.round(a[2] + (b[2] - a[2]) * k) + ')';
+  }
+
+  /**
+   * Çizim: her dörtgeni derinliğine göre gölgeleyerek doldur.
+   * z ileri geldikçe aydınlık, geri gittikçe koyu — kumaşın kıvrımları
+   * yalnızca bu gradyandan okunuyor, gerçek bir 3B ışıklandırmaya gerek yok.
+   */
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (let iy = 0; iy < GY; iy++) {
+      for (let ix = 0; ix < GX; ix++) {
+        const a = idx(ix, iy) * 3, b = idx(ix + 1, iy) * 3;
+        const c = idx(ix + 1, iy + 1) * 3, d = idx(ix, iy + 1) * 3;
+        const z = (cur[a + 2] + cur[b + 2] + cur[c + 2] + cur[d + 2]) / 4;
+        const k = Math.max(0, Math.min(1, 0.5 + z / 260));
+        ctx.fillStyle = mix(dark, light, k * k);
+        ctx.beginPath();
+        ctx.moveTo(cur[a], cur[a + 1]);
+        ctx.lineTo(cur[b], cur[b + 1]);
+        ctx.lineTo(cur[c], cur[c + 1]);
+        ctx.lineTo(cur[d], cur[d + 1]);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+  }
+
+  function loop() {
+    if (!running) return;
+    t += DT;
+    step(t);
+    draw();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function settle(steps) {
+    for (let i = 0; i < steps; i++) { t += DT; step(t); }
+    draw();
+  }
+
+  function onResize() {
+    layout();
+    reset();
+    settle(60);
+  }
+
+  return {
+    /** Sancak renklerini değiştirir — menüdeki renk seçiciye bağlı. */
+    setColors(l, d) {
+      light = l || light;
+      dark = d || dark;
+      if (!running) draw();
+    },
+    start() {
+      if (running) return;
+      layout();
+      reset();
+      window.addEventListener('resize', onResize);
+      if (reduceMotion) { settle(240); return; }
+      settle(50);
+      running = true;
+      raf = requestAnimationFrame(loop);
+    },
+    stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+    }
+  };
+}
+
+return { createBanner };
+})();
+
 const __m_src_core_economy_js = (function(){
 /**
  * Ekonomi — Colonist/Catan'dan alınan fikir: ARAZİ ÜRETİR.
@@ -2007,7 +2254,7 @@ const __m_src_core_rules_js = (function(){
  * istemci hiçbir kuralı kendi başına yeniden yorumlamaz.
  */
 const {
-  TERRAINS, FORT, BASE_MAX_STR, BASE_GROWTH,
+  TERRAINS, FORT, STRIKE, BASE_MAX_STR, BASE_GROWTH,
   FATIGUE_START_TICK, FATIGUE_STEP_TICKS, FATIGUE_STEP_AMOUNT, FATIGUE_FLOOR,
   SUPPLY_FLOW_RATE, INTERIOR_RESERVE, DEFENSE_FATIGUE_STEP, DEFENSE_FATIGUE_FLOOR
 } = __m_src_core_constants_js;
@@ -2202,6 +2449,50 @@ function fail(reason) {
 }
 
 /**
+ * BOMBARDIMAN MENZİLİ — hedef, oyuncunun toprağına en fazla `range` altıgen
+ * uzakta mı? Hedeften dışa doğru katmanlı BFS; köprüler menzile dahildir
+ * (top mermisi boğazın karşısına da düşer).
+ */
+function strikeInRange(cells, bridgeMap, targetKey, playerId, range) {
+  let ring = [targetKey];
+  const seen = new Set(ring);
+  for (let depth = 0; depth < range; depth++) {
+    const next = [];
+    for (let r = 0; r < ring.length; r++) {
+      const ns = neighborKeys(ring[r], bridgeMap);
+      for (let i = 0; i < ns.length; i++) {
+        const nk = ns[i];
+        if (seen.has(nk) || !cells[nk]) continue;
+        seen.add(nk);
+        if (cells[nk].o === playerId) return true;
+        next.push(nk);
+      }
+    }
+    ring = next;
+  }
+  return false;
+}
+
+/**
+ * Bombardımanı uygular ve hedefi YERİNDE günceller. Doğrulama (menzil, bedel,
+ * dolum) çağıranın işidir; bu fonksiyon yalnızca hasarı işler.
+ *
+ * Hasar savunma çarpanından bağımsızdır — top mermisi Toprak'ın surunu da
+ * aşar — ama kale STRIKE.fortShield ile korur ve arazi tabanı (floorOnHit)
+ * korunur: bombardıman tek başına bir hücreyi asla "bedava" hale getiremez.
+ * Dönen değer: silinen birim sayısı (arayüz geri bildirimi için).
+ */
+function resolveStrike(cells, targetKey) {
+  const tgt = cells[targetKey];
+  if (!tgt) return 0;
+  const t = terrainOf(tgt);
+  const raw = STRIKE.damage * (tgt.f ? STRIKE.fortShield : 1);
+  const before = tgt.s;
+  tgt.s = Math.max(t.floorOnHit, Math.round(tgt.s - raw));
+  return Math.max(0, before - tgt.s);
+}
+
+/**
  * Bir tick'lik büyümeyi uygular.
  *
  * `g` alanı hücre başına saklanan kesirli büyüme birikimidir. Güç HER ZAMAN
@@ -2342,7 +2633,7 @@ function bestSourceFor(cells, bridgeMap, targetKey, playerId) {
   return null;
 }
 
-return { terrainOf, effectiveMaxStr, siegeFatigue, cellCap, cellGrowth, defenseMultOf, defenseOf, planSource, planAssault, planAttack, isAdjacent, resolveAssault, applyGrowth, applySupplyFlow, frontierKeys, sourcesFor, bestSourceFor };
+return { terrainOf, effectiveMaxStr, siegeFatigue, cellCap, cellGrowth, defenseMultOf, defenseOf, planSource, planAssault, planAttack, isAdjacent, resolveAssault, strikeInRange, resolveStrike, applyGrowth, applySupplyFlow, frontierKeys, sourcesFor, bestSourceFor };
 })();
 
 const __m_src_core_intel_js = (function(){
@@ -2537,10 +2828,10 @@ const __m_src_core_ai_js = (function(){
  * bot yemi yutar; yüksek şüpheci bir bot alışılmadık sayıları kuşkuyla karşılar,
  * hatta casus gönderip doğrular. Yani "kimi kandırabilirim?" oyunun bir parçası.
  */
-const { COMMIT_STEPS, DECOY, SCOUT, FORT, FORTIFY, TERRAINS } = __m_src_core_constants_js;
+const { COMMIT_STEPS, DECOY, SCOUT, FORT, FORTIFY, STRIKE, TERRAINS } = __m_src_core_constants_js;
 const { buildIntel, INTEL, activeDecoyCount } = __m_src_core_intel_js;
 const {
-  frontierKeys, planAssault, resolveAssault,
+  frontierKeys, planAssault, resolveAssault, resolveStrike,
   defenseMultOf, cellCap
 } = __m_src_core_rules_js;
 const { canAfford, spend, fortAllowance } = __m_src_core_economy_js;
@@ -2694,6 +2985,23 @@ function botAct(state, player, bridgeMap, econStats, rng) {
     });
   }
   scored.sort((a, b) => b.score - a.score);
+
+  // --- BOMBARDIMAN: değerli ama (algılanan güce göre) kırılamayan hedefi yumuşat ---
+  // Bot da algıladığı savunmaya bakar; yani senin "güçlü göster" blöfün bir botu
+  // topçu harcamaya bile itebilir — altın karşılığı düşmana demir yaktırmak.
+  if (canAfford(player.purse, STRIKE.cost) && (player.strikeReadyAt || 0) <= state.tick
+      && rng() < 0.18 + persona.aggression * 0.35) {
+    let pick = null;
+    for (let i = 0; i < scored.length; i++) {
+      const s = scored[i];
+      if (s.feasibility < 1.15 && s.def >= 25) { pick = s; break; }
+    }
+    if (pick && spend(player.purse, STRIKE.cost)) {
+      player.strikeReadyAt = state.tick + STRIKE.cooldown;
+      resolveStrike(cells, pick.key);
+      events.push({ type: 'strike', by: player.id, from: cells[pick.key].o, key: pick.key });
+    }
+  }
 
   // --- saldırılar ---
   let budget = attackBudget(st.cellCount);
@@ -2872,7 +3180,7 @@ const __m_src_core_match_js = (function(){
  */
 const {
   TOTAL_SLOTS, START_STR, FACTIONS, BANNERS, MATCH_TICK_LIMIT,
-  DOMINATION_SHARE, DOMINATION_TICKS, DECOY, SCOUT, FORT, FORTIFY,
+  DOMINATION_SHARE, DOMINATION_TICKS, DECOY, SCOUT, FORT, FORTIFY, STRIKE,
   CAPITAL, COMMIT_STEPS
 } = __m_src_core_constants_js;
 const { makeRng, shuffle } = __m_src_core_rng_js;
@@ -2880,7 +3188,8 @@ const { buildBridgeMap } = __m_src_core_hex_js;
 const { generateMap, regionSizes, pickStartPositions, REGIONS } = __m_src_core_mapgen_js;
 const { computeEconomy, canAfford, spend, emptyPurse, fortAllowance } = __m_src_core_economy_js;
 const {
-  resolveAssault, planAssault, applyGrowth, applySupplyFlow, isAdjacent, cellCap
+  resolveAssault, planAssault, applyGrowth, applySupplyFlow, isAdjacent, cellCap,
+  strikeInRange, resolveStrike
 } = __m_src_core_rules_js;
 const {
   pruneDecoys, pruneScouts, activeDecoyCount, buildIntel, buildIntelFromBroadcast, decoyActive
@@ -2991,6 +3300,7 @@ function applyCommand(state, cmd) {
   switch (cmd.type) {
     case 'pickStart': return cmdPickStart(state, p, cmd);
     case 'attack':    return cmdAttack(state, p, cmd);
+    case 'strike':    return cmdStrike(state, p, cmd);
     case 'fort':      return cmdFort(state, p, cmd);
     case 'fortify':   return cmdFortify(state, p, cmd);
     case 'decoy':     return cmdDecoy(state, p, cmd);
@@ -3052,6 +3362,30 @@ function onCapture(state, capturer, cellKey, previousOwner) {
       pushLog(state, { type: 'capital', by: capturer.id, from: previousOwner });
     }
   }
+}
+
+/**
+ * BOMBARDIMAN — demir harca, menzildeki bir düşman garnizonunu erit.
+ * Toprak el değiştirmez; cepheni boşaltmadan bir cepheyi yumuşatırsın.
+ * Oyuncu başına dolum süresi vardır: topçu bir musluk değil, bir karar olsun.
+ */
+function cmdStrike(state, p, cmd) {
+  if (state.phase !== 'playing') return err('Maç aktif değil.');
+  const c = state.cells[cmd.cellKey];
+  if (!c) return err('Böyle bir bölge yok.');
+  if (c.o === p.id) return err('Kendi bölgeni bombalayamazsın.');
+  if ((p.strikeReadyAt || 0) > state.tick) {
+    return err('Topçu yeniden dolduruluyor — ' + (p.strikeReadyAt - state.tick) + ' tur kaldı.');
+  }
+  const bridgeMap = bridgeMapOf(state);
+  if (!strikeInRange(state.cells, bridgeMap, cmd.cellKey, p.id, STRIKE.range)) {
+    return err('Menzil dışında — topraklarından en fazla ' + STRIKE.range + ' bölge uzağı dövebilirsin.');
+  }
+  if (!spend(p.purse, STRIKE.cost)) return err('Yeterli demirin yok.');
+  p.strikeReadyAt = state.tick + STRIKE.cooldown;
+  const damage = resolveStrike(state.cells, cmd.cellKey);
+  pushLog(state, { type: 'strike', by: p.id, from: c.o, key: cmd.cellKey });
+  return { ok: true, damage };
 }
 
 function cmdFort(state, p, cmd) {
@@ -3328,6 +3662,33 @@ const BADGE_GLYPHS = {
 const BADGE_STROKED = { decoyWeak: true };
 
 /**
+ * ASKERİ BİRİM SİLÜETLERİ — 16×16, dolgu.
+ *
+ * Bir hücrenin YAYINLANAN gücüne göre haritada küçük bir silüet çizilir:
+ * piyade (zayıf) → tank (orta) → ağır zırh (güçlü). Sayı okumadan tek bakışta
+ * "orada ordu var mı?" sorusuna cevap verir — Risk tahtasındaki piyon yığınının
+ * karşılığı. Silüet bilinçli olarak intel değerinden türetilir: sahte garnizon
+ * kurduğunda düşman haritasında tanklar belirir ya da kaybolur. Yalan, görsele
+ * kadar işler.
+ */
+const UNIT_GLYPHS = {
+  // Piyade: miğferli asker büstü + omzunda tüfek
+  infantry: 'M8 1.5a2.6 2.6 0 0 1 2.6 2.6H5.4A2.6 2.6 0 0 1 8 1.5zM4.9 4.7h6.2v1H4.9zM11 5.6l2.9-3.2 1 .9-2.9 3.2zM8 6.6c2.7 0 4.7 1.8 5 4.4l.3 3.5H2.7l.3-3.5c.3-2.6 2.3-4.4 5-4.4z',
+  // Tank: palet + gövde + kule + namlu
+  tank: 'M2.2 10.6h11.6a2 2 0 0 1 0 4H2.2a2 2 0 0 1 0-4zM3 8.7h10v1.9H3zM5.6 5.4h4.2a1.7 1.7 0 0 1 1.7 1.7v1.6H3.9V7.1a1.7 1.7 0 0 1 1.7-1.7zM10.9 6.2h4.6v1.2h-4.6z',
+  // Ağır zırh: geniş palet, kumandan kulesi, namlu freni
+  heavy: 'M1.5 10.3h13a2.15 2.15 0 0 1 0 4.3h-13a2.15 2.15 0 0 1 0-4.3zM2.3 8.4h11.4v1.9H2.3zM4.7 4.7h5.2a1.8 1.8 0 0 1 1.8 1.8v1.9H2.9V6.5a1.8 1.8 0 0 1 1.8-1.8zM6.2 3.2h2.6v1.5H6.2zM10.9 5.6h3.3v1.2h-3.3zM13.8 5.1h1.5v2.2h-1.5z'
+};
+
+/** Yayınlanan güce göre silüet kademesi. Eşikler BASE_MAX_STR=90'a göredir. */
+function unitTierFor(val) {
+  if (val === null || val === undefined || val <= 0) return '';
+  if (val >= 55) return 'heavy';
+  if (val >= 25) return 'tank';
+  return 'infantry';
+}
+
+/**
  * Kaynak simgeleri — 16×16.
  *
  * İlk sürümde kaynaklar "E / D / A" baş harfleriyle gösteriliyordu; oyuna yeni
@@ -3343,7 +3704,7 @@ const RESOURCE_GLYPHS = {
 };
 const RESOURCE_STROKED = { supply: true, coin: true };
 
-return { TERRAIN_GLYPHS, TERRAIN_STROKED, BADGE_GLYPHS, BADGE_STROKED, RESOURCE_GLYPHS, RESOURCE_STROKED };
+return { TERRAIN_GLYPHS, TERRAIN_STROKED, BADGE_GLYPHS, BADGE_STROKED, UNIT_GLYPHS, unitTierFor, RESOURCE_GLYPHS, RESOURCE_STROKED };
 })();
 
 const __m_src_client_render_js = (function(){
@@ -3363,7 +3724,10 @@ const { parseKey, axialToPixel, hexCorners, DIRS, neighborKeys } = __m_src_core_
 const { TERRAINS, NEUTRAL_COLOR, INTEL_STALE_TICKS } = __m_src_core_constants_js;
 const { INTEL } = __m_src_core_intel_js;
 const { REGIONS } = __m_src_core_mapgen_js;
-const { TERRAIN_GLYPHS, TERRAIN_STROKED, BADGE_GLYPHS, BADGE_STROKED } = __m_src_client_glyphs_js;
+const {
+  TERRAIN_GLYPHS, TERRAIN_STROKED, BADGE_GLYPHS, BADGE_STROKED,
+  UNIT_GLYPHS, unitTierFor
+} = __m_src_client_glyphs_js;
 const NS = 'http://www.w3.org/2000/svg';
 const SIZE = 21;
 /** Simgeler 16×16 kutuya çizildi; altıgen içinde bu boyutta duruyorlar. */
@@ -3588,6 +3952,10 @@ function createRenderer(opts) {
         ));
       }
 
+      // Askeri birim silüeti — sayının altında, yayınlanan güce göre.
+      const unit = el('g', { class: 'unit' });
+      g.appendChild(unit);
+
       const text = el('text', { x: center[0], y: center[1] + 4.5, class: 'str' });
       g.appendChild(text);
 
@@ -3599,7 +3967,7 @@ function createRenderer(opts) {
       listen(g, 'pointerleave', () => opts.onCellHover && opts.onCellHover(null));
 
       layer.appendChild(g);
-      cellNodes.set(k, { g, poly, text, badge, center });
+      cellNodes.set(k, { g, poly, text, badge, unit, center });
     }
     svg.appendChild(layer);
     svg.appendChild(buildRegionOutlines(state.cells));
@@ -3661,13 +4029,13 @@ function createRenderer(opts) {
       memory.set(k, { val: entry.val, tick });
       const cls = entry.lvl === INTEL.OWN ? 'own'
         : entry.lvl === INTEL.VERIFIED ? 'verified' : 'live';
-      return { text: String(entry.val), cls };
+      return { text: String(entry.val), cls, val: entry.val };
     }
     const mem = memory.get(k);
     if (mem && tick - mem.tick < INTEL_STALE_TICKS * 3) {
-      return { text: '~' + mem.val, cls: 'stale' };
+      return { text: '~' + mem.val, cls: 'stale', val: mem.val };
     }
-    return { text: '?', cls: 'unknown' };
+    return { text: '?', cls: 'unknown', val: null };
   }
 
   function setBadge(node, center, kind) {
@@ -3679,6 +4047,24 @@ function createRenderer(opts) {
     node.appendChild(glyph(
       BADGE_GLYPHS[kind], center, -0.5, 0.42, 'badge-glyph b-' + kind, stroked
     ));
+  }
+
+  /**
+   * Askeri birim silüeti — hücrenin YAYINLANAN gücüne göre piyade/tank/ağır zırh.
+   * "stale" (eski bilgi) durumunda silüet soluklaşır: hatıradaki ordu.
+   * Buradaki değer İSTİHBARAT değeridir, asla cell.s değil — tank silüetleri de
+   * sayılar gibi yalan söyleyebilmeli, yoksa blöf görselden sızar.
+   */
+  function setUnit(node, center, tier, stale) {
+    const key = tier ? tier + (stale ? '~' : '') : '';
+    if (node.dataset.kind === key) return;
+    node.dataset.kind = key;
+    node.textContent = '';
+    if (!tier) return;
+    const scale = tier === 'heavy' ? 0.56 : tier === 'tank' ? 0.52 : 0.48;
+    const p = glyph(UNIT_GLYPHS[tier], center, 9.2, scale, 'unit-glyph u-' + tier, false);
+    if (stale) p.classList.add('stale');
+    node.appendChild(p);
   }
 
   function update(ctx) {
@@ -3708,6 +4094,10 @@ function createRenderer(opts) {
       else if (c.f) kind = 'fort';
       setBadge(node.badge, node.center, kind);
 
+      // Birim silüeti yalnızca sahipli bölgelerde — tarafsız garnizon ordu değil, milis.
+      const owned = c.o !== null && c.o !== undefined;
+      setUnit(node.unit, node.center, owned ? unitTierFor(label.val) : '', label.cls === 'stale');
+
       const mine = c.o === ctx.youId;
       node.g.classList.toggle('mine', mine);
       node.g.classList.toggle('frontier', !!(ctx.frontier && ctx.frontier.has(k)));
@@ -3732,22 +4122,109 @@ function createRenderer(opts) {
     node.g.classList.add(kind === 'deny' ? 'fx-deny' : kind === 'hit' ? 'fx-hit' : 'fx-capture');
   }
 
+  /**
+   * SALDIRI ANİMASYONU — her kaynaktan hedefe bir top mermisi.
+   *
+   * Üç aşama: kaynakta namlu alevi, yolda dönük bir mermi, hedefte tek bir
+   * patlama (kaynak başına değil — beş koldan gelen kuşatma hedefte TEK büyük
+   * çarpma olarak okunmalı, beş ayrı havai fişek olarak değil).
+   */
   function tracers(sourceKeys, targetKey) {
     if (reduceMotion) return;
     const tgt = cellNodes.get(targetKey);
     if (!tgt) return;
+    let fired = false;
     for (const sk of sourceKeys) {
       const src = cellNodes.get(sk);
       if (!src) continue;
-      const d = 'M' + src.center[0] + ',' + src.center[1] + 'L' + tgt.center[0] + ',' + tgt.center[1];
+      fired = true;
+      const [sx, sy] = src.center, [tx, ty] = tgt.center;
+      const ang = (Math.atan2(ty - sy, tx - sx) * 180 / Math.PI).toFixed(1);
+      const d = 'M' + sx + ',' + sy + 'L' + tx + ',' + ty;
+
       const g = el('g', { class: 'tracer' });
       g.appendChild(el('path', { d, class: 'trail', fill: 'none' }));
-      const spark = el('circle', { r: '1.8', class: 'spark' });
-      spark.appendChild(el('animateMotion', { dur: '.42s', fill: 'freeze', path: d }));
-      g.appendChild(spark);
+
+      // Namlu alevi: kaynağın hedefe bakan yüzünde kısa bir parlama.
+      const muzzle = el('g', { transform: `translate(${sx} ${sy}) rotate(${ang})` });
+      muzzle.appendChild(el('path', { d: 'M3 0L8.6 -2 6.8 0 8.6 2Z', class: 'muzzle-flame' }));
+      g.appendChild(muzzle);
+
+      // Mermi: uçuş yönüne dönük küçük bir kapsül.
+      const shell = el('g', { class: 'shell' });
+      shell.appendChild(el('ellipse', { rx: '2.1', ry: '.85', class: 'shell-body', transform: `rotate(${ang})` }));
+      shell.appendChild(el('animateMotion', { dur: '.42s', fill: 'freeze', path: d }));
+      g.appendChild(shell);
+
       svg.appendChild(g);
-      setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 620);
+      setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 700);
     }
+    if (fired) setTimeout(() => boom(targetKey, 'hit'), 400);
+  }
+
+  /**
+   * PATLAMA — çekirdek parlama + genişleyen şok halkası + şarapnel + duman.
+   * kind: 'hit' (küçük) | 'capture' (orta) | 'big' (bombardıman).
+   * Tümü CSS animasyonu: DOM bir kez kurulur, tarayıcı kompozitörü oynatır.
+   */
+  function boom(k, kind) {
+    if (reduceMotion) return;
+    const node = cellNodes.get(k);
+    if (!node) return;
+    const g = el('g', {
+      class: 'boom' + (kind === 'big' ? ' boom-big' : ''),
+      transform: `translate(${node.center[0]} ${node.center[1]})`
+    });
+    g.appendChild(el('circle', { r: '5.5', class: 'boom-flash' }));
+    g.appendChild(el('circle', { r: '6', class: 'boom-ring' }));
+
+    const frags = kind === 'big' ? 9 : 6;
+    for (let i = 0; i < frags; i++) {
+      const a = (Math.PI * 2 * i) / frags + Math.random() * 0.8;
+      const dist = (kind === 'big' ? 12 : 8) + Math.random() * 6;
+      const p = el('circle', { r: (0.7 + Math.random() * 0.7).toFixed(2), class: 'boom-frag' });
+      p.style.setProperty('--dx', (Math.cos(a) * dist).toFixed(1) + 'px');
+      p.style.setProperty('--dy', (Math.sin(a) * dist).toFixed(1) + 'px');
+      p.style.animationDelay = Math.round(Math.random() * 70) + 'ms';
+      g.appendChild(p);
+    }
+    for (let i = 0; i < (kind === 'big' ? 4 : 2); i++) {
+      const s = el('circle', {
+        cx: (Math.random() * 8 - 4).toFixed(1), cy: (Math.random() * 4 - 2).toFixed(1),
+        r: (2.4 + Math.random() * 2).toFixed(1), class: 'boom-smoke'
+      });
+      s.style.animationDelay = (110 + i * 140) + 'ms';
+      g.appendChild(s);
+    }
+    svg.appendChild(g);
+    setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 1500);
+  }
+
+  /**
+   * BOMBARDIMAN ANİMASYONU — kavisli bir obüs mermisi ve büyük patlama.
+   * fromKey verilmezse (ör. uzaktaki bir botun vuruşu) yalnızca patlama oynar.
+   */
+  function strikeFx(targetKey, fromKey) {
+    if (reduceMotion) return;
+    const tgt = cellNodes.get(targetKey);
+    if (!tgt) return;
+    const src = fromKey ? cellNodes.get(fromKey) : null;
+    if (!src) { boom(targetKey, 'big'); return; }
+    const [sx, sy] = src.center, [tx, ty] = tgt.center;
+    const mx = (sx + tx) / 2;
+    const my = (sy + ty) / 2 - Math.max(20, Math.hypot(tx - sx, ty - sy) * 0.5);
+    const d = `M${sx},${sy} Q${mx},${my} ${tx},${ty}`;
+
+    const g = el('g', { class: 'tracer' });
+    g.appendChild(el('path', { d, class: 'arc-trail', fill: 'none' }));
+    const shell = el('g', { class: 'shell' });
+    shell.appendChild(el('ellipse', { rx: '2.3', ry: '1', class: 'shell-body' }));
+    const mot = el('animateMotion', { dur: '.62s', fill: 'freeze', rotate: 'auto', path: d });
+    shell.appendChild(mot);
+    g.appendChild(shell);
+    svg.appendChild(g);
+    setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 950);
+    setTimeout(() => boom(targetKey, 'big'), 580);
   }
 
   function startEmbers() {
@@ -3926,7 +4403,7 @@ function createRenderer(opts) {
   }
 
   return {
-    setWorld, update, flash, tracers, startEmbers, destroy,
+    setWorld, update, flash, tracers, boom, strikeFx, startEmbers, destroy,
     resetView, centerOn, focusOn,
     zoomIn: () => centerZoom(1 / 1.25),
     zoomOut: () => centerZoom(1.25),
@@ -3947,7 +4424,7 @@ const __m_src_client_ui_js = (function(){
  */
 const {
   RESOURCE_META, TERRAINS, TERRAIN_IDS, COMMIT_STEPS,
-  DECOY, SCOUT, FORT, FORTIFY, TICK_MS
+  DECOY, SCOUT, FORT, FORTIFY, STRIKE, TICK_MS
 } = __m_src_core_constants_js;
 const { planSource, defenseMultOf, terrainOf } = __m_src_core_rules_js;
 const { neighborKeys } = __m_src_core_hex_js;
@@ -3956,6 +4433,8 @@ const { TERRAIN_GLYPHS, TERRAIN_STROKED, RESOURCE_GLYPHS, RESOURCE_STROKED } = _
 /** Komut çubuğu simgeleri — 24×24, emoji yerine tutarlı SVG. */
 const MODE_ICONS = {
   attack:      '<path d="M4 20 L14 10 M14 4h6v6 M20 4l-9 9 M4 6l5 5 M8 16l-4 4"/>',
+  // Topçu: tekerlek üstünde yukarı bakan namlu + ağız alevi
+  strike:      '<path d="M4 21h16"/><circle cx="8.5" cy="16.5" r="2.7"/><path d="M10.6 14.4L18 5.2"/><path d="M16.2 3.6l4.2 3.4-1.9 2.3"/><path d="M4.5 12.5l2.8 2.2"/>',
   decoyWeak:   '<path d="M3 8h18v4.5c0 3.6-4 6.5-9 6.5s-9-2.9-9-6.5z"/><path d="M7 11.5h2.6M14.4 11.5H17"/>',
   decoyStrong: '<path d="M3.5 9.5l11-4v13l-11-4z"/><path d="M15.5 8c2.2.8 3.6 2.2 3.6 4s-1.4 3.2-3.6 4"/>',
   scout:       '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.4 15.4L21 21"/>',
@@ -3970,13 +4449,14 @@ function modeIcon(id){
 /** Eylem kipleri — her biri bir komut tipine ve bir hedef kısıtına karşılık gelir. */
 const MODES = {
   attack:      { key: 'attack',  label: 'Saldırı',      hint: 'Sınırındaki bir bölgeye tıkla — ona komşu TÜM bölgelerinden kuvvet toplanır.' },
+  strike:      { key: 'strike',  label: 'Bombardıman',  cost: STRIKE.cost,  hint: 'Menzildeki (2 bölge) bir düşman bölgesini topa tut: garnizonu −' + STRIKE.damage + ', toprak el değiştirmez, cephen boşalmaz. Kale hasarı yarılar.' },
   decoyWeak:   { key: 'decoy',   label: 'Zayıf Göster', cost: DECOY.cost,   mode: 'weak',   own: true, hint: 'Kendi bölgeni seç: düşman burayı bomboş sanır ve gerçek gücünün üstüne gelir.' },
   decoyStrong: { key: 'decoy',   label: 'Güçlü Göster', cost: DECOY.cost,   mode: 'strong', own: true, hint: 'Kendi bölgeni seç: düşman burayı yenilmez sanır ve saldırmaktan vazgeçer.' },
   scout:       { key: 'scout',   label: 'Casus',        cost: SCOUT.cost,   hint: 'Herhangi bir bölgeyi seç: çevresindeki GERÇEK güçler açığa çıkar, blöfler delinir.' },
   fort:        { key: 'fort',    label: 'Kale',         cost: FORT.cost,    own: true, hint: 'Kendi bölgene kale kur: savunma ×1.6, tavan ve büyüme artar.' },
   fortify:     { key: 'fortify', label: 'Tahkimat',     cost: FORTIFY.cost, own: true, hint: 'Kendi bölgene anında +' + FORTIFY.amount + ' güç. Acil durum düğmesi.' }
 };
-const MODE_ORDER = ['attack', 'decoyWeak', 'decoyStrong', 'scout', 'fort', 'fortify'];
+const MODE_ORDER = ['attack', 'strike', 'decoyWeak', 'decoyStrong', 'scout', 'fort', 'fortify'];
 function formatTime(seconds) {
   const total = Math.max(0, Math.floor(seconds));
   return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
@@ -4222,6 +4702,11 @@ function createUI(refs) {
         case 'fort':
           html = `<b style="color:${colorOf(e.by)}">${escapeHtml(nameOf(e.by))}</b> kale kurdu`;
           break;
+        case 'strike':
+          html = e.from === null || e.from === undefined
+            ? `<b style="color:${colorOf(e.by)}">${escapeHtml(nameOf(e.by))}</b> tarafsız bölgeyi topa tuttu`
+            : `<b style="color:${colorOf(e.by)}">${escapeHtml(nameOf(e.by))}</b> → <span style="color:${colorOf(e.from)}">${escapeHtml(nameOf(e.from))}</span> bölgesini topa tuttu`;
+          break;
         case 'eliminated':
           html = `<b style="color:${colorOf(e.by)}">${escapeHtml(nameOf(e.by))}</b> elendi`;
           d.classList.add('big');
@@ -4396,6 +4881,8 @@ const sfx = {
 
   /** Kuşatma başlıyor: alçalan bir davul + toz. */
   assault()  { tone(150, 0.20, 'square', 0.10, 0, 80); noise(0.18, 0.10, 900); },
+  /** Bombardıman: düşen mermi ıslığı + ağır patlama. */
+  strike()   { tone(1100, 0.42, 'sine', 0.06, 0, 220); noise(0.4, 0.24, 420); tone(58, 0.5, 'sine', 0.26, 0.3, 36); },
   /** Bölge alındı: yükselen ikili. */
   capture()  { tone(520, 0.10, 'triangle', 0.20); tone(780, 0.14, 'triangle', 0.16, 0.07); },
   /** Bölge kaybedildi. */
@@ -4439,6 +4926,7 @@ const __m_src_client_session_js = (function(){
  */
 const { bridgeMapOf, viewFor, endReasonText } = __m_src_core_match_js;
 const { frontierKeys } = __m_src_core_rules_js;
+const { parseKey } = __m_src_core_hex_js;
 const { createRenderer } = __m_src_client_render_js;
 const { createUI, previewAssault, MODES } = __m_src_client_ui_js;
 const { sfx } = __m_src_client_audio_js;
@@ -4515,6 +5003,23 @@ function startSession(adapter, refs) {
       return;
     }
 
+    if (def.key === 'strike') {
+      if (cell.o === adapter.youId) {
+        renderer.flash(k, 'deny'); sfx.deny();
+        ui.toast('Kendi bölgeni bombalayamazsın.', 'bad');
+        return;
+      }
+      // Animasyon kaynağı: hedefe en yakın kendi bölgen (yalnızca görsel;
+      // kural motoru menzili kendisi doğrular).
+      const from = nearestOwnKey(state, k);
+      send({ type: 'strike', cellKey: k }, () => {
+        sfx.strike();
+        renderer.strikeFx(k, from);
+        ui.setMode('attack');
+      });
+      return;
+    }
+
     // Kaynak harcayan kipler
     if (def.own && cell.o !== adapter.youId) {
       renderer.flash(k, 'deny'); sfx.deny();
@@ -4569,7 +5074,8 @@ function startSession(adapter, refs) {
     '3': () => ui.setFraction(0.75), '4': () => ui.setFraction(1.0),
     'q': () => ui.setMode('decoyWeak'), 'w': () => ui.setMode('decoyStrong'),
     'e': () => ui.setMode('scout'), 'r': () => ui.setMode('fort'),
-    'f': () => ui.setMode('fortify'), 'escape': () => ui.setMode('attack'),
+    'f': () => ui.setMode('fortify'), 'b': () => ui.setMode('strike'),
+    'escape': () => ui.setMode('attack'),
     '+': () => renderer.zoomIn(), '-': () => renderer.zoomOut(), '0': () => renderer.resetView()
   };
   function onKey(e) {
@@ -4735,17 +5241,60 @@ function startSession(adapter, refs) {
     for (const k in state.cells) lastOwners.set(k, state.cells[k].o);
   }
 
+  /** Bombardıman animasyonu için: hedefe en yakın kendi bölgen (salt görsel). */
+  function nearestOwnKey(state, targetKey) {
+    const t = parseKey(targetKey);
+    let best = null, bestD = Infinity;
+    for (const k in state.cells) {
+      if (state.cells[k].o !== adapter.youId) continue;
+      const p = parseKey(k);
+      const dq = p[0] - t[0], dr = p[1] - t[1];
+      const d = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+      if (d < bestD) { bestD = d; best = k; }
+    }
+    return best;
+  }
+
+  /**
+   * Olay akışından görsel efekt üret: botların bombardımanları da haritada
+   * patlasın. Kendi vuruşun komut anında animasyonlanır, burada atlanır.
+   */
+  let lastLogTick = null;
+  function processLogEffects(state) {
+    if (lastLogTick === null) { lastLogTick = state.tick; return; }
+    for (const e of state.log || []) {
+      if (e.t <= lastLogTick) continue;
+      if (e.type === 'strike' && e.key && e.by !== adapter.youId) {
+        renderer.strikeFx(e.key, null);
+        if (e.from === adapter.youId) sfx.strike();   // topa tutulan sensin: duy
+      }
+    }
+    lastLogTick = state.tick;
+  }
+
   function detectChanges(state) {
     if (!lastOwners.size) { snapshotOwners(state); return; }
+    processLogEffects(state);
     let gained = 0, lost = 0;
     for (const k in state.cells) {
-      const now = state.cells[k].o;
+      const c = state.cells[k];
+      const now = c.o;
       const before = lastOwners.get(k);
       if (before === now) continue;
       lastOwners.set(k, now);
+      // Başkent yerleşimi savaş değildir — açılışta yedi patlama olmasın.
+      const placement = (before === null || before === undefined) && c.cap;
       if (now === adapter.youId) { gained++; renderer.flash(k, 'capture'); }
       else if (before === adapter.youId) { lost++; renderer.flash(k, 'hit'); }
       else renderer.flash(k, 'capture');
+      // Patlama yalnızca GERÇEK muharebelerde: bir oyuncudan alınan toprak ya da
+      // senin dahil olduğun her el değişimi. Botların tarafsız toprağa erken
+      // yayılması sessiz kalır — yoksa açılış bir havai fişek gösterisine döner.
+      const combat = before !== null && before !== undefined;
+      const involvesYou = now === adapter.youId || before === adapter.youId;
+      if (!placement && (combat || involvesYou)) {
+        renderer.boom(k, before === adapter.youId ? 'hit' : 'capture');
+      }
     }
     if (gained) sfx.capture();
     if (lost) sfx.lost();
@@ -5794,14 +6343,34 @@ function attachScrollHint(host, label) {
   }
 
   host.addEventListener('scroll', update, { passive: true });
-  const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
-  if (ro) ro.observe(host);
   window.addEventListener('resize', update);
-  // İçerik sonradan dolabilir (paneller her tur yeniden çiziliyor).
+
+  /**
+   * İÇERİĞİ de izle, yalnızca kabı değil.
+   *
+   * Kabın boyu sabittir (ekran yüksekliği), değişen şey İÇERİĞİN boyudur.
+   * Yalnızca kabı gözlemlemek sinsi bir yanlış pozitif üretiyordu: ipucu
+   * bağlandığı anda web fontu ("Ma Shan Zheng") henüz inmemiş oluyor, metin
+   * geçici olarak daha uzun sarıyor, taşma ölçülüyor ve "devamı var" yazısı
+   * açılıyordu. Font gelince taşma sıfırlanıyor ama kimse yeniden ölçmediği
+   * için ipucu ekranda kalıyordu — hiçbir yere kaymayan bir menüde.
+   */
+  const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
+  if (ro) {
+    ro.observe(host);
+    for (const child of host.children) {
+      if (child !== cue) ro.observe(child);
+    }
+  }
   const mo = typeof MutationObserver !== 'undefined' ? new MutationObserver(update) : null;
   if (mo) mo.observe(host, { childList: true, subtree: true });
 
   update();
+  // Yazı tipleri indikten ve ilk düzen oturduktan sonra bir kez daha ölç.
+  if (typeof requestAnimationFrame === 'function') requestAnimationFrame(update);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(update).catch(() => {});
+  setTimeout(update, 600);
+
   return () => {
     if (ro) ro.disconnect();
     if (mo) mo.disconnect();
@@ -5830,10 +6399,12 @@ const __m_src_client_boot_js = (function(){
  */
 const { createIdentity } = __m_src_client_identity_js;
 const { createBackdrop } = __m_src_client_backdrop_js;
+const { createBanner } = __m_src_client_banner_js;
 const { bootLocal } = __m_src_client_local_js;
 const { bootOnline } = __m_src_client_online_js;
 const { sfx } = __m_src_client_audio_js;
 const { createRouter, attachScrollHint } = __m_src_client_router_js;
+const { BANNERS } = __m_src_core_constants_js;
 const $ = (id) => document.getElementById(id);
 
 const FIREBASE_VERSION = '10.14.1';
@@ -5855,10 +6426,19 @@ function bootApp() {
   const identity = createIdentity({
     nameInput: $('nameInput'),
     swatches: $('swatches'),
-    onPick: () => { sfx.unlock(); sfx.select(); }
+    // Sancak seçimi menüdeki kumaşı ANINDA boyar: seçtiğin renk soyut bir
+    // ayar değil, ekranda dalgalanan kendi bayrağın oluyor.
+    onPick: (i) => {
+      sfx.unlock(); sfx.select();
+      const b = BANNERS[i];
+      if (b) banner.setColors(b.light, b.dark);
+    }
   });
 
   const backdrop = createBackdrop($('backdrop'));
+  const banner = createBanner($('banner'));
+  // Kayıtlı sancak rengiyle başla (localStorage'dan geri yüklenmiş olabilir).
+  if (identity.banner) banner.setColors(identity.banner.light, identity.banner.dark);
 
   let local = null;
   let online = null;
@@ -5880,7 +6460,8 @@ function bootApp() {
    */
   function showScreen(name, opts) {
     document.body.dataset.screen = name;
-    if (name === 'menu') backdrop.start(); else backdrop.stop();
+    if (name === 'menu') { backdrop.start(); banner.start(); }
+    else { backdrop.stop(); banner.stop(); }
     // Ekranın kendi kaydırması varsa başa sar — önceki ekranın konumu kalmasın.
     const el = $({
       'menu': 'screenMenu', 'local-setup': 'screenLocalSetup',

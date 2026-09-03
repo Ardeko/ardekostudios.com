@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+import Aurora from './Aurora';
 import Viewport from './Viewport';
 import { useLang } from '../lib/i18n';
 
@@ -147,6 +148,12 @@ export default function Hero() {
       ref={ref}
       className="adk-vh-screen relative flex flex-col justify-center items-center text-center px-4 pt-28 pb-20 lg:pt-0 lg:pb-0 overflow-hidden"
     >
+      {/* Zemin katmanı — DOM'da ilk, yani konumlanmış kardeşlerinin
+          hepsinin altında boyanıyor. Opak çiziyor (kenarları zaten
+          #05070F'e eriyor), o yüzden içeriğin `relative z-10` olması
+          şart; bkz. CLAUDE.md, Spotlight ile aynı kural. */}
+      <Aurora />
+
       <Particles />
 
       {/* Glow'lar gradient, blur DEĞİL — bilerek.
@@ -180,7 +187,7 @@ export default function Hero() {
         style={{ background: 'radial-gradient(circle, #9333ea 0%, transparent 70%)' }}
       />
 
-      <motion.div style={{ y, opacity }} className="flex flex-col items-center">
+      <motion.div style={{ y, opacity }} className="relative z-10 flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.5, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

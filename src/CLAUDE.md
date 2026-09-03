@@ -247,6 +247,40 @@ prompt gelirse:
   `--magnet-x/y` JS'te set edilip CSS'te hiç okunmuyor (ölü kod); burada
   transform zincirine eklendi.
 
+### `Aurora.jsx` — hero arka planı (2026-09-03)
+
+21st.dev **"Velaris"** (simplex-noise WebGL gradyan) uyarlandı;
+`Hero.jsx`'te `<Particles />`'ın da altında, en arkadaki zemin katmanı.
+Kullanıcı dört arka plan adayı getirdi, bu seçildi: tek tam ekran quad +
+piksel başına üç noise, yani dördünün en ucuzu ve renkleri prop.
+
+Diğer üçü neden reddedildi:
+
+| Aday | Neden |
+|---|---|
+| beams-background | Kare başına **üç tam ekran blur** (canvas `ctx.filter:blur(35px)` + CSS `blur(15px)` + animasyonlu `backdropFilter:blur(50px)`) — WebKit'te büyük ölçüde CPU, `feTurbulence` vakasının aynısı. Ayrıca `ctx.scale(dpr,dpr)` her resize'da transform sıfırlanmadan çağrılıyor (iOS adres çubuğu → ölçek birikiyor) ve ışınlar cihaz pikseliyle üretilip CSS pikseliyle çiziliyor. `motion` paketi istiyor, sende `framer-motion` var — aynı kütüphanenin iki adı. |
+| atc-shader | Piksel başına 50 iterasyonlu ray döngüsü, prop yok, renk kontrolü yok (sabit camgöbeği tünel — indigo paletle çakışıyor), sadece WebGL2, ekranda `<pre>` debug katmanı bırakıyor. |
+| blackhole-hero-section | Piksel başına 300 adım ray-marching + temporal accumulation + bright-pass + iki geçiş blur + composite = kare başına 5 geçiş. Ayrıca arka plan değil, kendi scrim'i olan komple bir hero — Hero başlığı ve `Viewport` ile yarışır. |
+
+Upstream'de düzeltilenler (dosya başındaki yorumda madde madde): `colors`
+dizisi prop + deps olduğu için **her render'da WebGL context'i baştan
+kuruluyordu**; shader derleme kontrolü yoktu (patlarsa sessiz siyah ekran,
+şimdi `null` dönüp sitenin zeminini bırakıyor); vignette siyaha eriyip
+hero'nun altında bant bırakıyordu, artık `u_bg`'ye eriyor.
+
+Bütçe önlemleri: rAF sadece hero ekrandayken + sekme öndeyken
+(IntersectionObserver + visibilitychange), `prefers-reduced-motion`'da tek
+kare, render ölçeği 0.65 / dokunmatikte 0.5, kurulum `requestIdleCallback`
+ile Preloader'ın dışına ertelenmiş, `webglcontextlost/restored` ele
+alınmış. Cleanup'ta **`loseContext()` çağırma** — StrictMode effect'i iki
+kez çalıştırıyor, ikinci kurulum ölü context'e düşer.
+
+⚠️ Hero'nun içerik sarmalayıcısına `relative z-10` verildi. Aurora opak
+çiziyor ve konumlanmış bir kardeş; `z-10` olmadan statik metnin üstüne
+biner. `Spotlight` ile birebir aynı kural.
+
+Şiddet/hız tek yerden: `<Aurora strength={0.55} speed={0.45} />`.
+
 **Reddedilenler ve nedenleri** (tekrar gündeme gelirse):
 
 | Bileşen | Neden |
