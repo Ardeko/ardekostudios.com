@@ -46,6 +46,31 @@
 
   --r-sm:8px; --r-md:12px; --r-lg:16px;
   --ease:cubic-bezier(.22,.8,.3,1);
+
+  --theme-brass:#c9a15a;
+  --theme-bright:#e9c67e;
+  --theme-dim:#8a6f3e;
+  --theme-parchment:#ece0c4;
+  --theme-muted:#9d9179;
+  --theme-line:rgba(201,161,90,.22);
+  --theme-line-strong:rgba(201,161,90,.42);
+  --theme-panel:#15100a;
+  --theme-card-a:rgba(35,26,16,.86);
+  --theme-card-b:rgba(18,13,8,.86);
+  --theme-card-hover-a:rgba(52,39,22,.9);
+  --theme-card-hover-b:rgba(26,19,11,.9);
+  --theme-card-ink:#f6f1e6;
+  --theme-card-muted:#c6beac;
+  --theme-panel-a:#1d1610;
+  --theme-panel-b:#120d08;
+  --theme-cta:#c9a15a;
+  --theme-cta-ink:#120d08;
+  --theme-cta-hover:#e9c67e;
+  --theme-glyph-bg:rgba(201,161,90,.10);
+  --theme-glow:rgba(233,198,126,.28);
+  --theme-swatch-ring:rgba(233,198,126,.35);
+  --theme-ghost-hover:rgba(201,161,90,.14);
+  --theme-inset:rgba(201,161,90,.12);
 }
 
 /* ── 1 · taban ─────────────────────────────────────────────────────────── */
@@ -93,31 +118,49 @@ body[data-screen="game"]        #screenGame{ display:block; }
 @keyframes screenIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
 
 /* ── 3 · ana menü ──────────────────────────────────────────────────────── */
-.screen-menu{position:relative;height:100dvh;overflow-y:auto;overflow-x:hidden;}
+body[data-screen="menu"],
+body[data-screen="local-setup"],
+body[data-screen="online"],
+body[data-screen="lobby"]{
+  background:radial-gradient(120% 100% at 50% 30%, var(--banner-glow, #16575c) 0%, var(--banner-mid, #0b2e32) 55%, var(--banner-deep, #04161a) 100%);
+  --brass:var(--theme-brass);
+  --brass-bright:var(--theme-bright);
+  --brass-dim:var(--theme-dim);
+  --parchment:var(--theme-parchment);
+  --parchment-dim:var(--theme-muted);
+  --line:var(--theme-line);
+  --line-strong:var(--theme-line-strong);
+  --bg-panel:var(--theme-panel);
+  color:var(--parchment);
+}
+
+.screen-menu{position:relative;height:100dvh;overflow-y:auto;overflow-x:hidden;z-index:2;}
+
+/**
+ * SAHNE — kinetik dokuma + harita dokusu.
+ * Menü ekranının içinde değil, gövdenin altında durur ki kurulum ve lobi
+ * panelleri de aynı kumaşın önünde otursun. Oyun tahtası sahneyi tamamen örter.
+ */
+.stage{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+}
+body[data-screen="game"] .stage{visibility:hidden;}
 
 .backdrop{
-  position:fixed;inset:-6%;width:112%;height:112%;
-  opacity:.30;filter:blur(2.5px) saturate(.75);
-  pointer-events:none;z-index:0;
+  position:absolute;inset:-6%;width:112%;height:112%;
+  opacity:.18;filter:blur(2.5px) saturate(.7);
 }
 .bd-hex{transition:fill 2.4s var(--ease);}
 
-/**
- * MENÜ SANCAĞI — rüzgârda dalgalanan, oyuncunun kendi renginde kumaş.
- * Harita dokusunun üstünde, içeriğin altında durur; hafif bulanıklık ve
- * karışım modu onu arka plan yapar, dikkat çeken bir nesne değil.
- */
 .banner{
-  position:fixed;inset:0;width:100%;height:100%;
-  z-index:1;pointer-events:none;
-  opacity:.34;filter:blur(0.4px);
-  mix-blend-mode:soft-light;
+  position:absolute;inset:0;width:100%;height:100%;
+  opacity:.92;
 }
 .backdrop-veil{
-  position:fixed;inset:0;pointer-events:none;z-index:2;
+  position:absolute;inset:0;
   background:
-    radial-gradient(ellipse 70% 55% at 50% 42%, transparent 0%, rgba(13,9,6,.72) 62%, var(--bg-deep) 100%),
-    linear-gradient(180deg, rgba(13,9,6,.55) 0%, transparent 22%, transparent 74%, var(--bg-deep) 100%);
+    radial-gradient(ellipse 62% 56% at 50% 44%, transparent 0%, var(--banner-veil, rgba(6,18,22,.42)) 72%, var(--banner-deep, #04161a) 100%),
+    linear-gradient(180deg, var(--banner-veil, rgba(6,18,22,.28)) 0%, transparent 22%, transparent 74%, var(--banner-deep, #04161a) 100%);
 }
 
 .menu-inner{
@@ -133,15 +176,20 @@ body[data-screen="game"]        #screenGame{ display:block; }
   font-family:var(--display);font-weight:400;
   font-size:clamp(3.4rem,13vw,5.4rem);line-height:.9;margin:0;
   color:var(--brass-bright);letter-spacing:.06em;
-  text-shadow:0 0 40px rgba(233,198,126,.28), 0 4px 30px rgba(0,0,0,.6);
+  text-shadow:0 0 40px var(--theme-glow), 0 4px 30px rgba(0,0,0,.6);
+  transition:color .25s var(--ease);
 }
 .menu-sub{
   font-size:.7rem;letter-spacing:.42em;text-transform:uppercase;
-  color:var(--parchment-dim);margin:14px 0 0;
+  color:var(--theme-card-ink);margin:14px 0 0;
+  text-shadow:0 1px 10px rgba(0,0,0,.85), 0 0 18px rgba(0,0,0,.45);
+  opacity:.88;
 }
 .menu-tagline{
   font-family:var(--serif);font-style:italic;font-size:.95rem;
-  color:var(--brass);margin:12px 0 0;opacity:.9;
+  color:var(--theme-card-ink);margin:12px 0 0;
+  text-shadow:0 1px 10px rgba(0,0,0,.85), 0 0 18px rgba(0,0,0,.45);
+  opacity:.9;
 }
 
 .menu-modes{display:flex;flex-direction:column;gap:12px;}
@@ -149,54 +197,79 @@ body[data-screen="game"]        #screenGame{ display:block; }
   display:flex;align-items:center;gap:16px;width:100%;text-align:left;
   padding:18px 20px;border-radius:var(--r-lg);cursor:pointer;
   border:1px solid var(--line);
-  background:linear-gradient(140deg, rgba(35,26,16,.86), rgba(18,13,8,.86));
-  backdrop-filter:blur(6px);
-  color:var(--parchment);
+  background:linear-gradient(140deg, var(--theme-card-a), var(--theme-card-b));
+  backdrop-filter:blur(10px);
+  color:var(--theme-card-ink);
   transition:border-color .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
 }
 .mode-card:hover{
   border-color:var(--brass);
-  background:linear-gradient(140deg, rgba(52,39,22,.9), rgba(26,19,11,.9));
+  background:linear-gradient(140deg, var(--theme-card-hover-a), var(--theme-card-hover-b));
   transform:translateY(-2px);
 }
 .mode-card:active{transform:translateY(0);}
 .mc-glyph{
   flex-shrink:0;width:44px;height:44px;border-radius:var(--r-md);
   display:grid;place-items:center;color:var(--brass-bright);
-  background:rgba(201,161,90,.10);border:1px solid var(--line);
+  background:var(--theme-glyph-bg);border:1px solid var(--line);
 }
 .mc-glyph svg{width:24px;height:24px;}
 .mc-body{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0;}
-.mc-title{font-family:var(--serif);font-size:1.12rem;color:var(--brass-bright);}
-.mc-desc{font-size:.78rem;color:var(--parchment-dim);line-height:1.5;}
-.mc-go{color:var(--brass);font-size:1.2rem;opacity:.5;transition:transform .2s var(--ease),opacity .2s;}
+.mc-title{
+  font-family:var(--serif);font-size:1.12rem;color:var(--theme-card-ink);
+  text-shadow:0 1px 2px rgba(0,0,0,.55);
+}
+.mc-desc{font-size:.78rem;color:var(--theme-card-muted);line-height:1.5;}
+.mc-go{color:var(--theme-card-ink);font-size:1.2rem;opacity:.62;transition:transform .2s var(--ease),opacity .2s;}
 .mode-card:hover .mc-go{transform:translateX(4px);opacity:1;}
 
 .menu-identity{
   display:flex;flex-direction:column;gap:12px;
   padding:16px 18px;border-radius:var(--r-md);
-  border:1px solid var(--line);background:rgba(0,0,0,.30);backdrop-filter:blur(6px);
+  border:1px solid var(--line);
+  background:linear-gradient(140deg, var(--theme-card-a), var(--theme-card-b));
+  backdrop-filter:blur(10px);
 }
 .mi-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
 .mi-label{
   font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--parchment-dim);min-width:76px;
+  color:var(--theme-card-muted);min-width:76px;
 }
 .mi-input{
-  flex:1;min-width:150px;background:rgba(0,0,0,.35);
+  flex:1;min-width:150px;background:rgba(0,0,0,.45);
   border:1px solid var(--line);border-radius:var(--r-sm);
-  color:var(--parchment);font-size:.88rem;padding:9px 12px;
+  color:var(--theme-card-ink);font-size:.88rem;padding:9px 12px;
 }
 .mi-input:focus{outline:none;border-color:var(--brass);}
 
-.swatches{display:flex;gap:8px;flex-wrap:wrap;}
+.swatches{display:flex;gap:11px;flex-wrap:wrap;align-items:flex-end;}
 .swatch{
-  width:26px;height:26px;border-radius:50%;padding:0;cursor:pointer;
-  border:2px solid rgba(255,255,255,.14);
-  transition:transform .15s var(--ease),border-color .15s;
+  --swatch-field:#8a5a18;
+  --swatch-pair:#f4ead2;
+  width:26px;height:38px;padding:0;cursor:pointer;
+  border:0;background:transparent;position:relative;
+  filter:drop-shadow(0 2px 2px rgba(0,0,0,.42));
+  transition:transform .15s var(--ease),filter .15s var(--ease);
 }
-.swatch:hover{transform:scale(1.15);}
-.swatch.selected{border-color:#fff;box-shadow:0 0 0 3px rgba(233,198,126,.35);}
+.swatch::before{
+  content:'';position:absolute;left:2px;right:2px;top:0;height:3px;
+  border-radius:1px;background:var(--swatch-pair);
+  box-shadow:0 1px 0 rgba(0,0,0,.35);
+}
+.swatch::after{
+  content:'';position:absolute;left:4px;right:4px;top:3px;height:33px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16), transparent 38%),
+    linear-gradient(180deg, var(--swatch-pair) 0 16%, var(--swatch-field) 16% 100%);
+  clip-path:polygon(0 0, 100% 0, 100% 76%, 50% 100%, 0 76%);
+  box-shadow:inset 0 0 0 1.5px var(--swatch-pair);
+}
+.swatch:hover{transform:translateY(-2px) rotate(-7deg);}
+.swatch.selected{
+  transform:translateY(-1px) scale(1.08);
+  filter:drop-shadow(0 0 4px var(--theme-swatch-ring)) drop-shadow(0 0 0 1.5px #fff) drop-shadow(0 2px 2px rgba(0,0,0,.42));
+}
+.swatch.selected:hover{transform:translateY(-2px) rotate(-7deg) scale(1.08);}
 
 .menu-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;}
 .menu-brand{
@@ -210,11 +283,12 @@ body[data-screen="game"]        #screenGame{ display:block; }
   padding:9px 14px;border-radius:var(--r-sm);cursor:pointer;
   transition:background .18s,border-color .18s;
 }
-.ghost-btn:hover{background:rgba(201,161,90,.14);border-color:var(--brass);}
+.ghost-btn:hover{background:var(--theme-ghost-hover);border-color:var(--brass);}
 
 /* ── 4 · panel ekranları (kurulum · çevrimiçi · lobi) ──────────────────── */
 /* display BELİRTMEZ — bkz. ekran mimarisi bloğundaki gerekçe. */
 .screen-panel{
+  position:relative;z-index:2;
   height:100dvh;overflow-y:auto;
   align-content:center;justify-items:center;
   padding:clamp(20px,5vh,56px) 18px;
@@ -223,8 +297,8 @@ body[data-screen="game"]        #screenGame{ display:block; }
   width:100%;max-width:440px;position:relative;
   padding:26px 26px 24px;border-radius:var(--r-lg);
   border:1px solid var(--line);
-  background:linear-gradient(160deg,#1d1610,#120d08);
-  box-shadow:0 24px 60px rgba(0,0,0,.55);
+  background:linear-gradient(160deg, var(--theme-panel-a), var(--theme-panel-b));
+  box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 0 0 1px var(--theme-inset);
 }
 .panel-back{
   background:none;border:none;color:var(--parchment-dim);cursor:pointer;
@@ -233,15 +307,15 @@ body[data-screen="game"]        #screenGame{ display:block; }
 .panel-back:hover{color:var(--brass-bright);}
 /* Hiyerarşi: başlık büyük ve tek satır, açıklama küçük ve kısa. */
 .panel-title{font-family:var(--serif);font-size:1.45rem;margin:0 0 5px;color:var(--brass-bright);font-weight:400;letter-spacing:.01em;}
-.panel-lead{font-size:.8rem;color:var(--parchment-dim);line-height:1.55;margin:0 0 20px;}
-.panel-lead b{color:var(--parchment);}
+.panel-lead{font-size:.8rem;color:var(--theme-card-muted);line-height:1.55;margin:0 0 20px;}
+.panel-lead b{color:var(--theme-card-ink);}
 
 /* Alanlar arası boşluk tek bir ölçüye bağlı: gözle "orantısız" görünmesin. */
 .field{margin-bottom:16px;}
 .field-label{
   display:flex;align-items:baseline;gap:8px;
   font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--parchment-dim);margin-bottom:7px;
+  color:var(--theme-card-muted);margin-bottom:7px;
 }
 .field-label .opt{opacity:.5;letter-spacing:.04em;text-transform:none;font-size:.66rem;}
 .field-row{display:flex;align-items:center;gap:14px;}
@@ -249,10 +323,10 @@ body[data-screen="game"]        #screenGame{ display:block; }
   font-family:var(--mono);font-size:1.15rem;color:var(--brass-bright);
   min-width:26px;text-align:right;
 }
-.field-note{font-size:.7rem;color:var(--parchment-dim);margin:6px 0 0;line-height:1.45;min-height:1.45em;}
+.field-note{font-size:.7rem;color:var(--theme-card-muted);margin:6px 0 0;line-height:1.45;min-height:1.45em;}
 .field-input{
-  width:100%;background:rgba(0,0,0,.32);border:1px solid var(--line);
-  border-radius:var(--r-sm);color:var(--parchment);font-size:.86rem;padding:10px 12px;
+  width:100%;background:rgba(0,0,0,.42);border:1px solid var(--line);
+  border-radius:var(--r-sm);color:var(--theme-card-ink);font-size:.86rem;padding:10px 12px;
 }
 .field-input:focus{outline:none;border-color:var(--brass);}
 .field-input.code{
@@ -265,15 +339,15 @@ input[type=range]{
 
 .cta{
   display:block;width:100%;margin-top:4px;padding:13px 20px;border-radius:var(--r-md);cursor:pointer;
-  background:var(--brass);border:1px solid var(--brass);color:#120d08;
+  background:var(--theme-cta);border:1px solid var(--theme-cta);color:var(--theme-cta-ink);
   font-size:.7rem;font-weight:800;letter-spacing:.18em;
-  transition:background .18s,transform .12s;
+  transition:background .18s,transform .12s,color .18s,border-color .18s;
 }
-.cta:hover{background:var(--brass-bright);}
+.cta:hover{background:var(--theme-cta-hover);}
 .cta:active{transform:translateY(1px);}
 .cta:disabled{opacity:.4;cursor:not-allowed;}
 .cta.secondary{background:transparent;color:var(--brass-bright);}
-.cta.secondary:hover{background:rgba(201,161,90,.14);}
+.cta.secondary:hover{background:var(--theme-ghost-hover);}
 
 .or{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--parchment-dim);font-size:.7rem;}
 .or::before,.or::after{content:'';flex:1;height:1px;background:var(--line);}
@@ -392,6 +466,35 @@ svg#map.panning{cursor:grabbing;}
 .b-decoyWeak{fill:none;stroke:#ffd9f0;}
 .b-decoyStrong{fill:#ffd9a8;stroke:none;}
 
+/* Askeri birimler — sayıların altında duran piyade / tank / ağır zırh. */
+.unit{pointer-events:none;}
+.unit-idle,.boom,.boom-flash,.boom-ring,.boom-frag,.boom-smoke,.floater,.muzzle-flame{
+  transform-box:fill-box;transform-origin:center;
+}
+.unit-glyph{
+  fill:#f3e6c4;
+  stroke:#1a1208;stroke-width:.55;stroke-linejoin:round;stroke-linecap:round;
+  filter:drop-shadow(0 0.6px 0.8px rgba(0,0,0,.75));
+}
+.cell.mine .unit-glyph{fill:#fff6de;}
+.unit-idle.stale{opacity:.42;}
+.unit-idle.stale .unit-glyph{fill:#cbbd9a;}
+.cell.bluffing .unit-idle{animation:bluffPulse 1.4s ease-in-out infinite;}
+.u-infantry{animation:infBob 1.55s ease-in-out infinite;}
+.u-tank{animation:tankRumble .62s linear infinite;}
+.u-heavy{animation:heavyIdle 1.15s ease-in-out infinite;}
+.unit-spawn{animation:unitPop .38s var(--ease) both;}
+
+@keyframes infBob{0%,100%{transform:translate(0,0);}50%{transform:translate(0,-.85px);}}
+@keyframes tankRumble{
+  0%,100%{transform:translate(0,0);}
+  25%{transform:translate(.28px,.18px);}
+  75%{transform:translate(-.28px,.12px);}
+}
+@keyframes heavyIdle{0%,100%{transform:translate(0,0) rotate(0);}50%{transform:translate(.15px,-.25px) rotate(-1.4deg);}}
+@keyframes unitPop{0%{transform:scale(.2);opacity:0;}70%{transform:scale(1.18);}100%{transform:scale(1);opacity:1;}}
+@keyframes bluffPulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+
 /* İSTİHBARAT HİYERARŞİSİ — sayının rengi ne kadar güvenilir olduğunu söyler. */
 /* Kendi toprağın gözden kaçmamalı: en parlak sayı, en belirgin çerçeve. */
 .cell text.str.own{fill:#fff8e4;opacity:1;font-size:12.5px;}
@@ -425,9 +528,40 @@ svg#map.panning{cursor:grabbing;}
 .region-edge{fill:none;stroke-width:1.4;opacity:.3;stroke-linecap:round;pointer-events:none;stroke-dasharray:5 4;}
 .bridge-line{stroke:var(--brass);stroke-width:1.5;stroke-dasharray:3 3;opacity:.38;pointer-events:none;}
 
+.fx-layer{pointer-events:none;}
 .tracer{pointer-events:none;}
 .tracer .spark{fill:var(--brass-bright);filter:drop-shadow(0 0 4px rgba(233,198,126,.9));}
 .tracer .trail{stroke:var(--brass-bright);stroke-width:.6;opacity:0;stroke-dasharray:3 2;animation:trailFade .55s ease-out forwards;}
+.march-trail{stroke:#e9c67e;stroke-width:1.15;stroke-dasharray:4 3;filter:drop-shadow(0 0 2px rgba(233,198,126,.45));}
+.muzzle-flame{fill:#ffe08a;stroke:#ff9a3a;stroke-width:.35;animation:muzzlePop .22s ease-out forwards;filter:drop-shadow(0 0 3px rgba(255,170,60,.9));}
+.muzzle-bloom{fill:#ffe7a0;opacity:.9;animation:muzzleBloom .32s ease-out forwards;filter:drop-shadow(0 0 5px rgba(255,190,80,.8));}
+.shell-body{fill:#f0d48a;stroke:#3a2a12;stroke-width:.35;filter:drop-shadow(0 0 3px rgba(233,198,126,.85));}
+.arc-trail{stroke:#ffb24a;stroke-width:1.05;fill:none;stroke-dasharray:5 4;opacity:0;animation:trailFade .85s ease-out forwards;filter:drop-shadow(0 0 3px rgba(255,150,40,.6));}
+.march-dust{fill:#c4b089;opacity:0;animation:dustPuff .7s ease-out forwards;}
+.march-glyph{filter:drop-shadow(0 1px 1.4px rgba(0,0,0,.8));}
+
+.boom{pointer-events:none;}
+.boom-flash{fill:#fff4c8;animation:boomFlash .32s ease-out forwards;filter:drop-shadow(0 0 6px rgba(255,220,140,.9));}
+.boom-ring{fill:none;stroke:#e9c67e;stroke-width:1.4;animation:boomRing .58s ease-out forwards;}
+.boom-frag{fill:#e0b073;animation:boomFrag .52s ease-out forwards;}
+.boom-smoke{fill:#6a5a48;opacity:.55;animation:boomSmoke 1.05s ease-out forwards;}
+.boom-crater{fill:#1a1208;opacity:.55;animation:craterFade 1.1s ease-out forwards;}
+.boom-capture .boom-flash{fill:#ffe9a8;}
+.boom-capture .boom-frag{fill:var(--brass-bright);}
+.boom-hit .boom-flash{fill:#ffd0a0;}
+.boom-hit .boom-frag{fill:#e07a6a;}
+.boom-big .boom-flash{fill:#fff;}
+.boom-big .boom-ring{stroke:#ffb24a;stroke-width:1.8;}
+
+.floater{
+  font-family:var(--mono);font-size:7.2px;font-weight:700;text-anchor:middle;
+  pointer-events:none;paint-order:stroke;stroke:rgba(8,5,3,.85);stroke-width:2.2px;
+  animation:floatUp .85s ease-out forwards;
+}
+.floater.dmg{fill:#ffb0a4;}
+
+svg#map.fx-shake{animation:mapShake .38s ease;}
+
 .ember{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(233,198,126,.8),transparent 70%);pointer-events:none;opacity:0;animation:emberRise linear infinite;}
 
 @keyframes pulseGlow{0%,100%{stroke:rgba(233,198,126,.3);stroke-width:.8;}50%{stroke:rgba(233,198,126,.85);stroke-width:2.2;}}
@@ -438,6 +572,16 @@ svg#map.panning{cursor:grabbing;}
 @keyframes revealIn{from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);}}
 @keyframes trailFade{0%{opacity:.8;}100%{opacity:0;}}
 @keyframes emberRise{0%{opacity:0;transform:translateY(0) scale(.6);}12%{opacity:.7;}85%{opacity:.4;}100%{opacity:0;transform:translateY(-140px) scale(1.1);}}
+@keyframes muzzlePop{0%{opacity:1;transform:scale(.4);}100%{opacity:0;transform:scale(1.8) translateX(2px);}}
+@keyframes muzzleBloom{0%{opacity:.9;transform:scale(.4);}100%{opacity:0;transform:scale(2.6);}}
+@keyframes dustPuff{0%{opacity:0;transform:scale(.4);}25%{opacity:.7;}100%{opacity:0;transform:scale(2.2) translateY(-2px);}}
+@keyframes boomFlash{0%{opacity:1;transform:scale(.3);}100%{opacity:0;transform:scale(2.4);}}
+@keyframes boomRing{0%{opacity:.95;transform:scale(.35);}100%{opacity:0;transform:scale(2.8);}}
+@keyframes boomFrag{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25);}}
+@keyframes boomSmoke{0%{opacity:.5;transform:translate(0,0) scale(.7);}100%{opacity:0;transform:translate(1.5px,-7px) scale(2.1);}}
+@keyframes craterFade{0%{opacity:.6;transform:scale(.6);}100%{opacity:0;transform:scale(1.15);}}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-11px);}}
+@keyframes mapShake{0%,100%{transform:none;}18%{transform:translate(1.6px,-1px);}42%{transform:translate(-1.4px,1px);}66%{transform:translate(1px,.6px);}}
 
 /* saldırı önizlemesi */
 .preview{
@@ -534,7 +678,7 @@ svg#map.panning{cursor:grabbing;}
 .terrain-chip{font-size:.66rem;color:var(--parchment-dim);display:flex;align-items:center;gap:7px;}
 .terrain-chip svg{width:13px;height:13px;flex-shrink:0;opacity:.75;}
 .terrain-chip b{color:var(--parchment);font-weight:600;min-width:44px;}
-.terrain-chip .tt{opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.terrain-chip.unit-legend-head{margin-top:6px;padding-top:6px;border-top:1px solid var(--line);opacity:.95;}
 
 /* ── 7 · komut çubuğu ──────────────────────────────────────────────────── */
 .command-bar{
@@ -576,20 +720,28 @@ svg#map.panning{cursor:grabbing;}
 }
 .overlay.show{opacity:1;pointer-events:auto;}
 .dispatch{
-  background:linear-gradient(160deg,#f2e6c8,#e1cfa0);color:#241a0c;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 2px, rgba(60,30,20,.045) 2px 3px),
+    repeating-linear-gradient(90deg, transparent 0 2px, rgba(255,250,235,.05) 2px 3px),
+    linear-gradient(160deg,#efe6d4,#e3d7bf);
+  color:#241a0c;
   padding:32px 34px;border-radius:var(--r-sm);max-width:400px;width:100%;text-align:center;
   box-shadow:0 30px 80px rgba(0,0,0,.6);position:relative;
+  border:1px solid rgba(201,161,90,.35);
 }
 .overlay.show .dispatch{animation:dispatchIn .45s var(--ease) forwards;}
-.dispatch::before{content:'';position:absolute;inset:9px;border:1px solid rgba(36,26,12,.25);border-radius:2px;pointer-events:none;}
+.dispatch::before{
+  content:'';position:absolute;inset:9px;
+  border:1px solid rgba(138,111,62,.28);border-radius:2px;pointer-events:none;
+}
 .seal{width:52px;height:52px;border-radius:50%;margin:0 auto 13px;box-shadow:0 5px 12px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.3);}
 .eyebrow{font-size:.64rem;letter-spacing:.2em;color:#8a7550;margin-bottom:6px;text-transform:uppercase;}
 .dispatch h2{font-family:var(--serif);font-size:1.5rem;margin:0 0 6px;font-weight:400;}
 .dispatch p{font-size:.84rem;margin:0 0 20px;color:#4a3a20;line-height:1.65;}
 .dispatch-brand{font-size:.56rem;letter-spacing:.2em;color:#8a7550;text-transform:uppercase;opacity:.8;margin-bottom:16px;}
 .dispatch-actions{display:flex;flex-direction:column;gap:8px;}
-.dispatch-actions .cta{background:#3a2a12;border-color:#3a2a12;color:#f2e6c8;}
-.dispatch-actions .cta:hover{background:#241a0c;}
+.dispatch-actions .cta{background:var(--brass);border-color:var(--brass-dim);color:#120d08;}
+.dispatch-actions .cta:hover{background:var(--brass-bright);}
 .dispatch-actions .cta.secondary{background:transparent;color:#3a2a12;border-color:rgba(36,26,12,.35);}
 .dispatch-actions .cta.secondary:hover{background:rgba(36,26,12,.1);}
 .rb-reason{font-style:italic;color:#6a5433;font-size:.8rem;}
@@ -685,10 +837,14 @@ svg#map.panning{cursor:grabbing;}
 
 @media (prefers-reduced-motion: reduce){
   .cell.frontier .hex-fill,.cell.pickable .hex-fill,.cell.fx-capture .hex-fill,
-  .cell.fx-hit .hex-fill,.cell.fx-deny,.cell.reveal,.ember,.tracer .trail{animation:none !important;}
+  .cell.fx-hit .hex-fill,.cell.fx-deny,.cell.reveal,.ember,.tracer .trail,
+  .u-infantry,.u-tank,.u-heavy,.unit-spawn,.cell.bluffing .unit-idle,
+  .muzzle-flame,.muzzle-bloom,.march-dust,.boom-flash,.boom-ring,.boom-frag,
+  .boom-smoke,.boom-crater,.floater,.arc-trail,.march-trail,svg#map.fx-shake{animation:none !important;}
   .cell.frontier:hover,.cell.pickable:hover{transform:none;}
   .overlay.show .dispatch,.screen{animation:none !important;}
   .bd-hex{transition:none;}
+  .swatch:hover,.swatch.selected:hover{transform:none;}
 }
 
 
@@ -735,12 +891,15 @@ svg#map.panning{cursor:grabbing;}
 </head>
 <body data-screen="menu">
 
+<!-- Kinetik dokuma: menü, kurulum ve lobi arkasında dalgalanır; oyun tahtası onu örter. -->
+<div class="stage" id="stage" aria-hidden="true">
+  <svg class="backdrop" id="backdrop"></svg>
+  <canvas class="banner" id="banner"></canvas>
+  <div class="backdrop-veil"></div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════ 1 · ANA MENÜ ═══ -->
 <section class="screen screen-menu" id="screenMenu">
-  <svg class="backdrop" id="backdrop" aria-hidden="true"></svg>
-  <canvas class="banner" id="banner" aria-hidden="true"></canvas>
-  <div class="backdrop-veil" aria-hidden="true"></div>
-
   <div class="menu-inner">
     <header class="menu-head">
       <svg class="menu-crest" viewBox="0 0 48 48" aria-hidden="true">
@@ -952,16 +1111,17 @@ svg#map.panning{cursor:grabbing;}
 
     <h3>1 · Temel</h3>
     <ul>
-      <li>Her bölgenin bir <b>garnizonu</b> vardır ve her tur büyür. Tavan 90.</li>
+      <li>Her bölgenin bir <b>garnizonu</b> vardır ve her tur büyür. Tavan 90. Garnizon büyüdükçe haritada <b>piyade → tank → ağır zırh</b> görünür.</li>
       <li>Bir bölgeye saldırdığında, ona komşu olan <b>BÜTÜN</b> bölgelerinden aynı anda kuvvet toplanır. Asıl soru "yeterince güçlü müyüm?" değil, <b>"onu sarabildim mi?"</b></li>
       <li><b>Taahhüt</b> düğmeleri (<kbd>1</kbd>–<kbd>4</kbd>) her kaynaktan gücünün ne kadarını göndereceğini belirler. %100 saldırırsan tüm cephen aynı anda boşalır.</li>
       <li>İç bölgelerin her tur kuvvetlerini <b>cepheye akıtır</b>. Derinlik = dayanıklılık.</li>
+      <li><b>Tank ve ağır zırh</b> topçu hasarının bir kısmını emer; kuşatma zar zar geçerse geride bir işgal kuvveti bırakır. Silüet istihbarata göre çizilir — sahte garnizon düşmana yalan tank da gösterebilir.</li>
     </ul>
 
     <h3>2 · Ekonomi</h3>
     <div class="help-grid">
       <div class="help-card"><div class="hc-title">Erzak — büyüme</div><div class="hc-body">Garnizon büyümesi erzak yer ve maliyet toprağınla <b>karesel</b> artar: çok yayılırsan garnizonların açlıktan yavaşlar. Çaresi Toprak ve Su bölgeleri almak.</div></div>
-      <div class="help-card"><div class="hc-title">Demir — savunma</div><div class="hc-body">Kale (savunma ×1.6) ve tahkimat (anında +25 güç). Ateş ve Buz üretir.</div></div>
+      <div class="help-card"><div class="hc-title">Demir — savunma</div><div class="hc-body">Kale (savunma ×1.6), tahkimat (anında +25 güç) ve bombardıman. Tanklar topçu hasarının bir kısmını emer. Ateş ve Buz üretir.</div></div>
       <div class="help-card"><div class="hc-title">Altın — aldatma</div><div class="hc-body">Sahte garnizon ve casus. Hava ve Kum üretir.</div></div>
     </div>
     <p style="margin-top:10px">Harita üzerindeki <b>Büyüme %</b> göstergesi ekonominin nabzıdır. %100'ün altına düştüyse fazla yayılmışsın demektir.</p>
@@ -994,6 +1154,7 @@ svg#map.panning{cursor:grabbing;}
     <p>
       <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> taahhüt ·
       <kbd>Q</kbd> zayıf göster · <kbd>W</kbd> güçlü göster · <kbd>E</kbd> casus ·
+      <kbd>B</kbd> bombardıman ·
       <kbd>R</kbd> kale · <kbd>F</kbd> tahkimat · <kbd>Esc</kbd> saldırı kipi ·
       <kbd>Boşluk</kbd> başkente dön · <kbd>+</kbd><kbd>−</kbd><kbd>0</kbd> yakınlaştırma
     </p>
@@ -1155,6 +1316,38 @@ const STRIKE = {
   cooldown: 20      // oyuncu başına yeniden dolum (tick)
 };
 
+/**
+ * KUVVET KADEMELERİ — garnizonun BÜYÜKLÜĞÜ hem görsel (piyade/tank/ağır zırh)
+ * hem mekanik kimliktir.
+ *
+ * Saldırı matematiğine dokunulmaz: kuşatma hâlâ "sarabildin mi?" sorusudur ve
+ * o denge simülatörle kilitlendi. Kademe iki yerde işe yarar:
+ *
+ *   1. Topçu direnci. Tank bir yığın piyade değildir; obüs mermisi paleti
+ *      ezer ama mürettebatın çoğunu bırakır. "Zayıf göster" blöfü burada da
+ *      çalışır: düşman piyade sanıp bombalar, zırh emer.
+ *   2. İşgal tabanı. Kuşatma zar zar geçerse hücrede 1 birim kalırdı — tank
+ *      kolu yarmayı tutar, geride bir işgal kuvveti bırakır.
+ *
+ * Eşikler harita silüetleriyle AYNI olmak zorunda (glyphs.unitTierFor), yoksa
+ * "tank görüyorum ama zırh yok" tutarsızlığı doğar. Görsel kademe istihbarat
+ * değerinden, mekanik kademe GERÇEK `s`'ten türetilir — yalan yalnızca göze
+ * işler, zırha işlemez.
+ */
+const FORCE = {
+  infantry: { id: 'infantry', name: 'Piyade',    min: 1,  strikeResist: 0,    occupy: 1 },
+  tank:     { id: 'tank',     name: 'Tank',      min: 25, strikeResist: 0.20, occupy: 4 },
+  heavy:    { id: 'heavy',    name: 'Ağır zırh', min: 55, strikeResist: 0.34, occupy: 7 }
+};
+
+/** Yayınlanan veya gerçek güce göre kuvvet kademesi. 0/boş → kademe yok. */
+function forceTierFor(val) {
+  if (val === null || val === undefined || val <= 0) return '';
+  if (val >= FORCE.heavy.min) return 'heavy';
+  if (val >= FORCE.tank.min) return 'tank';
+  return 'infantry';
+}
+
 // --- aldatma (oyunun kalbi) ------------------------------------------------
 /**
  * SAHTE GARNİZON: bir hücrenin düşmana YAYINLADIĞI sayıyı yalanlar.
@@ -1208,15 +1401,15 @@ const DOMINATION_TICKS = 40;
 const TOTAL_SLOTS = 7;
 const COMMIT_STEPS = [0.25, 0.5, 0.75, 1.0];
 
-/** İnsan oyuncuların seçebileceği sancak renkleri. */
+/** İnsan oyuncuların seçebileceği sancaklar — zemin `dark`, vurgu `pair`. */
 const BANNERS = [
-  { name: 'Altın',   light: '#f5d78e', dark: '#a9782f' },
-  { name: 'Kızıl',   light: '#e8768a', dark: '#8a1f35' },
-  { name: 'Mor',     light: '#c9a8e8', dark: '#5a2f8a' },
-  { name: 'Turkuaz', light: '#7fd9c4', dark: '#1f6b5c' },
-  { name: 'Pembe',   light: '#e88ec4', dark: '#8a2f6b' },
-  { name: 'Çivit',   light: '#9098e0', dark: '#2f3578' },
-  { name: 'Bakır',   light: '#e0a074', dark: '#8a4a1f' }
+  { name: 'Altın',   light: '#f5d78e', dark: '#8a5a18', pair: '#f4ead2' },
+  { name: 'Kızıl',   light: '#e8768a', dark: '#7a1828', pair: '#f4efe8' },
+  { name: 'Mor',     light: '#c9a8e8', dark: '#4a1f78', pair: '#f0d24a' },
+  { name: 'Turkuaz', light: '#7fd9a8', dark: '#145a3c', pair: '#eef7f3' },
+  { name: 'Pembe',   light: '#e88ec4', dark: '#7a2458', pair: '#f3e0a8' },
+  { name: 'Çivit',   light: '#9098e0', dark: '#242a6a', pair: '#e8c56a' },
+  { name: 'Bakır',   light: '#e0a074', dark: '#7a3a14', pair: '#d4efe8' }
 ];
 
 /** Bot uluslar - renk + kişilik (kişilik ağırlıkları ai.js'te). */
@@ -1246,7 +1439,7 @@ const INTERIOR_RESERVE = 7;
 const DEFENSE_FATIGUE_STEP = 0.06;
 const DEFENSE_FATIGUE_FLOOR = 0.45;
 
-return { TICK_MS, MATCH_TICK_LIMIT, BASE_MAX_STR, BASE_GROWTH, START_STR, NEUTRAL_STR_MIN, NEUTRAL_STR_MAX, FATIGUE_START_TICK, FATIGUE_STEP_TICKS, FATIGUE_STEP_AMOUNT, FATIGUE_FLOOR, RESOURCES, RESOURCE_META, BASE_INCOME, SUPPLY_PER_GROWTH, OVEREXTEND, TERRAINS, TERRAIN_IDS, FORT, FORTIFY, STRIKE, DECOY, SCOUT, INTEL_STALE_TICKS, CONTINENT_YIELD_MULT, CONTINENT_FLAT_BONUS, CAPITAL, DOMINATION_SHARE, DOMINATION_TICKS, TOTAL_SLOTS, COMMIT_STEPS, BANNERS, FACTIONS, NEUTRAL_COLOR, SUPPLY_FLOW_RATE, INTERIOR_RESERVE, DEFENSE_FATIGUE_STEP, DEFENSE_FATIGUE_FLOOR };
+return { TICK_MS, MATCH_TICK_LIMIT, BASE_MAX_STR, BASE_GROWTH, START_STR, NEUTRAL_STR_MIN, NEUTRAL_STR_MAX, FATIGUE_START_TICK, FATIGUE_STEP_TICKS, FATIGUE_STEP_AMOUNT, FATIGUE_FLOOR, RESOURCES, RESOURCE_META, BASE_INCOME, SUPPLY_PER_GROWTH, OVEREXTEND, TERRAINS, TERRAIN_IDS, FORT, FORTIFY, STRIKE, FORCE, forceTierFor, DECOY, SCOUT, INTEL_STALE_TICKS, CONTINENT_YIELD_MULT, CONTINENT_FLAT_BONUS, CAPITAL, DOMINATION_SHARE, DOMINATION_TICKS, TOTAL_SLOTS, COMMIT_STEPS, BANNERS, FACTIONS, NEUTRAL_COLOR, SUPPLY_FLOW_RATE, INTERIOR_RESERVE, DEFENSE_FATIGUE_STEP, DEFENSE_FATIGUE_FLOOR };
 })();
 
 const __m_src_client_identity_js = (function(){
@@ -1269,7 +1462,8 @@ function createIdentity(refs) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'swatch' + (i === bannerIdx ? ' selected' : '');
-      b.style.background = `linear-gradient(160deg, ${col.light}, ${col.dark})`;
+      b.style.setProperty('--swatch-field', col.dark);
+      b.style.setProperty('--swatch-pair', col.pair || col.light);
       b.title = col.name;
       b.setAttribute('aria-label', col.name);
       b.addEventListener('click', () => {
@@ -1900,26 +2094,245 @@ return { createBackdrop };
 
 const __m_src_client_banner_js = (function(){
 /**
- * Menü sancağı — rüzgârda dalgalanan kumaş, Verlet fiziğiyle.
+ * Menü sancağı — rüzgârda dalgalanan dokuma kumaş, Verlet fiziğiyle.
  *
- * NEDEN KENDİMİZ YAZIYORUZ: hazır "kinetik kumaş" bileşenleri Three.js + React
- * + Tailwind gerektiriyor ve bir iframe içinde ~1 MB harici betik yüklüyor.
- * Decoy'un tamamı sıfır bağımlılık ve tek dosyalık bir HTML olarak dağıtılıyor
- * (çevrimdışı da açılıyor); bunu bir arka plan efekti için feda etmek yanlış
- * takas olurdu. Bir bayrak, kafaya yakın bir açıdan bakıldığında 3B motora
- * ihtiyaç duymaz: ızgarayı 2B'de simüle edip derinliği yalnızca GÖLGELEME için
- * kullanmak yeterli.
+ * Bu, "Woven Cloth / Lumina Weavers" kinetik tekstil temasının Decoy uyarlaması.
+ * Orijinal bileşen React + Three.js + Tailwind + CDN iframe (~1 MB harici
+ * betik). Decoy sıfır bağımlılıkla, çevrimdışı ve tek dosya olarak dağıtılır;
+ * bir arka plan efekti için o yığını içeri almak yanlış takas olurdu.
  *
- * Asıl kazanç şu: bu sancak SENİN sancağın. Menüde bir renk seçtiğinde kumaş
- * o renge dönüyor — jenerik bir doku yerine oyunun kendi diline ait bir nesne.
+ * Aynı fizik burada zaten vardı: ızgarayı 2B'de simüle edip derinliği yalnızca
+ * gölgeleme için kullanmak, kafaya yakın bir açıdan bakıldığında 3B motora
+ * ihtiyaç duymaz. Eklenen şey kumaşın KENDİSİ — zemin sancağın koyu rengi,
+ * yazı ve kenar zıt `pair` (kızıl+beyaz, mor+sarı), kıvrım ışıltısı bu çiftten.
+ *
+ * Yazıları değiştirmek için BANNER_* sabitlerini düzenle.
  */
 
-const GX = 26;             // yatay bölüm
-const GY = 17;             // dikey bölüm
-const ITER = 3;            // kısıt çözüm turu
-const DAMP = 0.982;
+/** Sancak yazıları — buradan değiştir. */
+const BANNER_MARK = 'D E C O Y';
+const BANNER_LINE = '· YEDI ULUS ·';
+const BANNER_TITLE = 'SEFER';
+const BANNER_SUB = 'ARDEKO STUDIOS';
+const BANNER_FOOT = 'K I T A   ·   E K O N O M İ';
+
+const GX = 32;
+const GY = 20;
+const ITER = 3;
+const DAMP = 0.985;
 const GRAV = 90;
 const DT = 1 / 60;
+const TEX_W = 1024;
+const TEX_H = 640;
+
+function hexToRgb(h) {
+  return [
+    parseInt(h.slice(1, 3), 16),
+    parseInt(h.slice(3, 5), 16),
+    parseInt(h.slice(5, 7), 16)
+  ];
+}
+
+function mixRgb(a, b, k) {
+  return [
+    a[0] + (b[0] - a[0]) * k,
+    a[1] + (b[1] - a[1]) * k,
+    a[2] + (b[2] - a[2]) * k
+  ];
+}
+
+function cssRgb(rgb, scale) {
+  const s = scale === undefined ? 1 : scale;
+  return 'rgb(' +
+    Math.round(Math.max(0, Math.min(255, rgb[0] * s))) + ',' +
+    Math.round(Math.max(0, Math.min(255, rgb[1] * s))) + ',' +
+    Math.round(Math.max(0, Math.min(255, rgb[2] * s))) + ')';
+}
+
+function cssHex(rgb) {
+  return '#' + rgb.map((c) =>
+    Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, '0')
+  ).join('');
+}
+
+function rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = max === r ? (g - b) / d + (g < b ? 6 : 0)
+    : max === g ? (b - r) / d + 2
+    : (r - g) / d + 4;
+  return [h / 6, s, l];
+}
+
+function hslToRgb(h, s, l) {
+  const hue2rgb = (p, q, t) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  if (s === 0) return [l * 255, l * 255, l * 255];
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  return [
+    hue2rgb(p, q, h + 1 / 3) * 255,
+    hue2rgb(p, q, h) * 255,
+    hue2rgb(p, q, h - 1 / 3) * 255
+  ];
+}
+
+function luminance(rgb) {
+  const chan = (c) => {
+    c /= 255;
+    return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * chan(rgb[0]) + 0.7152 * chan(rgb[1]) + 0.0722 * chan(rgb[2]);
+}
+
+function shiftHue(rgb, deg, sat, lit) {
+  const hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
+  return hslToRgb(
+    (hsl[0] + deg / 360 + 1) % 1,
+    Math.max(0, Math.min(1, hsl[1] * (sat === undefined ? 1 : sat))),
+    Math.max(0.06, Math.min(0.92, hsl[2] * (lit === undefined ? 1 : lit)))
+  );
+}
+
+function rgbaOf(rgb, a) {
+  return 'rgba(' +
+    Math.round(rgb[0]) + ',' + Math.round(rgb[1]) + ',' + Math.round(rgb[2]) + ',' + a + ')';
+}
+
+const NIGHT = [6, 16, 20];
+const BRASS = [201, 161, 90];
+const BRASS_LIGHT = [233, 198, 126];
+
+function makePrism(accent, dark) {
+  return [
+    mixRgb(dark, accent, 0.2),
+    accent,
+    mixRgb(accent, dark, 0.35),
+    shiftHue(accent, 18, 1.08, 1.06),
+    mixRgb(dark, accent, 0.45)
+  ];
+}
+
+function prismAt(t, stops) {
+  const pal = stops || makePrism(BRASS_LIGHT, BRASS);
+  const n = pal.length;
+  const u = ((t % 1) + 1) % 1 * (n - 1);
+  const i = Math.min(n - 2, u | 0);
+  return mixRgb(pal[i], pal[i + 1], u - i);
+}
+
+/**
+ * Kumaş zemini sancağın koyu rengi, yazı ve kenar zıt `pair` rengi.
+ * Mor+sarı, kızıl+beyaz gibi çiftler tek hue'yu kırar.
+ */
+function paintCloth(off, lightHex, darkHex, pairHex) {
+  const x = off.getContext('2d');
+  if (!x) return null;
+  const W = off.width, H = off.height;
+  const light = hexToRgb(lightHex);
+  const dark = hexToRgb(darkHex);
+  const pair = hexToRgb(pairHex || lightHex);
+  const fieldTop = mixRgb(shiftHue(dark, 0, 1.35, 0.95), NIGHT, 0.08);
+  const fieldBot = mixRgb(shiftHue(dark, 0, 1.2, 0.5), NIGHT, 0.1);
+  const fieldMid = mixRgb(fieldTop, fieldBot, 0.4);
+  const pairIsLight = luminance(pair) > 0.42;
+  const ink = pair;
+  const mute = mixRgb(pair, fieldMid, pairIsLight ? 0.22 : 0.12);
+  const hem = pair;
+  const hemDeep = mixRgb(pair, fieldBot, 0.35);
+  const sheenA = mixRgb(pair, light, 0.35);
+  const sheenB = mixRgb(pair, dark, 0.4);
+  const sheenC = shiftHue(pair, 28, 1.1, 1.05);
+  const halo = pairIsLight ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.28)';
+
+  const g = x.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, cssRgb(fieldTop));
+  g.addColorStop(0.55, cssRgb(mixRgb(fieldTop, fieldBot, 0.5)));
+  g.addColorStop(1, cssRgb(fieldBot));
+  x.fillStyle = g;
+  x.fillRect(0, 0, W, H);
+
+  x.globalCompositeOperation = 'screen';
+  const pg = x.createLinearGradient(0, 0, W, H);
+  pg.addColorStop(0, rgbaOf(sheenA, 0.34));
+  pg.addColorStop(0.28, rgbaOf(sheenB, 0.16));
+  pg.addColorStop(0.55, rgbaOf(sheenC, 0.16));
+  pg.addColorStop(1, rgbaOf(pair, 0.22));
+  x.fillStyle = pg;
+  x.fillRect(0, 0, W, H);
+  const pg2 = x.createLinearGradient(W, 0, 0, H);
+  pg2.addColorStop(0, rgbaOf(shiftHue(pair, 16, 1.05, 1.06), 0.14));
+  pg2.addColorStop(0.5, 'transparent');
+  pg2.addColorStop(1, rgbaOf(hem, 0.08));
+  x.fillStyle = pg2;
+  x.fillRect(0, 0, W, H);
+  x.globalCompositeOperation = 'source-over';
+
+  x.strokeStyle = cssRgb(hem);
+  x.lineWidth = 10;
+  x.strokeRect(36, 36, W - 72, H - 72);
+  x.lineWidth = 3;
+  x.strokeStyle = cssRgb(hemDeep);
+  x.strokeRect(54, 54, W - 108, H - 108);
+
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.lineJoin = 'round';
+  x.miterLimit = 2;
+
+  function stamp(text, y, fill, strokeW) {
+    if (strokeW) {
+      x.strokeStyle = halo;
+      x.lineWidth = strokeW;
+      x.strokeText(text, W / 2, y);
+    }
+    x.fillStyle = cssRgb(fill);
+    x.fillText(text, W / 2, y);
+  }
+
+  x.font = 'bold 52px Georgia, "Times New Roman", serif';
+  stamp(BANNER_MARK, 148, mute, 3);
+  x.font = 'normal 20px "Helvetica Neue", Arial, sans-serif';
+  stamp(BANNER_LINE, 198, mute, 0);
+  x.font = 'bold 128px Georgia, "Times New Roman", serif';
+  stamp(BANNER_TITLE, 328, ink, 6);
+  x.font = 'bold 42px Georgia, "Times New Roman", serif';
+  stamp(BANNER_SUB, 428, ink, 3);
+  x.font = '600 22px "Helvetica Neue", Arial, sans-serif';
+  stamp(BANNER_FOOT, 518, mute, 0);
+
+  x.globalAlpha = 1;
+  for (let yy = 0; yy < H; yy += 3) {
+    x.strokeStyle = pairIsLight ? 'rgba(30,22,16,0.14)' : 'rgba(2, 18, 22, 0.28)';
+    x.lineWidth = 1;
+    x.beginPath(); x.moveTo(0, yy + 0.5); x.lineTo(W, yy + 0.5); x.stroke();
+  }
+  for (let xx = 0; xx < W; xx += 3) {
+    x.strokeStyle = (xx % 6 === 0)
+      ? rgbaOf(sheenA, 0.07)
+      : rgbaOf(hem, 0.07);
+    x.lineWidth = 1;
+    x.beginPath(); x.moveTo(xx + 0.5, 0); x.lineTo(xx + 0.5, H); x.stroke();
+  }
+
+  const id = x.getImageData(0, 0, W, H);
+  const d = id.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = (Math.random() * 2 - 1) * 10;
+    d[i] += n; d[i + 1] += n; d[i + 2] += n;
+  }
+  x.putImageData(id, 0, 0);
+}
 function createBanner(canvas) {
   if (!canvas || !canvas.getContext) return { start() {}, stop() {}, setColors() {} };
   const ctx = canvas.getContext('2d');
@@ -1929,10 +2342,77 @@ function createBanner(canvas) {
     && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let W = 0, H = 0, dpr = 1;
-  let cw = 0, ch = 0, ox = 0, oy = 0;   // kumaşın ekrandaki kutusu
+  let cw = 0, ch = 0, ox = 0, oy = 0;
   let raf = 0, running = false, t = 0;
 
-  let light = '#f5d78e', dark = '#a9782f';
+  let light = '#f5d78e', dark = '#8a5a18', pair = '#f4ead2';
+  let lightRgb = hexToRgb(light);
+  let darkRgb = hexToRgb(dark);
+  let pairRgb = hexToRgb(pair);
+  let prismStops = makePrism(pairRgb, darkRgb);
+  const off = document.createElement('canvas');
+  off.width = TEX_W;
+  off.height = TEX_H;
+
+  function tintStage() {
+    const glow = mixRgb(shiftHue(darkRgb, 0, 1.3, 1.05), pairRgb, 0.18);
+    const mid = mixRgb(shiftHue(darkRgb, 0, 1.2, 0.7), NIGHT, 0.18);
+    const deep = mixRgb(shiftHue(darkRgb, 0, 1.1, 0.38), NIGHT, 0.22);
+    const bright = pairRgb;
+    const accent = mixRgb(pairRgb, darkRgb, 0.16);
+    const dim = mixRgb(darkRgb, pairRgb, 0.28);
+    const parchment = mixRgb([236, 224, 196], pairRgb, 0.08);
+    const parchmentInk = [245, 236, 220];
+    const cardA = mixRgb(darkRgb, [8, 6, 8], 0.58);
+    const cardB = mixRgb(darkRgb, [4, 3, 4], 0.72);
+    const cardInk = luminance(cardA) > 0.4 ? [18, 14, 12] : [246, 241, 230];
+    const cardMuted = luminance(cardA) > 0.4 ? [72, 58, 46] : [198, 188, 172];
+    const muted = mixRgb(parchmentInk, deep, 0.22);
+    const ctaInk = luminance(bright) > 0.46 ? [18, 14, 10] : [244, 239, 228];
+    const root = document.body.style;
+    root.setProperty('--banner-glow', cssHex(glow));
+    root.setProperty('--banner-mid', cssHex(mid));
+    root.setProperty('--banner-deep', cssHex(deep));
+    root.setProperty('--banner-veil', rgbaOf(deep, 0.42));
+    root.setProperty('--theme-brass', cssHex(accent));
+    root.setProperty('--theme-bright', cssHex(bright));
+    root.setProperty('--theme-dim', cssHex(dim));
+    root.setProperty('--theme-parchment', cssHex(parchmentInk));
+    root.setProperty('--theme-muted', cssHex(muted));
+    root.setProperty('--theme-line', rgbaOf(bright, 0.28));
+    root.setProperty('--theme-line-strong', rgbaOf(bright, 0.5));
+    root.setProperty('--theme-panel', cssHex(mixRgb(darkRgb, [12, 9, 10], 0.45)));
+    root.setProperty('--theme-card-a', rgbaOf(cardA, 0.94));
+    root.setProperty('--theme-card-b', rgbaOf(cardB, 0.96));
+    root.setProperty('--theme-card-hover-a', rgbaOf(mixRgb(cardA, pairRgb, 0.12), 0.96));
+    root.setProperty('--theme-card-hover-b', rgbaOf(cardB, 0.97));
+    root.setProperty('--theme-card-ink', cssHex(cardInk));
+    root.setProperty('--theme-card-muted', cssHex(cardMuted));
+    root.setProperty('--theme-panel-a', cssHex(mixRgb(darkRgb, [12, 9, 10], 0.5)));
+    root.setProperty('--theme-panel-b', cssHex(mixRgb(darkRgb, [6, 5, 6], 0.68)));
+    root.setProperty('--theme-cta', cssHex(bright));
+    root.setProperty('--theme-cta-ink', cssHex(ctaInk));
+    root.setProperty('--theme-cta-hover', cssHex(mixRgb(bright, [255, 255, 255], 0.16)));
+    root.setProperty('--theme-glyph-bg', rgbaOf(bright, 0.14));
+    root.setProperty('--theme-glow', rgbaOf(bright, 0.32));
+    root.setProperty('--theme-swatch-ring', rgbaOf(bright, 0.42));
+    root.setProperty('--theme-ghost-hover', rgbaOf(bright, 0.14));
+    root.setProperty('--theme-inset', rgbaOf(bright, 0.14));
+  }
+
+  function retint(l, d, p) {
+    light = l || light;
+    dark = d || dark;
+    pair = p || pair || light;
+    lightRgb = hexToRgb(light);
+    darkRgb = hexToRgb(dark);
+    pairRgb = hexToRgb(pair);
+    prismStops = makePrism(pairRgb, darkRgb);
+    paintCloth(off, light, dark, pair);
+    tintStage();
+  }
+
+  retint(light, dark, pair);
 
   const N = (GX + 1) * (GY + 1);
   const cur = new Float32Array(N * 3);
@@ -1949,10 +2429,9 @@ function createBanner(canvas) {
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Kumaş ekranı taşsın: kenarları görünmesin, doku gibi dursun.
-    cw = W * 1.25;
-    ch = H * 0.92;
-    ox = -W * 0.12;
+    cw = W * 1.18;
+    ch = H * 0.88;
+    ox = -W * 0.09;
     oy = (H - ch) / 2;
   }
 
@@ -1969,26 +2448,26 @@ function createBanner(canvas) {
     }
   }
 
-  /** Sol kenar direğe bağlı; rüzgâr soldan sağa ilerleyen bir dalga. */
+  /** Üst kenar asılı; rüzgâr yukarıdan aşağıya ve sağa doğru bir dalga. */
   function wind(ix, iy, time) {
     const u = ix / GX, v = iy / GY;
-    const travel = time * 2.1 - u * 5.4;
-    const gust = 0.75 + 0.35 * Math.sin(time * 0.55) + 0.16 * Math.sin(time * 1.7 + 1.1);
-    const amp = 120 * u;                       // direğe yakın kısım az oynar
-    const fz = (Math.sin(travel) + 0.45 * Math.sin(travel * 1.9 + v * 4.2)) * amp * gust;
-    const fy = Math.sin(travel * 0.8 + v * 2.0) * 26 * u;
-    return [fz, fy];
+    const travel = time * 1.7 - v * 4.2;
+    const gust = 0.6 + 0.42 * Math.sin(time * 0.6) + 0.18 * Math.sin(time * 1.9 + 1.3);
+    const amp = 118 * v;
+    const fz = (Math.sin(travel + u * 3.3) + 0.5 * Math.sin(travel * 1.7 + u * 6.0)) * amp * gust;
+    const fx = Math.sin(time * 0.9 + v * 2.2) * 18 * v;
+    const fy = Math.sin(travel * 0.8 + u * 2.0) * 22 * v;
+    return [fx, fy, fz];
   }
 
   function step(time) {
-    for (let iy = 0; iy <= GY; iy++) {
-      for (let ix = 1; ix <= GX; ix++) {          // ix=0 sabit (direk)
+    for (let iy = 1; iy <= GY; iy++) {          // iy=0 sabit (asma çubuğu)
+      for (let ix = 0; ix <= GX; ix++) {
         const i = idx(ix, iy) * 3;
-        const [fz, fy] = wind(ix, iy, time);
-        // x: yay gibi dinlenme konumuna dönme eğilimi
-        const ax = (rest[i] - cur[i]) * 1.4;
-        const ay = GRAV * 0.25 + fy + (rest[i + 1] - cur[i + 1]) * 1.1;
-        const az = fz - cur[i + 2] * 1.6;
+        const [fx, fy, fz] = wind(ix, iy, time);
+        const ax = fx + (rest[i] - cur[i]) * 1.15;
+        const ay = GRAV * 0.22 + fy + (rest[i + 1] - cur[i + 1]) * 1.05;
+        const az = fz - cur[i + 2] * 1.55;
         for (let k = 0; k < 3; k++) {
           const j = i + k;
           const a = k === 0 ? ax : k === 1 ? ay : az;
@@ -2007,8 +2486,8 @@ function createBanner(canvas) {
       for (let iy = 0; iy < GY; iy++) {
         for (let ix = 0; ix <= GX; ix++) solve(idx(ix, iy), idx(ix, iy + 1), rv);
       }
-      for (let iy = 0; iy <= GY; iy++) {        // direği geri sabitle
-        const i = idx(0, iy) * 3;
+      for (let ix = 0; ix <= GX; ix++) {
+        const i = idx(ix, 0) * 3;
         cur[i] = rest[i]; cur[i + 1] = rest[i + 1]; cur[i + 2] = rest[i + 2];
       }
     }
@@ -2020,8 +2499,8 @@ function createBanner(canvas) {
     const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1e-6;
     const f = ((d - rl) / d) * 0.5;
     dx *= f; dy *= f; dz *= f;
-    const pinnedA = a % (GX + 1) === 0;
-    const pinnedB = b % (GX + 1) === 0;
+    const pinnedA = (a / (GX + 1) | 0) === 0;
+    const pinnedB = (b / (GX + 1) | 0) === 0;
     if (!pinnedA && !pinnedB) {
       cur[ai] += dx; cur[ai + 1] += dy; cur[ai + 2] += dz;
       cur[bi] -= dx; cur[bi + 1] -= dy; cur[bi + 2] -= dz;
@@ -2032,37 +2511,73 @@ function createBanner(canvas) {
     }
   }
 
-  function mix(c1, c2, k) {
-    const p = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-    const a = p(c1), b = p(c2);
-    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * k) + ',' +
-      Math.round(a[1] + (b[1] - a[1]) * k) + ',' +
-      Math.round(a[2] + (b[2] - a[2]) * k) + ')';
-  }
-
   /**
-   * Çizim: her dörtgeni derinliğine göre gölgeleyerek doldur.
-   * z ileri geldikçe aydınlık, geri gittikçe koyu — kumaşın kıvrımları
-   * yalnızca bu gradyandan okunuyor, gerçek bir 3B ışıklandırmaya gerek yok.
+   * Her dörtgene dokuma dokusunu afin dönüşümle basar (üst-sol köşeden
+   * paralelkenar). Harfler mozaik blok değil, kumaşın üstünde okunur yazı
+   * olarak kalır. z derinliği sonra çarpımsal gölge + kızıl kenar ışığı olur.
    */
   function draw() {
     ctx.clearRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    const sw = TEX_W / GX, sh = TEX_H / GY;
     for (let iy = 0; iy < GY; iy++) {
       for (let ix = 0; ix < GX; ix++) {
         const a = idx(ix, iy) * 3, b = idx(ix + 1, iy) * 3;
         const c = idx(ix + 1, iy + 1) * 3, d = idx(ix, iy + 1) * 3;
-        const z = (cur[a + 2] + cur[b + 2] + cur[c + 2] + cur[d + 2]) / 4;
-        const k = Math.max(0, Math.min(1, 0.5 + z / 260));
-        ctx.fillStyle = mix(dark, light, k * k);
+        const ax = cur[a], ay = cur[a + 1];
+        const bx = cur[b], by = cur[b + 1];
+        const cx = cur[c], cy = cur[c + 1];
+        const dx = cur[d], dy = cur[d + 1];
+        const mx = (ax + bx + cx + dx) * 0.25;
+        const my = (ay + by + cy + dy) * 0.25;
+        const su = ix * sw, sv = iy * sh;
+        const m11 = (bx - ax) / sw;
+        const m12 = (by - ay) / sw;
+        const m21 = (dx - ax) / sh;
+        const m22 = (dy - ay) / sh;
+
+        ctx.save();
         ctx.beginPath();
-        ctx.moveTo(cur[a], cur[a + 1]);
-        ctx.lineTo(cur[b], cur[b + 1]);
-        ctx.lineTo(cur[c], cur[c + 1]);
-        ctx.lineTo(cur[d], cur[d + 1]);
+        const p0 = outset(ax, ay, mx, my);
+        const p1 = outset(bx, by, mx, my);
+        const p2 = outset(cx, cy, mx, my);
+        const p3 = outset(dx, dy, mx, my);
+        ctx.moveTo(p0[0], p0[1]);
+        ctx.lineTo(p1[0], p1[1]);
+        ctx.lineTo(p2[0], p2[1]);
+        ctx.lineTo(p3[0], p3[1]);
         ctx.closePath();
+        ctx.clip();
+        ctx.setTransform(
+          dpr * m11, dpr * m12,
+          dpr * m21, dpr * m22,
+          dpr * (ax - m11 * su - m21 * sv),
+          dpr * (ay - m12 * su - m22 * sv)
+        );
+        ctx.drawImage(off, su, sv, sw + 1.25, sh + 1.25, su, sv, sw + 1.25, sh + 1.25);
+        ctx.restore();
+
+        const z = (cur[a + 2] + cur[b + 2] + cur[c + 2] + cur[d + 2]) * 0.25;
+        const k = Math.max(0, Math.min(1, 0.5 + z / 240));
+        ctx.beginPath();
+        ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.lineTo(cx, cy); ctx.lineTo(dx, dy);
+        ctx.closePath();
+        ctx.fillStyle = k >= 0.5
+          ? rgbaOf(pairRgb, (k - 0.5) * 0.22)
+          : rgbaOf([2, 8, 12], (0.5 - k) * 0.48);
+        ctx.fill();
+        const p = prismAt(ix / GX * 0.55 + iy / GY * 0.2 + (1 - k) * 0.45, prismStops);
+        ctx.fillStyle = rgbaOf(p, 0.1 + (1 - k) * 0.3);
         ctx.fill();
       }
     }
+  }
+
+  function outset(x, y, mx, my) {
+    const vx = x - mx, vy = y - my;
+    const len = Math.hypot(vx, vy) || 1;
+    return [x + vx / len * 0.7, y + vy / len * 0.7];
   }
 
   function loop() {
@@ -2085,19 +2600,17 @@ function createBanner(canvas) {
   }
 
   return {
-    /** Sancak renklerini değiştirir — menüdeki renk seçiciye bağlı. */
-    setColors(l, d) {
-      light = l || light;
-      dark = d || dark;
-      if (!running) draw();
+    setColors(l, d, p) {
+      retint(l, d, p);
+      if (W) draw();
     },
     start() {
       if (running) return;
       layout();
       reset();
       window.addEventListener('resize', onResize);
-      if (reduceMotion) { settle(240); return; }
-      settle(50);
+      if (reduceMotion) { settle(220); return; }
+      settle(40);
       running = true;
       raf = requestAnimationFrame(loop);
     },
@@ -2254,7 +2767,7 @@ const __m_src_core_rules_js = (function(){
  * istemci hiçbir kuralı kendi başına yeniden yorumlamaz.
  */
 const {
-  TERRAINS, FORT, STRIKE, BASE_MAX_STR, BASE_GROWTH,
+  TERRAINS, FORT, STRIKE, FORCE, forceTierFor, BASE_MAX_STR, BASE_GROWTH,
   FATIGUE_START_TICK, FATIGUE_STEP_TICKS, FATIGUE_STEP_AMOUNT, FATIGUE_FLOOR,
   SUPPLY_FLOW_RATE, INTERIOR_RESERVE, DEFENSE_FATIGUE_STEP, DEFENSE_FATIGUE_FLOOR
 } = __m_src_core_constants_js;
@@ -2405,6 +2918,14 @@ function resolveAssault(cells, bridgeMap, targetKey, attackerId, fraction, tick)
   const plan = planAssault(cells, bridgeMap, targetKey, attackerId, fraction, tick);
   if (!plan.valid) return fail('too-weak');
 
+  // İşgal tabanı, yola çıkmadan ÖNCEKİ kaynak gücünden türetilir — boşalan
+  // hücrenin 1 kalanı "piyade" sayılmasın, tank kolu tank olarak işgal etsin.
+  let maxSrcStr = 0;
+  for (let i = 0; i < plan.sources.length; i++) {
+    const sc = cells[plan.sources[i].key];
+    if (sc && sc.s > maxSrcStr) maxSrcStr = sc.s;
+  }
+
   // Kuvvetleri yola çıkar.
   for (let i = 0; i < plan.sources.length; i++) {
     const s = plan.sources[i];
@@ -2420,7 +2941,10 @@ function resolveAssault(cells, bridgeMap, targetKey, attackerId, fraction, tick)
   if (plan.totalPower >= defense) {
     // Sağ kalanları BİRİM cinsine geri çevir: toplam güç/birim oranıyla ölçekle.
     const ratio = plan.totalCommit / plan.totalPower;
-    const survivors = Math.max(1, Math.round((plan.totalPower - defense) * ratio));
+    const survivors = Math.max(
+      occupyFloor(maxSrcStr),
+      Math.round((plan.totalPower - defense) * ratio)
+    );
     const previousOwner = tgt.o;
     tgt.o = attackerId;
     // Tavanı aşan fazlalık buharlaşır — yoksa bir kuşatma, alınan hücreyi
@@ -2446,6 +2970,18 @@ function resolveAssault(cells, bridgeMap, targetKey, attackerId, fraction, tick)
 
 function fail(reason) {
   return { ok: false, captured: false, totalCommit: 0, sourceKeys: [], reason };
+}
+
+/** Kuşatma sonrası geride kalacak asgari işgal kuvveti. */
+function occupyFloor(str) {
+  const tier = forceTierFor(str);
+  return (tier && FORCE[tier] ? FORCE[tier].occupy : 1);
+}
+
+/** Gerçek garnizondan topçu direnci (0..1). İstihbarat değil — zırh yalan söylemez. */
+function strikeResistOf(cell) {
+  const tier = forceTierFor(cell && cell.s);
+  return (tier && FORCE[tier] ? FORCE[tier].strikeResist : 0);
 }
 
 /**
@@ -2478,15 +3014,16 @@ function strikeInRange(cells, bridgeMap, targetKey, playerId, range) {
  * dolum) çağıranın işidir; bu fonksiyon yalnızca hasarı işler.
  *
  * Hasar savunma çarpanından bağımsızdır — top mermisi Toprak'ın surunu da
- * aşar — ama kale STRIKE.fortShield ile korur ve arazi tabanı (floorOnHit)
- * korunur: bombardıman tek başına bir hücreyi asla "bedava" hale getiremez.
+ * aşar — ama kale STRIKE.fortShield ile korur, zırh (tank/ağır) bir kısmını
+ * emer ve arazi tabanı (floorOnHit) korunur: bombardıman tek başına bir
+ * hücreyi asla "bedava" hale getiremez.
  * Dönen değer: silinen birim sayısı (arayüz geri bildirimi için).
  */
 function resolveStrike(cells, targetKey) {
   const tgt = cells[targetKey];
   if (!tgt) return 0;
   const t = terrainOf(tgt);
-  const raw = STRIKE.damage * (tgt.f ? STRIKE.fortShield : 1);
+  const raw = STRIKE.damage * (tgt.f ? STRIKE.fortShield : 1) * (1 - strikeResistOf(tgt));
   const before = tgt.s;
   tgt.s = Math.max(t.floorOnHit, Math.round(tgt.s - raw));
   return Math.max(0, before - tgt.s);
@@ -2633,7 +3170,7 @@ function bestSourceFor(cells, bridgeMap, targetKey, playerId) {
   return null;
 }
 
-return { terrainOf, effectiveMaxStr, siegeFatigue, cellCap, cellGrowth, defenseMultOf, defenseOf, planSource, planAssault, planAttack, isAdjacent, resolveAssault, strikeInRange, resolveStrike, applyGrowth, applySupplyFlow, frontierKeys, sourcesFor, bestSourceFor };
+return { terrainOf, effectiveMaxStr, siegeFatigue, cellCap, cellGrowth, defenseMultOf, defenseOf, planSource, planAssault, planAttack, isAdjacent, resolveAssault, occupyFloor, strikeResistOf, strikeInRange, resolveStrike, applyGrowth, applySupplyFlow, frontierKeys, sourcesFor, bestSourceFor };
 })();
 
 const __m_src_core_intel_js = (function(){
@@ -3630,6 +4167,7 @@ const __m_src_client_glyphs_js = (function(){
  *
  * Her yol 16×16 kutuya çizilmiştir; render katmanı ölçekleyip yerleştirir.
  */
+const { forceTierFor } = __m_src_core_constants_js;
 const TERRAIN_GLYPHS = {
   // Alev: iki katmanlı, yukarı doğru sivrilen dil
   fire: 'M8 1.5c1.6 2.4 1 3.9.2 5 .9.3 1.7-.2 2.2-1 1.6 1.7 2.1 3.6 2.1 5C12.5 12.9 10.5 14.5 8 14.5S3.5 12.9 3.5 10.5c0-3 1.9-6.6 4.5-9z',
@@ -3672,21 +4210,16 @@ const BADGE_STROKED = { decoyWeak: true };
  * kadar işler.
  */
 const UNIT_GLYPHS = {
-  // Piyade: miğferli asker büstü + omzunda tüfek
-  infantry: 'M8 1.5a2.6 2.6 0 0 1 2.6 2.6H5.4A2.6 2.6 0 0 1 8 1.5zM4.9 4.7h6.2v1H4.9zM11 5.6l2.9-3.2 1 .9-2.9 3.2zM8 6.6c2.7 0 4.7 1.8 5 4.4l.3 3.5H2.7l.3-3.5c.3-2.6 2.3-4.4 5-4.4z',
-  // Tank: palet + gövde + kule + namlu
-  tank: 'M2.2 10.6h11.6a2 2 0 0 1 0 4H2.2a2 2 0 0 1 0-4zM3 8.7h10v1.9H3zM5.6 5.4h4.2a1.7 1.7 0 0 1 1.7 1.7v1.6H3.9V7.1a1.7 1.7 0 0 1 1.7-1.7zM10.9 6.2h4.6v1.2h-4.6z',
-  // Ağır zırh: geniş palet, kumandan kulesi, namlu freni
-  heavy: 'M1.5 10.3h13a2.15 2.15 0 0 1 0 4.3h-13a2.15 2.15 0 0 1 0-4.3zM2.3 8.4h11.4v1.9H2.3zM4.7 4.7h5.2a1.8 1.8 0 0 1 1.8 1.8v1.9H2.9V6.5a1.8 1.8 0 0 1 1.8-1.8zM6.2 3.2h2.6v1.5H6.2zM10.9 5.6h3.3v1.2h-3.3zM13.8 5.1h1.5v2.2h-1.5z'
+  // Piyade: miğfer + siperlik + omuzda tüfek + gövde. Kalın, 8px'te okunur.
+  infantry: 'M8 .9a2.9 2.9 0 0 1 2.9 2.9H5.1A2.9 2.9 0 0 1 8 .9zM4.2 4.4h7.6v1.25H4.2zM11.1 5.2l3.4-3.7 1.15 1-3.4 3.7zM8 6.2c3 0 5.15 1.95 5.5 4.7L14 14.8H2l.5-3.9C2.85 8.15 5 6.2 8 6.2z',
+  // Tank: palet, yol tekeri boşlukları, gövde, kule, namlu — sağa bakıyor.
+  tank: 'M1.4 10.4h13.2a1.9 1.9 0 0 1 0 3.8H1.4a1.9 1.9 0 0 1 0-3.8zM2.6 11.4h1.3v1.6H2.6zM5.1 11.4h1.3v1.6H5.1zM7.6 11.4h1.3v1.6H7.6zM10.1 11.4h1.3v1.6h-1.3zM12.4 11.4h1.2v1.6h-1.2zM2.4 8.15h11.2v2.25H2.4zM5.2 5.05h4.6a1.55 1.55 0 0 1 1.55 1.55v1.55H3.65V6.6A1.55 1.55 0 0 1 5.2 5.05zM11.1 5.85h4.5v1.35h-4.5z',
+  // Ağır zırh: daha geniş palet, kumandan kapağı, namlu freni.
+  heavy: 'M.7 10.15h14.6a2.1 2.1 0 0 1 0 4.2H.7a2.1 2.1 0 0 1 0-4.2zM2 11.2h1.4v1.7H2zM4.6 11.2h1.4v1.7H4.6zM7.3 11.2h1.4v1.7H7.3zM10 11.2h1.4v1.7H10zM12.6 11.2h1.4v1.7h-1.4zM1.7 7.95h12.6v2.2H1.7zM4.5 4.55h5.6a1.7 1.7 0 0 1 1.7 1.7v1.7H2.8V6.25A1.7 1.7 0 0 1 4.5 4.55zM6.15 2.85h2.7v1.7H6.15zM11.5 5.35h3.2v1.35H11.5zM14.3 4.75h1.5v2.55h-1.5z'
 };
 
-/** Yayınlanan güce göre silüet kademesi. Eşikler BASE_MAX_STR=90'a göredir. */
-function unitTierFor(val) {
-  if (val === null || val === undefined || val <= 0) return '';
-  if (val >= 55) return 'heavy';
-  if (val >= 25) return 'tank';
-  return 'infantry';
-}
+/** Yayınlanan güce göre silüet kademesi — çekirdekteki FORCE eşikleriyle birebir. */
+const unitTierFor = forceTierFor;
 
 /**
  * Kaynak simgeleri — 16×16.
@@ -3775,6 +4308,22 @@ function createRenderer(opts) {
   const listen = (el2, type, fn, opt) =>
     el2.addEventListener(type, fn, { ...(opt || {}), signal: ac.signal });
   let emberTimer = null;
+  const fxTimers = [];
+  let fxLayer = null;
+
+  function later(fn, ms) {
+    const id = setTimeout(() => {
+      const i = fxTimers.indexOf(id);
+      if (i >= 0) fxTimers.splice(i, 1);
+      fn();
+    }, ms);
+    fxTimers.push(id);
+    return id;
+  }
+
+  function spawnFx(node) {
+    (fxLayer || svg).appendChild(node);
+  }
 
   let cellNodes = new Map();
   let borderNodes = new Map();   // playerId -> <path>  (imparatorluk sınırı)
@@ -3897,6 +4446,8 @@ function createRenderer(opts) {
   }
 
   function setWorld(state, bridgeMap) {
+    for (const id of fxTimers) clearTimeout(id);
+    fxTimers.length = 0;
     memory.clear();
     cellNodes = new Map();
     borderNodes = new Map();
@@ -3956,7 +4507,7 @@ function createRenderer(opts) {
       const unit = el('g', { class: 'unit' });
       g.appendChild(unit);
 
-      const text = el('text', { x: center[0], y: center[1] + 4.5, class: 'str' });
+      const text = el('text', { x: center[0], y: center[1] - 1.2, class: 'str' });
       g.appendChild(text);
 
       const badge = el('g', { class: 'badge' });
@@ -3980,6 +4531,9 @@ function createRenderer(opts) {
       borderNodes.set(p.id, path);
     }
     svg.appendChild(borders);
+
+    fxLayer = el('g', { class: 'fx-layer' });
+    svg.appendChild(fxLayer);
   }
 
   // ---------------------------------------------------------------- güncelleme
@@ -4054,17 +4608,33 @@ function createRenderer(opts) {
    * "stale" (eski bilgi) durumunda silüet soluklaşır: hatıradaki ordu.
    * Buradaki değer İSTİHBARAT değeridir, asla cell.s değil — tank silüetleri de
    * sayılar gibi yalan söyleyebilmeli, yoksa blöf görselden sızar.
+   *
+   * Konum transform'u DIŞ grupta, idle animasyonu İÇ grupta: CSS transform
+   * SVG attribute transform'u ezer, ikisini aynı düğümde tutmak birimi
+   * orijine sıçratırdı.
    */
   function setUnit(node, center, tier, stale) {
     const key = tier ? tier + (stale ? '~' : '') : '';
     if (node.dataset.kind === key) return;
+    const changed = node.dataset.kind && node.dataset.kind !== key;
     node.dataset.kind = key;
     node.textContent = '';
     if (!tier) return;
-    const scale = tier === 'heavy' ? 0.56 : tier === 'tank' ? 0.52 : 0.48;
-    const p = glyph(UNIT_GLYPHS[tier], center, 9.2, scale, 'unit-glyph u-' + tier, false);
-    if (stale) p.classList.add('stale');
-    node.appendChild(p);
+    const scale = tier === 'heavy' ? 0.70 : tier === 'tank' ? 0.64 : 0.58;
+    const size = GLYPH_BOX * scale;
+    const tx = center[0] - size / 2;
+    const ty = center[1] + 10.6 - size / 2;
+    const wrap = el('g', {
+      transform: `translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${scale.toFixed(3)})`
+    });
+    const idle = el('g', { class: 'unit-idle u-' + tier + (stale ? ' stale' : '') });
+    idle.appendChild(el('path', { d: UNIT_GLYPHS[tier], class: 'unit-glyph' }));
+    wrap.appendChild(idle);
+    node.appendChild(wrap);
+    if (changed && !reduceMotion) {
+      idle.classList.add('unit-spawn');
+      later(() => idle.classList.remove('unit-spawn'), 420);
+    }
   }
 
   function update(ctx) {
@@ -4107,6 +4677,7 @@ function createRenderer(opts) {
       node.g.classList.toggle('hovered', k === ctx.hoverKey);
       node.g.classList.toggle('locked',
         ctx.phase === 'playing' && !mine && !(ctx.frontier && ctx.frontier.has(k)));
+      node.g.classList.toggle('bluffing', kind === 'decoyWeak' || kind === 'decoyStrong');
     }
 
     updateOwnerBorders(cells);
@@ -4122,109 +4693,182 @@ function createRenderer(opts) {
     node.g.classList.add(kind === 'deny' ? 'fx-deny' : kind === 'hit' ? 'fx-hit' : 'fx-capture');
   }
 
+  function sourceTier(node) {
+    const kind = (node.unit && node.unit.dataset.kind) || '';
+    const tier = kind.replace('~', '');
+    return UNIT_GLYPHS[tier] ? tier : 'infantry';
+  }
+
   /**
-   * SALDIRI ANİMASYONU — her kaynaktan hedefe bir top mermisi.
+   * SALDIRI ANİMASYONU — her kaynaktan hedefe yürüyen bir birlik.
    *
-   * Üç aşama: kaynakta namlu alevi, yolda dönük bir mermi, hedefte tek bir
-   * patlama (kaynak başına değil — beş koldan gelen kuşatma hedefte TEK büyük
-   * çarpma olarak okunmalı, beş ayrı havai fişek olarak değil).
+   * Piyade koşar, tank palet tozu bırakır, ağır zırh daha yavaş ve tok gelir.
+   * Hedefte TEK patlama: beş koldan gelen kuşatma beş havai fişek değil,
+   * tek bir yarma olarak okunmalı.
    */
   function tracers(sourceKeys, targetKey) {
     if (reduceMotion) return;
     const tgt = cellNodes.get(targetKey);
     if (!tgt) return;
-    let fired = false;
+    let latest = 0;
+    let i = 0;
     for (const sk of sourceKeys) {
       const src = cellNodes.get(sk);
       if (!src) continue;
-      fired = true;
       const [sx, sy] = src.center, [tx, ty] = tgt.center;
       const ang = (Math.atan2(ty - sy, tx - sx) * 180 / Math.PI).toFixed(1);
       const d = 'M' + sx + ',' + sy + 'L' + tx + ',' + ty;
+      const dist = Math.hypot(tx - sx, ty - sy);
+      const delay = i * 0.07;
+      const dur = Math.max(0.34, Math.min(0.64, dist / 88));
+      const tier = sourceTier(src);
+      i++;
 
       const g = el('g', { class: 'tracer' });
-      g.appendChild(el('path', { d, class: 'trail', fill: 'none' }));
+      g.appendChild(el('path', { d, class: 'trail march-trail', fill: 'none' }));
 
-      // Namlu alevi: kaynağın hedefe bakan yüzünde kısa bir parlama.
       const muzzle = el('g', { transform: `translate(${sx} ${sy}) rotate(${ang})` });
-      muzzle.appendChild(el('path', { d: 'M3 0L8.6 -2 6.8 0 8.6 2Z', class: 'muzzle-flame' }));
+      muzzle.appendChild(el('path', { d: 'M2.2 0L9.4 -2.6 7.2 0 9.4 2.6Z', class: 'muzzle-flame' }));
       g.appendChild(muzzle);
 
-      // Mermi: uçuş yönüne dönük küçük bir kapsül.
-      const shell = el('g', { class: 'shell' });
-      shell.appendChild(el('ellipse', { rx: '2.1', ry: '.85', class: 'shell-body', transform: `rotate(${ang})` }));
-      shell.appendChild(el('animateMotion', { dur: '.42s', fill: 'freeze', path: d }));
-      g.appendChild(shell);
+      const scale = tier === 'heavy' ? 0.78 : tier === 'tank' ? 0.72 : 0.66;
+      const body = el('g', { class: 'march-body' });
+      const wrap = el('g', { transform: `translate(${(-8 * scale).toFixed(2)} ${(-8 * scale).toFixed(2)}) scale(${scale.toFixed(3)})` });
+      wrap.appendChild(el('path', { d: UNIT_GLYPHS[tier], class: 'unit-glyph march-glyph u-' + tier }));
+      body.appendChild(wrap);
+      const mot = el('animateMotion', {
+        dur: dur.toFixed(2) + 's', fill: 'freeze', rotate: 'auto', path: d,
+        begin: delay.toFixed(2) + 's'
+      });
+      body.appendChild(mot);
+      g.appendChild(body);
 
-      svg.appendChild(g);
-      setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 700);
+      if (tier !== 'infantry') {
+        for (let p = 0; p < 3; p++) {
+          const t = (p + 1) / 4;
+          const dust = el('circle', {
+            cx: (sx + (tx - sx) * t).toFixed(1),
+            cy: (sy + (ty - sy) * t).toFixed(1),
+            r: (1.4 + p * 0.35).toFixed(1),
+            class: 'march-dust'
+          });
+          dust.style.animationDelay = ((delay + dur * t) * 1000).toFixed(0) + 'ms';
+          g.appendChild(dust);
+        }
+      }
+
+      spawnFx(g);
+      later(() => { if (g.parentNode) g.parentNode.removeChild(g); }, (delay + dur) * 1000 + 280);
+      const arrive = delay + dur;
+      if (arrive > latest) latest = arrive;
     }
-    if (fired) setTimeout(() => boom(targetKey, 'hit'), 400);
+    if (latest > 0) later(() => boom(targetKey, 'hit'), latest * 1000 - 40);
   }
 
   /**
    * PATLAMA — çekirdek parlama + genişleyen şok halkası + şarapnel + duman.
-   * kind: 'hit' (küçük) | 'capture' (orta) | 'big' (bombardıman).
+   * kind: 'hit' (küçük) | 'capture' (orta, pirinç) | 'big' (bombardıman).
    * Tümü CSS animasyonu: DOM bir kez kurulur, tarayıcı kompozitörü oynatır.
    */
   function boom(k, kind) {
     if (reduceMotion) return;
     const node = cellNodes.get(k);
     if (!node) return;
+    const big = kind === 'big';
     const g = el('g', {
-      class: 'boom' + (kind === 'big' ? ' boom-big' : ''),
+      class: 'boom boom-' + (kind || 'hit') + (big ? ' boom-big' : ''),
       transform: `translate(${node.center[0]} ${node.center[1]})`
     });
-    g.appendChild(el('circle', { r: '5.5', class: 'boom-flash' }));
+    g.appendChild(el('circle', { r: big ? '7.5' : '5.5', class: 'boom-flash' }));
     g.appendChild(el('circle', { r: '6', class: 'boom-ring' }));
+    if (big) g.appendChild(el('ellipse', { rx: '7', ry: '3.2', class: 'boom-crater' }));
 
-    const frags = kind === 'big' ? 9 : 6;
+    const frags = big ? 10 : kind === 'capture' ? 8 : 6;
     for (let i = 0; i < frags; i++) {
-      const a = (Math.PI * 2 * i) / frags + Math.random() * 0.8;
-      const dist = (kind === 'big' ? 12 : 8) + Math.random() * 6;
-      const p = el('circle', { r: (0.7 + Math.random() * 0.7).toFixed(2), class: 'boom-frag' });
+      const a = (Math.PI * 2 * i) / frags + Math.random() * 0.7;
+      const dist = (big ? 13 : 8) + Math.random() * 6;
+      const p = el('circle', { r: (0.7 + Math.random() * 0.8).toFixed(2), class: 'boom-frag' });
       p.style.setProperty('--dx', (Math.cos(a) * dist).toFixed(1) + 'px');
       p.style.setProperty('--dy', (Math.sin(a) * dist).toFixed(1) + 'px');
-      p.style.animationDelay = Math.round(Math.random() * 70) + 'ms';
+      p.style.animationDelay = Math.round(Math.random() * 80) + 'ms';
       g.appendChild(p);
     }
-    for (let i = 0; i < (kind === 'big' ? 4 : 2); i++) {
+    for (let i = 0; i < (big ? 5 : 3); i++) {
       const s = el('circle', {
-        cx: (Math.random() * 8 - 4).toFixed(1), cy: (Math.random() * 4 - 2).toFixed(1),
-        r: (2.4 + Math.random() * 2).toFixed(1), class: 'boom-smoke'
+        cx: (Math.random() * 9 - 4.5).toFixed(1), cy: (Math.random() * 5 - 2).toFixed(1),
+        r: (2.6 + Math.random() * 2.2).toFixed(1), class: 'boom-smoke'
       });
-      s.style.animationDelay = (110 + i * 140) + 'ms';
+      s.style.animationDelay = (90 + i * 120) + 'ms';
       g.appendChild(s);
     }
-    svg.appendChild(g);
-    setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 1500);
+    spawnFx(g);
+    later(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 1500);
+    if (big) shake();
+  }
+
+  function shake() {
+    if (reduceMotion) return;
+    svg.classList.remove('fx-shake');
+    void svg.getBoundingClientRect();
+    svg.classList.add('fx-shake');
+    later(() => svg.classList.remove('fx-shake'), 420);
+  }
+
+  function floatText(k, text, cls) {
+    if (reduceMotion || !text) return;
+    const node = cellNodes.get(k);
+    if (!node) return;
+    const t = el('text', {
+      x: node.center[0], y: node.center[1] - 7,
+      class: 'floater' + (cls ? ' ' + cls : '')
+    });
+    t.textContent = text;
+    spawnFx(t);
+    later(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 900);
   }
 
   /**
-   * BOMBARDIMAN ANİMASYONU — kavisli bir obüs mermisi ve büyük patlama.
+   * BOMBARDIMAN ANİMASYONU — kavisli bir obüs mermisi, duman izi ve büyük patlama.
    * fromKey verilmezse (ör. uzaktaki bir botun vuruşu) yalnızca patlama oynar.
    */
-  function strikeFx(targetKey, fromKey) {
-    if (reduceMotion) return;
+  function strikeFx(targetKey, fromKey, damage) {
+    if (reduceMotion) {
+      if (damage) floatText(targetKey, '−' + damage, 'dmg');
+      return;
+    }
     const tgt = cellNodes.get(targetKey);
     if (!tgt) return;
     const src = fromKey ? cellNodes.get(fromKey) : null;
-    if (!src) { boom(targetKey, 'big'); return; }
+    if (!src) {
+      boom(targetKey, 'big');
+      if (damage) later(() => floatText(targetKey, '−' + damage, 'dmg'), 80);
+      return;
+    }
     const [sx, sy] = src.center, [tx, ty] = tgt.center;
     const mx = (sx + tx) / 2;
-    const my = (sy + ty) / 2 - Math.max(20, Math.hypot(tx - sx, ty - sy) * 0.5);
+    const my = (sy + ty) / 2 - Math.max(22, Math.hypot(tx - sx, ty - sy) * 0.52);
     const d = `M${sx},${sy} Q${mx},${my} ${tx},${ty}`;
 
     const g = el('g', { class: 'tracer' });
     g.appendChild(el('path', { d, class: 'arc-trail', fill: 'none' }));
+
+    const muzzle = el('g', { transform: `translate(${sx} ${sy})` });
+    muzzle.appendChild(el('circle', { r: '3.2', class: 'muzzle-bloom' }));
+    g.appendChild(muzzle);
+
     const shell = el('g', { class: 'shell' });
-    shell.appendChild(el('ellipse', { rx: '2.3', ry: '1', class: 'shell-body' }));
-    const mot = el('animateMotion', { dur: '.62s', fill: 'freeze', rotate: 'auto', path: d });
-    shell.appendChild(mot);
+    shell.appendChild(el('path', {
+      d: 'M-3.6 -.9 L2.8 -1.15 L4.4 0 L2.8 1.15 L-3.6 .9 L-2.6 0Z',
+      class: 'shell-body'
+    }));
+    shell.appendChild(el('animateMotion', { dur: '.68s', fill: 'freeze', rotate: 'auto', path: d }));
     g.appendChild(shell);
-    svg.appendChild(g);
-    setTimeout(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 950);
-    setTimeout(() => boom(targetKey, 'big'), 580);
+    spawnFx(g);
+    later(() => { if (g.parentNode) g.parentNode.removeChild(g); }, 1050);
+    later(() => {
+      boom(targetKey, 'big');
+      if (damage) floatText(targetKey, '−' + damage, 'dmg');
+    }, 640);
   }
 
   function startEmbers() {
@@ -4400,10 +5044,14 @@ function createRenderer(opts) {
   function destroy() {
     ac.abort();
     if (emberTimer) { clearInterval(emberTimer); emberTimer = null; }
+    for (const id of fxTimers) clearTimeout(id);
+    fxTimers.length = 0;
+    if (fxLayer && fxLayer.parentNode) fxLayer.parentNode.removeChild(fxLayer);
+    fxLayer = null;
   }
 
   return {
-    setWorld, update, flash, tracers, boom, strikeFx, startEmbers, destroy,
+    setWorld, update, flash, tracers, boom, strikeFx, floatText, startEmbers, destroy,
     resetView, centerOn, focusOn,
     zoomIn: () => centerZoom(1 / 1.25),
     zoomOut: () => centerZoom(1.25),
@@ -4424,12 +5072,12 @@ const __m_src_client_ui_js = (function(){
  */
 const {
   RESOURCE_META, TERRAINS, TERRAIN_IDS, COMMIT_STEPS,
-  DECOY, SCOUT, FORT, FORTIFY, STRIKE, TICK_MS
+  DECOY, SCOUT, FORT, FORTIFY, STRIKE, FORCE, forceTierFor, TICK_MS
 } = __m_src_core_constants_js;
 const { planSource, defenseMultOf, terrainOf } = __m_src_core_rules_js;
 const { neighborKeys } = __m_src_core_hex_js;
 const { INTEL } = __m_src_core_intel_js;
-const { TERRAIN_GLYPHS, TERRAIN_STROKED, RESOURCE_GLYPHS, RESOURCE_STROKED } = __m_src_client_glyphs_js;
+const { TERRAIN_GLYPHS, TERRAIN_STROKED, RESOURCE_GLYPHS, RESOURCE_STROKED, UNIT_GLYPHS } = __m_src_client_glyphs_js;
 /** Komut çubuğu simgeleri — 24×24, emoji yerine tutarlı SVG. */
 const MODE_ICONS = {
   attack:      '<path d="M4 20 L14 10 M14 4h6v6 M20 4l-9 9 M4 6l5 5 M8 16l-4 4"/>',
@@ -4449,7 +5097,7 @@ function modeIcon(id){
 /** Eylem kipleri — her biri bir komut tipine ve bir hedef kısıtına karşılık gelir. */
 const MODES = {
   attack:      { key: 'attack',  label: 'Saldırı',      hint: 'Sınırındaki bir bölgeye tıkla — ona komşu TÜM bölgelerinden kuvvet toplanır.' },
-  strike:      { key: 'strike',  label: 'Bombardıman',  cost: STRIKE.cost,  hint: 'Menzildeki (2 bölge) bir düşman bölgesini topa tut: garnizonu −' + STRIKE.damage + ', toprak el değiştirmez, cephen boşalmaz. Kale hasarı yarılar.' },
+  strike:      { key: 'strike',  label: 'Bombardıman',  cost: STRIKE.cost,  hint: 'Menzildeki (2 bölge) düşmanı topa tut. Tank ve ağır zırh hasarın bir kısmını emer, kale yarılar. Toprak el değiştirmez.' },
   decoyWeak:   { key: 'decoy',   label: 'Zayıf Göster', cost: DECOY.cost,   mode: 'weak',   own: true, hint: 'Kendi bölgeni seç: düşman burayı bomboş sanır ve gerçek gücünün üstüne gelir.' },
   decoyStrong: { key: 'decoy',   label: 'Güçlü Göster', cost: DECOY.cost,   mode: 'strong', own: true, hint: 'Kendi bölgeni seç: düşman burayı yenilmez sanır ve saldırmaktan vazgeçer.' },
   scout:       { key: 'scout',   label: 'Casus',        cost: SCOUT.cost,   hint: 'Herhangi bir bölgeyi seç: çevresindeki GERÇEK güçler açığa çıkar, blöfler delinir.' },
@@ -4523,6 +5171,24 @@ function createUI(refs) {
         'stroke-linecap="round" stroke-linejoin="round"><path d="' + TERRAIN_GLYPHS[id] + '"/></svg>' +
         '<b>' + t.name + '</b>' +
         '<span class="tt">' + RESOURCE_META[bestRes].name + ' · ' + t.tip + '</span>';
+      refs.terrainLegend.appendChild(chip);
+    }
+    const note = document.createElement('span');
+    note.className = 'terrain-chip unit-legend-head';
+    note.innerHTML = '<b>Ordu</b><span class="tt">Garnizon büyüdükçe silüet değişir</span>';
+    refs.terrainLegend.appendChild(note);
+    for (const id of ['infantry', 'tank', 'heavy']) {
+      const f = FORCE[id];
+      const chip = document.createElement('span');
+      chip.className = 'terrain-chip';
+      const resist = Math.round(f.strikeResist * 100);
+      chip.innerHTML =
+        '<svg viewBox="0 0 16 16" fill="currentColor"><path d="' + UNIT_GLYPHS[id] + '"/></svg>' +
+        '<b>' + f.name + '</b>' +
+        '<span class="tt">' + f.min + '+ güç' +
+          (resist ? ' · topçu −%' + resist : ' · zırhsız') +
+          (f.occupy > 1 ? ' · işgal ' + f.occupy : '') +
+        '</span>';
       refs.terrainLegend.appendChild(chip);
     }
   }
@@ -4734,11 +5400,19 @@ function createUI(refs) {
     refs.preview.innerHTML = info;
   }
 
+  function forceTag(val) {
+    const tier = forceTierFor(val);
+    if (!tier) return '';
+    return '<span class="pv-tag">' + FORCE[tier].name + '</span>';
+  }
+
   function buildPreviewHtml(cellKey, cell, entry, prev, tick) {
     const t = terrainOf(cell);
+    const believed = entry && entry.val !== null ? entry.val : null;
     const head = '<div class="pv-head"><span class="pv-terrain">' + t.name + '</span>' +
       (cell.f ? '<span class="pv-tag">Kale</span>' : '') +
       (cell.cap ? '<span class="pv-tag">Başkent</span>' : '') +
+      forceTag(believed) +
       '</div>';
 
     if (!prev || !prev.valid) {
@@ -4751,11 +5425,61 @@ function createUI(refs) {
     const trustNote = prev.trusted
       ? '<span class="pv-trust ok">✓ doğrulanmış</span>'
       : '<span class="pv-trust risk">? doğrulanmamış</span>';
+    const seen = forceTierFor(believed);
+    const armorNote = seen && FORCE[seen].strikeResist
+      ? '<div class="pv-warn">Görünen ' + FORCE[seen].name.toLowerCase() + ' topçuya karşı zırhlı görünüyor — yalan olabilir.</div>'
+      : '';
     return head +
       `<div class="pv-row"><span>${prev.sources.length} bölgeden kuvvet</span><b>${Math.round(prev.totalPower)}</b></div>` +
       `<div class="pv-row"><span>Gereken (tahmin)</span><b>${Math.round(prev.defense)}</b> ${trustNote}</div>` +
       `<div class="pv-verdict ${ok ? 'ok' : 'no'}">${ok ? '✓ Ele geçirilir' : '✗ Yetersiz — yıpratır ama alamaz'}</div>` +
-      (prev.trusted ? '' : `<div class="pv-warn">Bu sayı bir sahte garnizon olabilir.</div>`);
+      (prev.trusted ? '' : `<div class="pv-warn">Bu sayı bir sahte garnizon olabilir.</div>`) +
+      armorNote;
+  }
+
+  function buildOwnPreviewHtml(cell, entry, tick) {
+    const t = terrainOf(cell);
+    const val = entry && entry.val !== null ? entry.val : cell.s;
+    const tier = forceTierFor(val);
+    const f = tier ? FORCE[tier] : null;
+    const head = '<div class="pv-head"><span class="pv-terrain">' + t.name + '</span>' +
+      (cell.f ? '<span class="pv-tag">Kale</span>' : '') +
+      (cell.cap ? '<span class="pv-tag">Başkent</span>' : '') +
+      (f ? '<span class="pv-tag">' + f.name + '</span>' : '') +
+      '</div>';
+    const resist = f ? Math.round(f.strikeResist * 100) : 0;
+    return head +
+      `<div class="pv-row"><span>Garnizon</span><b>${val}</b></div>` +
+      `<div class="pv-row"><span>Topçu direnci</span><b>${resist ? '%' + resist : 'yok'}</b></div>` +
+      (f && f.occupy > 1
+        ? `<div class="pv-row muted">${f.name} yarmayı tutar: ele geçirince en az ${f.occupy} birim kalır.</div>`
+        : `<div class="pv-row muted">Kendi bölgen. Garnizon ${FORCE.tank.min}'e ulaşınca tank, ${FORCE.heavy.min}'te ağır zırh olur.</div>`);
+  }
+
+  function buildStrikePreviewHtml(cell, entry, inRange, tick) {
+    const t = terrainOf(cell);
+    const believed = entry && entry.val !== null ? entry.val : null;
+    const seen = forceTierFor(believed);
+    const head = '<div class="pv-head"><span class="pv-terrain">' + t.name + '</span>' +
+      (cell.f ? '<span class="pv-tag">Kale</span>' : '') +
+      forceTag(believed) +
+      '</div>';
+    if (!inRange) {
+      return head + '<div class="pv-row muted">Menzil dışında — toprağından en fazla ' + STRIKE.range + ' bölge uzağı dövebilirsin.</div>';
+    }
+    const resistGuess = seen && FORCE[seen] ? FORCE[seen].strikeResist : 0;
+    const fortMul = cell.f ? STRIKE.fortShield : 1;
+    const est = believed === null
+      ? null
+      : Math.round(STRIKE.damage * fortMul * (1 - resistGuess));
+    return head +
+      (est === null
+        ? '<div class="pv-row muted">Gücü bilinmiyor — hasar tahmini yok.</div>'
+        : `<div class="pv-row"><span>Tahmini hasar</span><b>−${est}</b></div>`) +
+      `<div class="pv-verdict ok">Bombardıman menzilde</div>` +
+      (believed !== null && !((entry && (entry.lvl === INTEL.OWN || entry.lvl === INTEL.VERIFIED)))
+        ? '<div class="pv-warn">Zırh tahmini gördüğün silüete göre; tuzak olabilir.</div>'
+        : '');
   }
 
   // ------------------------------------------------------------ bildirim
@@ -4790,7 +5514,7 @@ function createUI(refs) {
     setMode, setFraction,
     onAction(fn) { onAction = fn; },
     renderResources, renderLeaderboard, renderRegions, renderLog,
-    setPreview, buildPreviewHtml, toast, setStatus, setClock, setSharePct
+    setPreview, buildPreviewHtml, buildOwnPreviewHtml, buildStrikePreviewHtml, toast, setStatus, setClock, setSharePct
   };
 }
 
@@ -4879,8 +5603,12 @@ const sfx = {
   select()   { tone(620, 0.07, 'sine', 0.16); },
   deny()     { tone(180, 0.16, 'sawtooth', 0.13, 0, 90); },
 
-  /** Kuşatma başlıyor: alçalan bir davul + toz. */
-  assault()  { tone(150, 0.20, 'square', 0.10, 0, 80); noise(0.18, 0.10, 900); },
+  /** Kuşatma başlıyor: alçalan davul + palet gürültüsü + toz. */
+  assault()  {
+    tone(150, 0.20, 'square', 0.10, 0, 80);
+    tone(68, 0.28, 'square', 0.08, 0.04, 42);
+    noise(0.22, 0.12, 700);
+  },
   /** Bombardıman: düşen mermi ıslığı + ağır patlama. */
   strike()   { tone(1100, 0.42, 'sine', 0.06, 0, 220); noise(0.4, 0.24, 420); tone(58, 0.5, 'sine', 0.26, 0.3, 36); },
   /** Bölge alındı: yükselen ikili. */
@@ -4925,13 +5653,13 @@ const __m_src_client_session_js = (function(){
  * yapısal olarak imkânsızlaşır: davranışın tamamı burada, tek yerde.
  */
 const { bridgeMapOf, viewFor, endReasonText } = __m_src_core_match_js;
-const { frontierKeys } = __m_src_core_rules_js;
+const { frontierKeys, strikeInRange } = __m_src_core_rules_js;
 const { parseKey } = __m_src_core_hex_js;
 const { createRenderer } = __m_src_client_render_js;
 const { createUI, previewAssault, MODES } = __m_src_client_ui_js;
 const { sfx } = __m_src_client_audio_js;
 const { REGIONS } = __m_src_core_mapgen_js;
-const { DOMINATION_SHARE } = __m_src_core_constants_js;
+const { DOMINATION_SHARE, STRIKE } = __m_src_core_constants_js;
 function startSession(adapter, refs) {
   const renderer = createRenderer({
     svg: refs.map,
@@ -5012,9 +5740,9 @@ function startSession(adapter, refs) {
       // Animasyon kaynağı: hedefe en yakın kendi bölgen (yalnızca görsel;
       // kural motoru menzili kendisi doğrular).
       const from = nearestOwnKey(state, k);
-      send({ type: 'strike', cellKey: k }, () => {
+      send({ type: 'strike', cellKey: k }, (res) => {
         sfx.strike();
-        renderer.strikeFx(k, from);
+        renderer.strikeFx(k, from, res && res.damage);
         ui.setMode('attack');
       });
       return;
@@ -5044,7 +5772,7 @@ function startSession(adapter, refs) {
         sfx.deny();
         return;
       }
-      if (onOk) onOk();
+      if (onOk) onOk(res);
       refresh();
     }).catch((err) => {
       ui.toast(String((err && err.message) || err), 'bad');
@@ -5060,11 +5788,18 @@ function startSession(adapter, refs) {
     if (!cell) { ui.setPreview(null); return; }
     const entry = currentIntel[k];
     if (cell.o === adapter.youId) {
-      ui.setPreview(ui.buildPreviewHtml(k, cell, entry, null, state.tick));
-    } else {
-      const prev = previewAssault(state.cells, bridgeMap, k, adapter.youId, ui.fraction, state.tick, entry);
-      ui.setPreview(ui.buildPreviewHtml(k, cell, entry, prev, state.tick));
+      ui.setPreview(ui.buildOwnPreviewHtml(cell, entry, state.tick));
+      refresh();
+      return;
     }
+    if (ui.mode === 'strike') {
+      const inRange = strikeInRange(state.cells, bridgeMap, k, adapter.youId, STRIKE.range);
+      ui.setPreview(ui.buildStrikePreviewHtml(cell, entry, inRange, state.tick));
+      refresh();
+      return;
+    }
+    const prev = previewAssault(state.cells, bridgeMap, k, adapter.youId, ui.fraction, state.tick, entry);
+    ui.setPreview(ui.buildPreviewHtml(k, cell, entry, prev, state.tick));
     refresh();
   }
 
@@ -5979,7 +6714,7 @@ function bootOnline(host) {
         const row = document.createElement('div');
         row.className = 'lobby-player-row';
         row.innerHTML =
-          `<span class="lobby-player-swatch" style="background:linear-gradient(160deg,${col.light},${col.dark})"></span>` +
+          `<span class="lobby-player-swatch" style="background:linear-gradient(160deg,${col.pair || col.light},${col.dark})"></span>` +
           `<span${pUid === uid ? ' class="lobby-player-you"' : ''}>${esc(p.name)}` +
           `${pUid === lobby.hostUid ? ' <em>(kurucu)</em>' : ''}</span>`;
         lobbyPlayersEl.appendChild(row);
@@ -6431,14 +7166,14 @@ function bootApp() {
     onPick: (i) => {
       sfx.unlock(); sfx.select();
       const b = BANNERS[i];
-      if (b) banner.setColors(b.light, b.dark);
+      if (b) banner.setColors(b.light, b.dark, b.pair);
     }
   });
 
   const backdrop = createBackdrop($('backdrop'));
   const banner = createBanner($('banner'));
   // Kayıtlı sancak rengiyle başla (localStorage'dan geri yüklenmiş olabilir).
-  if (identity.banner) banner.setColors(identity.banner.light, identity.banner.dark);
+  if (identity.banner) banner.setColors(identity.banner.light, identity.banner.dark, identity.banner.pair);
 
   let local = null;
   let online = null;
@@ -6455,13 +7190,14 @@ function bootApp() {
 
   // ------------------------------------------------------------- ekranlar
   /**
-   * Görünür ekranı değiştirir. Menü dışındaki ekranlarda dekoratif arka plan
-   * durdurulur — arkada boşuna dönen bir zamanlayıcı bırakmıyoruz.
+   * Görünür ekranı değiştirir. Oyun tahtasında dekoratif kumaş durdurulur —
+   * arkada boşuna dönen bir zamanlayıcı bırakmıyoruz. Menü, kurulum ve lobi
+   * aynı sahneyi paylaşır.
    */
   function showScreen(name, opts) {
     document.body.dataset.screen = name;
-    if (name === 'menu') { backdrop.start(); banner.start(); }
-    else { backdrop.stop(); banner.stop(); }
+    if (name === 'game') { backdrop.stop(); banner.stop(); }
+    else { backdrop.start(); banner.start(); }
     // Ekranın kendi kaydırması varsa başa sar — önceki ekranın konumu kalmasın.
     const el = $({
       'menu': 'screenMenu', 'local-setup': 'screenLocalSetup',
