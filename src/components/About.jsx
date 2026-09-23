@@ -30,7 +30,7 @@ export default function About() {
           transition={{ duration: 0.8 }}
           className="mb-24 text-center lg:text-left"
         >
-          <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
+          <p className="text-[11px] font-black tracking-label-x text-indigo-400 uppercase mb-3">
             {t.about.eyebrow}
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
@@ -80,7 +80,7 @@ export default function About() {
                 variants={valueItem}
                 whileHover={{ y: -4, borderColor: 'rgba(99,102,241,0.3)' }}
                 data-cursor="soft"
-                className="bg-white/[0.02] border border-white/8 rounded-2xl p-5 flex flex-col gap-3 cursor-default transition-colors"
+                className="bg-white/[0.02] border border-white/8 rounded-card p-5 flex flex-col gap-3 cursor-default transition-colors"
               >
                 <span className="text-2xl">{v.icon}</span>
                 <h4 className="text-sm font-black text-white tracking-tight">{v.title}</h4>

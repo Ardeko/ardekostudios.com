@@ -14,13 +14,19 @@ export default function Footer() {
             transition={{ duration: 0.7 }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <img src="/ardeko.png" alt="Ardeko" className="h-8 w-auto object-contain opacity-80" />
+              <img
+                src="/ardeko.png"
+                alt=""
+                width={512}
+                height={512}
+                className="h-8 w-auto object-contain opacity-80"
+              />
               <div>
-                <div className="text-xs font-black tracking-[0.3em] text-white">ARDEKO</div>
-                <div lang="en" className="text-[8px] font-bold tracking-[0.3em] text-gray-600 uppercase">Studios</div>
+                <div className="text-xs font-black tracking-label-wide text-white">ARDEKO</div>
+                <div lang="en" className="text-[8px] font-bold tracking-label-wide text-gray-400 uppercase">Studios</div>
               </div>
             </div>
-            <p className="text-xs text-gray-600 font-light leading-relaxed">
+            <p className="text-xs text-gray-400 font-light leading-relaxed">
               {t.footer.desc}
             </p>
 
@@ -30,7 +36,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 data-cursor="ring"
-                className="px-3 py-1.5 border border-white/10 rounded-lg text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
+                className="px-3 py-1.5 border border-white/10 rounded-chip text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
               >
                 App Store
               </a>
@@ -39,7 +45,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 data-cursor="ring"
-                className="px-3 py-1.5 border border-white/10 rounded-lg text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
+                className="px-3 py-1.5 border border-white/10 rounded-chip text-[9px] font-black tracking-widest text-gray-400 hover:text-white hover:border-white/30 transition-all uppercase"
               >
                 Google Play
               </a>
@@ -52,7 +58,7 @@ export default function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.08 }}
           >
-            <h4 className="text-[9px] font-black tracking-[0.4em] text-gray-500 uppercase mb-5">
+            <h4 className="text-[9px] font-black tracking-label-x text-gray-500 uppercase mb-5">
               {t.footer.social}
             </h4>
             <ul className="flex flex-col gap-3">
@@ -76,7 +82,7 @@ export default function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.16 }}
           >
-            <h4 className="text-[9px] font-black tracking-[0.4em] text-gray-500 uppercase mb-5">
+            <h4 className="text-[9px] font-black tracking-label-x text-gray-500 uppercase mb-5">
               {t.footer.legal}
             </h4>
             <ul className="flex flex-col gap-3">
@@ -98,7 +104,7 @@ export default function Footer() {
         <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-8" />
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] text-gray-700 font-medium tracking-widest uppercase">
+          <p className="text-[10px] text-gray-400 font-medium tracking-widest uppercase">
             © {new Date().getFullYear()} <span lang="en">Ardeko Studios.</span> {t.footer.rights}
           </p>
 
@@ -108,7 +114,7 @@ export default function Footer() {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-1 h-1 rounded-full bg-indigo-500"
             />
-            <span lang="en" className="text-[9px] text-gray-700 font-bold tracking-widest uppercase">
+            <span lang="en" className="text-[9px] text-gray-400 font-bold tracking-widest uppercase">
               Made with ♥ in Istanbul
             </span>
           </div>

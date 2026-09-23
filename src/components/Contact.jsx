@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useLang } from '../lib/i18n';
 
 const cardsContainer = {
@@ -34,37 +34,20 @@ const fieldItem = {
   },
 };
 
-function MagneticButton({ loading, disabled }) {
+/* Eskiden MagneticButton'dı: imleç üzerindeyken buton fareye doğru
+   kayıyordu. Mıknatıs efekti siteden tamamen kaldırıldı — bir gönder
+   butonunun tıklanacak anda yer değiştirmesi hedefi küçültmekten başka
+   bir şey yapmıyordu (Fitts yasası) ve dokunmatikte zaten hiç
+   çalışmıyordu. Geri kalanı aynı: gradyan hover'ı, glow, loading. */
+function SubmitButton({ loading, disabled }) {
   const { t } = useLang();
-  const ref = useRef(null);
-
-  const handleMouseMove = (e) => {
-    const el = ref.current;
-    if (!el || disabled || loading) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    el.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-    el.style.transition = 'transform 0.1s ease';
-    el.style.boxShadow = '0 0 50px rgba(99,102,241,0.5)';
-  };
-
-  const handleMouseLeave = () => {
-    if (!ref.current) return;
-    ref.current.style.transform = 'translate(0px, 0px)';
-    ref.current.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-    ref.current.style.boxShadow = '0 0 30px rgba(99,102,241,0.25)';
-  };
 
   return (
     <button
-      ref={ref}
       type="submit"
       disabled={disabled || loading}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       data-cursor="soft"
-      className="mt-2 px-8 py-4 bg-indigo-600 text-white rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_0_30px_rgba(99,102,241,0.25)] relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed will-change-transform"
+      className="mt-2 px-8 py-4 bg-indigo-600 text-white rounded-control text-[10px] font-black tracking-widest uppercase shadow-[0_0_30px_rgba(99,102,241,0.25)] hover:shadow-[0_0_50px_rgba(99,102,241,0.5)] transition-shadow duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
     >
       <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <span className="relative z-10 flex items-center justify-center gap-2">
@@ -147,7 +130,7 @@ export default function Contact() {
   // text-base (16px) mobilde şart: iOS Safari 16px altındaki bir alana
   // odaklanınca sayfayı kendiliğinden yakınlaştırıyor. sm'den itibaren 14px.
   const inputBase =
-    'w-full bg-white/[0.03] border rounded-xl px-4 py-3.5 text-base sm:text-sm text-white placeholder:text-gray-600 outline-none transition-all duration-300 focus:bg-white/[0.05]';
+    'w-full bg-white/[0.03] border rounded-control px-4 py-3.5 text-base sm:text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-300 focus:bg-white/[0.05]';
 
   return (
     <section id="contact" className="py-32 px-6 overflow-hidden">
@@ -159,7 +142,7 @@ export default function Contact() {
           transition={{ duration: 0.8 }}
           className="mb-20 text-center lg:text-left"
         >
-          <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
+          <p className="text-[11px] font-black tracking-label-x text-indigo-400 uppercase mb-3">
             {t.contact.eyebrow}
           </p>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
@@ -190,17 +173,28 @@ export default function Contact() {
                     className="flex flex-col gap-4"
                   >
                     {[
-                      { name: 'name', label: t.contact.form.nameLabel, type: 'text', placeholder: t.contact.form.namePlaceholder },
-                      { name: 'email', label: t.contact.form.emailLabel, type: 'email', placeholder: t.contact.form.emailPlaceholder },
+                      { name: 'name', label: t.contact.form.nameLabel, type: 'text', autoComplete: 'name', placeholder: t.contact.form.namePlaceholder },
+                      { name: 'email', label: t.contact.form.emailLabel, type: 'email', autoComplete: 'email', placeholder: t.contact.form.emailPlaceholder },
                     ].map((field) => (
                       <motion.div key={field.name} variants={fieldItem} className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
+                        {/* htmlFor/id çifti şart: label'lar eskiden hiçbir
+                            input'a bağlı değildi — ekran okuyucu alanları
+                            isimsiz okuyordu, etikete tıklayınca odak
+                            gitmiyordu. */}
+                        <label
+                          htmlFor={`contact-${field.name}`}
+                          className="text-[10px] font-black tracking-widest text-gray-500 uppercase"
+                        >
                           {field.label}
                         </label>
                         <div className="relative">
                           <input
+                            id={`contact-${field.name}`}
                             type={field.type}
                             name={field.name}
+                            autoComplete={field.autoComplete}
+                            aria-invalid={errors[field.name] ? true : undefined}
+                            aria-describedby={errors[field.name] ? `contact-${field.name}-error` : undefined}
                             value={form[field.name]}
                             onChange={handleChange}
                             onFocus={() => setFocused(field.name)}
@@ -215,7 +209,7 @@ export default function Contact() {
                           {focused === field.name && !errors[field.name] && (
                             <motion.div
                               layoutId="input-glow"
-                              className="absolute inset-0 rounded-xl pointer-events-none"
+                              className="absolute inset-0 rounded-control pointer-events-none"
                               style={{ boxShadow: '0 0 0 1px rgba(99,102,241,0.3), 0 0 20px rgba(99,102,241,0.08)' }}
                             />
                           )}
@@ -223,6 +217,8 @@ export default function Contact() {
                         <AnimatePresence>
                           {errors[field.name] && (
                             <motion.span
+                              id={`contact-${field.name}-error`}
+                              role="alert"
                               initial={{ opacity: 0, y: -4 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -4 }}
@@ -236,12 +232,18 @@ export default function Contact() {
                     ))}
 
                     <motion.div variants={fieldItem} className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
+                      <label
+                        htmlFor="contact-message"
+                        className="text-[10px] font-black tracking-widest text-gray-500 uppercase"
+                      >
                         {t.contact.form.messageLabel}
                       </label>
                       <div className="relative">
                         <textarea
+                          id="contact-message"
                           name="message"
+                          aria-invalid={errors.message ? true : undefined}
+                          aria-describedby={errors.message ? 'contact-message-error' : undefined}
                           value={form.message}
                           onChange={handleChange}
                           onFocus={() => setFocused('message')}
@@ -257,7 +259,7 @@ export default function Contact() {
                         {focused === 'message' && !errors.message && (
                           <motion.div
                             layoutId="input-glow"
-                            className="absolute inset-0 rounded-xl pointer-events-none"
+                            className="absolute inset-0 rounded-control pointer-events-none"
                             style={{ boxShadow: '0 0 0 1px rgba(99,102,241,0.3), 0 0 20px rgba(99,102,241,0.08)' }}
                           />
                         )}
@@ -265,6 +267,8 @@ export default function Contact() {
                       <AnimatePresence>
                         {errors.message && (
                           <motion.span
+                            id="contact-message-error"
+                            role="alert"
                             initial={{ opacity: 0, y: -4 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
@@ -277,12 +281,13 @@ export default function Contact() {
                     </motion.div>
 
                     <motion.div variants={fieldItem}>
-                      <MagneticButton loading={loading} disabled={loading} />
+                      <SubmitButton loading={loading} disabled={loading} />
                     </motion.div>
 
                     <AnimatePresence>
                       {serverError && (
                         <motion.p
+                          role="alert"
                           initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
@@ -347,18 +352,18 @@ export default function Contact() {
                   variants={cardItem}
                   whileHover={{ x: 6, borderColor: 'rgba(99,102,241,0.3)' }}
                   data-cursor="ring"
-                  className="flex items-center gap-4 bg-white/[0.02] border border-white/8 rounded-2xl px-5 py-4 transition-colors group"
+                  className="flex items-center gap-4 bg-white/[0.02] border border-white/8 rounded-card px-5 py-4 transition-colors group"
                 >
                   <span className="text-xl w-8 text-center">{card.icon}</span>
                   <div>
-                    <div className="text-[9px] font-black tracking-widest text-gray-600 uppercase mb-0.5">
+                    <div className="text-[9px] font-black tracking-widest text-gray-400 uppercase mb-0.5">
                       {card.label}
                     </div>
                     <div className="text-sm text-gray-300 font-medium group-hover:text-white transition-colors">
                       {card.value}
                     </div>
                   </div>
-                  <span className="ml-auto text-gray-600 group-hover:text-indigo-400 transition-colors text-xs">→</span>
+                  <span className="ml-auto text-gray-400 group-hover:text-indigo-400 transition-colors text-xs">→</span>
                 </motion.a>
               ))}
             </motion.div>
@@ -369,7 +374,7 @@ export default function Contact() {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="w-1.5 h-1.5 rounded-full bg-emerald-400"
               />
-              <span className="text-[10px] font-bold tracking-widest text-gray-600 uppercase">
+              <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
                 {t.contact.responseNote}
               </span>
             </div>

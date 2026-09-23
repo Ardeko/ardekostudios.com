@@ -9,8 +9,10 @@ import { useLang } from '../lib/i18n';
    yerine canvas üzerinde canlı bir "engine viewport" çiziyor:
      · "oyun"      sekmesi → imleçle deforme olan bir wireframe mesh
      · "uygulama"  sekmesi → kendini kuran bir arayüz iskeleti,
-                    elemanlar imlece doğru manyetik şekilde çekiliyor
-                    (stüdyonun her yerdeki "magnetic button" diliyle aynı)
+                    elemanlar imlece doğru manyetik şekilde çekiliyor.
+                    (Butonlardaki mıknatıs efekti 2026-09-23'te kaldırıldı;
+                    burada kalması bilinçli — bir tıklama hedefi değil,
+                    canvas üzerinde bir "motor önizlemesi".)
    Birkaç KB kod, üçüncü taraf asset yok, ve anlatmak yerine gösteriyor.
 
    prefers-reduced-motion'a saygı duyar: tek kare çizip durur.
@@ -278,7 +280,7 @@ export default function Viewport() {
   return (
     <div
       data-cursor="soft"
-      className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.12)] backdrop-blur-sm"
+      className="rounded-card border border-white/10 bg-white/[0.03] overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.12)] backdrop-blur-sm"
     >
       {/* sekme çubuğu — kayan pill + sekme değişiminde parçacık patlaması,
           bkz. GooeyTabs.jsx. Aktif sekme burada (`mode`) tutuluyor,
@@ -289,7 +291,7 @@ export default function Viewport() {
         value={mode}
         onChange={setMode}
         trailing={
-          <span className="ml-auto hidden items-center px-4 text-[10px] font-bold tracking-widest text-gray-600 uppercase sm:flex">
+          <span className="ml-auto hidden items-center px-4 text-[10px] font-bold tracking-widest text-gray-400 uppercase sm:flex">
             {t.viewport.hint}
           </span>
         }
@@ -306,7 +308,7 @@ export default function Viewport() {
       />
 
       {/* HUD */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-white/8 px-4 py-2.5 text-[10px] font-bold tracking-widest text-gray-600 uppercase">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-white/8 px-4 py-2.5 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
         <span>
           fps <span className="text-gray-400">{String(hud.fps).padStart(2, '0')}</span>
         </span>

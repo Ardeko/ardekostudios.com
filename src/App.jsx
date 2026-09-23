@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { motion, useMotionValue, useSpring, useScroll, useTransform } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -19,8 +19,6 @@ const Games = lazy(() => import('./components/Games'));
 export default function App() {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
-  const [cursorVariant, setCursorVariant] = useState('default');
-
   const springConfig = { damping: 40, stiffness: 300, mass: 0.5 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
@@ -55,6 +53,15 @@ export default function App() {
     <LanguageProvider>
     <SmoothScroll>
     <div className="relative antialiased bg-[#05070F] overflow-x-clip">
+      {/* Klavyeyle gezenler sabit sidebar'daki bütün bağlantıları her
+          seferinde geçmek zorunda kalmasın. Odaklanana kadar görünmez. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-chip focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-xs focus:font-black focus:tracking-widest focus:text-white focus:uppercase"
+      >
+        İçeriğe atla
+      </a>
+
       <Preloader />
       <CustomCursor />
 
@@ -91,7 +98,7 @@ export default function App() {
 
       <div className="relative z-10">
         <Navbar />
-        <main className="w-full lg:pl-64">
+        <main id="main" className="w-full lg:pl-64">
           <Hero />
           {/* Yer tutucunun yüksekliği önemli: boş bir fallback verirsen chunk
               inince sayfa yüksekliği sıçrar ve Lenis'in scroll konumu kayar. */}

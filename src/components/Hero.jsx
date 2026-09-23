@@ -54,67 +54,19 @@ function TypewriterWords() {
   );
 }
 
-function Particles() {
-  const dots = useRef(
-    Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 1,
-      duration: Math.random() * 6 + 4,
-      delay: Math.random() * 4,
-    }))
-  ).current;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {dots.map((dot) => (
-        <motion.div
-          key={dot.id}
-          className="absolute rounded-full bg-indigo-400/20"
-          style={{ left: `${dot.x}%`, top: `${dot.y}%`, width: dot.size, height: dot.size }}
-          animate={{ y: [0, -30, 0], opacity: [0, 0.6, 0] }}
-          transition={{ duration: dot.duration, delay: dot.delay, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function MagneticLink({ href, children, primary }) {
-  const ref = useRef(null);
-
-  const handleMouseMove = (e) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    el.style.transform = `translate(${x * 0.32}px, ${y * 0.32}px)`;
-    el.style.transition = 'transform 0.1s ease';
-    if (primary) {
-      el.style.boxShadow = '0 0 70px rgba(99,102,241,0.6)';
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!ref.current) return;
-    ref.current.style.transform = 'translate(0px, 0px)';
-    ref.current.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-    if (primary) {
-      ref.current.style.boxShadow = '0 0 40px rgba(99,102,241,0.3)';
-    }
-  };
-
+/* Eskiden MagneticLink'ti: imleç üzerindeyken buton fareye doğru
+   kayıyordu. Mıknatıs efekti siteden tamamen kaldırıldı — tıklama hedefi
+   tam tıklanacağı anda yer değiştiriyordu, dokunmatikte zaten hiç
+   çalışmıyordu ve her hover'da bir layout-dışı transform + glow yazımı
+   demekti. Vurgu artık sadece renkte ve glow'da: aynı görünüm, kaçmayan
+   hedef. */
+function CtaLink({ href, children, primary }) {
   if (primary) {
     return (
       <a
-        ref={ref}
         href={href}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
         data-cursor="soft"
-        className="relative inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-white uppercase bg-indigo-600 rounded-xl overflow-hidden group shadow-[0_0_40px_rgba(99,102,241,0.3)] will-change-transform"
+        className="relative inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-white uppercase bg-indigo-600 rounded-control overflow-hidden group shadow-[0_0_40px_rgba(99,102,241,0.3)] hover:shadow-[0_0_70px_rgba(99,102,241,0.6)] transition-shadow duration-300"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <span className="relative z-10">{children}</span>
@@ -124,12 +76,9 @@ function MagneticLink({ href, children, primary }) {
 
   return (
     <a
-      ref={ref}
       href={href}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       data-cursor="ring"
-      className="inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-gray-300 uppercase border border-white/10 rounded-xl hover:border-white/30 transition-colors will-change-transform"
+      className="inline-flex items-center justify-center px-8 py-4 text-xs font-black tracking-widest text-gray-300 uppercase border border-white/10 rounded-control hover:border-white/30 hover:text-white transition-colors"
     >
       {children}
     </a>
@@ -151,10 +100,20 @@ export default function Hero() {
       {/* Zemin katmanı — DOM'da ilk, yani konumlanmış kardeşlerinin
           hepsinin altında boyanıyor. Opak çiziyor (kenarları zaten
           #05070F'e eriyor), o yüzden içeriğin `relative z-10` olması
-          şart; bkz. CLAUDE.md, Spotlight ile aynı kural. */}
-      <Aurora />
+          şart; bkz. CLAUDE.md, Spotlight ile aynı kural.
 
-      <Particles />
+          Aurora geldikten sonra hero'da yedi dekoratif katman üst üste
+          binmişti: Aurora + 20 parçacık + iki radial glow + global grid +
+          film grain + imleç glow'u. İkisi çıkarıldı:
+            · <Particles /> — 20 DOM düğümü, her biri sonsuz döngüde.
+              Yaptığı iş (arka planda hafif bir kıpırtı) artık Aurora'nın
+              sürüklenen noise alanının içinde zaten var.
+            · mor radial glow — 0.07–0.14 opaklıkta, Aurora'nın mor
+              bileşeniyle aynı yerde aynı şeyi söylüyordu.
+          Kalan indigo glow bilerek duruyor: Aurora sürükleniyor, o ise
+          nefes alıyor; ikisi farklı ritimler ve başlığın arkasını
+          sabitleyen şey bu. */}
+      <Aurora />
 
       {/* Glow'lar gradient, blur DEĞİL — bilerek.
           Önceden `bg-indigo-600 blur-[180px]` idi: 180px yarıçap devasa bir
@@ -175,18 +134,6 @@ export default function Hero() {
         style={{ background: 'radial-gradient(circle, #4f46e5 0%, transparent 70%)' }}
       />
 
-      <motion.div
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.07, 0.14, 0.07],
-          x: ['-30%', '-28%', '-32%', '-30%'],
-          y: ['-30%', '-32%', '-28%', '-30%'],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
-        className="absolute top-1/3 left-1/4 w-[300px] h-[300px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #9333ea 0%, transparent 70%)' }}
-      />
-
       <motion.div style={{ y, opacity }} className="relative z-10 flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.5, y: 20 }}
@@ -204,7 +151,7 @@ export default function Hero() {
               "İNTERACTİVE" yapıyordu. Daralan tracking 320px'de tek satırda tutuyor. */}
           <span
             lang="en"
-            className="text-[10px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-indigo-400 uppercase"
+            className="text-[10px] font-black tracking-label-wide sm:tracking-label-x text-indigo-400 uppercase"
           >
             {t.hero.badge}
           </span>
@@ -214,9 +161,9 @@ export default function Hero() {
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-4 uppercase leading-[0.9] select-none"
+          className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter mb-4 uppercase leading-[0.9]"
         >
-          <span className="bg-gradient-to-b from-white via-gray-100 to-gray-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-b from-white via-gray-100 to-gray-400 bg-clip-text text-transparent">
             {t.hero.lead}
           </span>
           <br />
@@ -238,8 +185,8 @@ export default function Hero() {
           transition={{ duration: 1, delay: 0.7 }}
           className="flex flex-col sm:flex-row gap-4 mb-14"
         >
-          <MagneticLink href="#games" primary>{t.hero.primary}</MagneticLink>
-          <MagneticLink href="#about">{t.hero.secondary}</MagneticLink>
+          <CtaLink href="#games" primary>{t.hero.primary}</CtaLink>
+          <CtaLink href="#about">{t.hero.secondary}</CtaLink>
         </motion.div>
 
         <motion.div
@@ -272,7 +219,7 @@ export default function Hero() {
         transition={{ delay: 2 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-[9px] tracking-widest text-gray-600 uppercase font-bold">{t.hero.scroll}</span>
+        <span className="text-[9px] tracking-widest text-gray-400 uppercase font-bold">{t.hero.scroll}</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}

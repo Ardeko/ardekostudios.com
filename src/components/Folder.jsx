@@ -72,7 +72,9 @@ export default function Folder({
   };
 
   // Açıkken kâğıtlar imlece doğru hafifçe kaçıyor — sitenin her yerindeki
-  // MagneticButton/MagneticLink diliyle aynı his.
+  // Not: butonlardaki mıknatıs efekti 2026-09-23'te siteden kaldırıldı.
+  // Burada duruyor çünkü bu bir tıklama hedefi değil — kâğıtlar klasörün
+  // içeriği, imlece doğru açılmaları "aç/kapat" jestinin parçası.
   const onPaperMove = (e, i) => {
     if (!open) return;
     const rect = e.currentTarget.getBoundingClientRect();

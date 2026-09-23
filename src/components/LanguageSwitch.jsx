@@ -54,14 +54,14 @@ export default function LanguageSwitch({ className = '', showFlag = true }) {
 
         <span
           className={`relative z-10 flex-1 text-center text-[9px] font-black tracking-widest transition-colors duration-300 ${
-            lang === 'tr' ? 'text-white' : 'text-gray-600 group-hover:text-gray-400'
+            lang === 'tr' ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'
           }`}
         >
           TR
         </span>
         <span
           className={`relative z-10 flex-1 text-center text-[9px] font-black tracking-widest transition-colors duration-300 ${
-            lang === 'en' ? 'text-white' : 'text-gray-600 group-hover:text-gray-400'
+            lang === 'en' ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'
           }`}
         >
           EN
@@ -69,7 +69,7 @@ export default function LanguageSwitch({ className = '', showFlag = true }) {
       </span>
 
       {showFlag && (
-        <span className="relative hidden h-5 w-7 shrink-0 overflow-hidden rounded-[4px] border border-white/15 shadow-[0_0_8px_rgba(0,0,0,0.4)] sm:block">
+        <span className="relative hidden h-5 w-7 shrink-0 overflow-hidden rounded-inset border border-white/15 shadow-[0_0_8px_rgba(0,0,0,0.4)] sm:block">
           <AnimatePresence mode="wait" initial={false}>
             <motion.img
               key={lang}

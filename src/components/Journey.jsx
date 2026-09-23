@@ -84,7 +84,7 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
       />
 
       <div
-        className={`rounded-2xl border transition-colors ${
+        className={`rounded-card border transition-colors ${
           isStudio
             ? 'border-indigo-500/25 bg-indigo-500/[0.06]'
             : 'border-white/10 bg-white/[0.03] hover:border-white/20'
@@ -99,17 +99,17 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
         >
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-black tracking-[0.2em] text-gray-500">
+              <span className="text-[10px] font-black tracking-label text-gray-500">
                 {date}
               </span>
               <span
-                className="rounded-full border px-2 py-0.5 text-[9px] font-black tracking-[0.15em]"
+                className="rounded-full border px-2 py-0.5 text-[9px] font-black tracking-label"
                 style={{ color, borderColor: `${color}40`, background: `${color}14` }}
               >
                 {badges[item.category]}
               </span>
               {item.inProgress && (
-                <span className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black tracking-[0.15em] text-amber-400">
+                <span className="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[9px] font-black tracking-label text-amber-400">
                   {linkWords.inProgress}
                 </span>
               )}
@@ -131,7 +131,7 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
           </div>
 
           <span
-            className="mt-1 shrink-0 text-[9px] font-black tracking-[0.2em] text-gray-600"
+            className="mt-1 shrink-0 text-[9px] font-black tracking-label text-gray-400"
             aria-hidden="true"
           >
             {open ? '—' : expandLabel}
@@ -159,7 +159,7 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
                     {item.tech.map((tech) => (
                       <span
                         key={tech}
-                        className="rounded-md border border-white/8 bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-gray-400"
+                        className="rounded-chip border border-white/8 bg-white/[0.04] px-2.5 py-1 text-[10px] font-bold text-gray-400"
                       >
                         {tech}
                       </span>
@@ -177,7 +177,7 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
                         rel="noreferrer"
                         data-cursor="soft"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-white/15 px-3 py-2 text-[10px] font-black tracking-widest text-white transition-colors hover:border-white/40"
+                        className="inline-flex min-h-[36px] items-center gap-1.5 rounded-chip border border-white/15 px-3 py-2 text-[10px] font-black tracking-widest text-white transition-colors hover:border-white/40"
                       >
                         <LinkIcon kind={kind} />
                         {linkWords[kind]}
@@ -187,7 +187,7 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
                 )}
 
                 {item.restricted && (
-                  <p className="mt-4 text-[10px] font-bold tracking-wide text-gray-600">
+                  <p className="mt-4 text-[10px] font-bold tracking-wide text-gray-400">
                     {linkWords.restricted}
                   </p>
                 )}
@@ -247,7 +247,7 @@ export default function Journey() {
     <div>
       <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-xl">
-          <p className="mb-3 text-[11px] font-black uppercase tracking-[0.4em] text-indigo-400">
+          <p className="mb-3 text-[11px] font-black uppercase tracking-label-x text-indigo-400">
             {t.about.journey}
           </p>
           <p className="text-sm font-light leading-relaxed text-gray-400">
@@ -265,7 +265,7 @@ export default function Journey() {
               <div className="text-3xl font-black tracking-tight text-white tabular-nums">
                 {value}
               </div>
-              <div className="text-[10px] font-black tracking-[0.2em] text-gray-600">
+              <div className="text-[10px] font-black tracking-label text-gray-400">
                 {label}
               </div>
             </div>
@@ -286,14 +286,14 @@ export default function Journey() {
               onClick={() => setFilter(key)}
               aria-pressed={active}
               data-cursor="soft"
-              className={`inline-flex min-h-[40px] items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-black tracking-[0.15em] transition-colors ${
+              className={`inline-flex min-h-[40px] items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-black tracking-label transition-colors ${
                 active
                   ? 'border-indigo-400/50 bg-indigo-500/15 text-white'
                   : 'border-white/10 bg-white/[0.02] text-gray-500 hover:border-white/25 hover:text-gray-300'
               }`}
             >
               {t.about.journeyFilters[key]}
-              <span className={active ? 'text-indigo-300' : 'text-gray-600'}>{count}</span>
+              <span className={active ? 'text-indigo-300' : 'text-gray-500'}>{count}</span>
             </button>
           );
         })}

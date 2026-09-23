@@ -44,6 +44,7 @@ export default function Navbar() {
         initial={{ x: -200, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        aria-label="Ana menü"
         className="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-[#05070F]/80 backdrop-blur-2xl border-r border-white/5 flex-col justify-between items-center py-12 px-8 z-50"
       >
         <div className="w-full flex flex-col items-center gap-4">
@@ -59,9 +60,12 @@ export default function Navbar() {
               className="w-full h-full object-contain drop-shadow-[0_0_25px_rgba(99,102,241,0.3)]"
             />
           </motion.a>
+          {/* Vaktiyle <h1>'di. Sayfada iki <h1> oluyordu (diğeri Hero'nun
+              asıl başlığı) ve arama motorları/ekran okuyucular için sayfanın
+              başlığı nav logosuyla yarışıyordu. Logotip bir başlık değil. */}
           <div className="text-center mt-1">
-            <h1 className="text-sm font-black tracking-[0.3em] text-white">ARDEKO</h1>
-            <p className="text-[9px] font-medium tracking-[0.4em] text-gray-500 mt-1">STUDIOS</p>
+            <p className="text-sm font-black tracking-label-wide text-white">ARDEKO</p>
+            <p className="text-[9px] font-medium tracking-label-x text-gray-500 mt-1">STUDIOS</p>
           </div>
 
           <LanguageSwitch className="mt-2" />
@@ -76,10 +80,10 @@ export default function Navbar() {
                 href={`#${item.toLowerCase()}`}
                 whileTap={{ scale: 0.97 }}
                 data-cursor="ring"
-                className="relative group flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200"
+                className="relative group flex items-center gap-3 px-4 py-3 rounded-control transition-colors duration-200"
               >
                 <motion.div
-                  className="absolute inset-0 rounded-xl"
+                  className="absolute inset-0 rounded-control"
                   animate={{
                     backgroundColor: isActive ? 'rgba(99,102,241,0.08)' : 'transparent',
                     borderColor: isActive ? 'rgba(99,102,241,0.2)' : 'transparent',
@@ -101,7 +105,7 @@ export default function Navbar() {
                 </AnimatePresence>
 
                 <span
-                  className={`relative z-10 text-[11px] font-black tracking-[0.35em] transition-colors duration-300 ${
+                  className={`relative z-10 text-[11px] font-black tracking-label-wide transition-colors duration-300 ${
                     isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-200'
                   }`}
                 >
@@ -132,10 +136,10 @@ export default function Navbar() {
             data-cursor="ring"
             className="group flex flex-col items-center gap-0.5 cursor-pointer select-none"
           >
-            <span className="text-[8px] font-bold tracking-[0.4em] text-gray-500 group-hover:text-indigo-400 transition-colors duration-300">
+            <span className="text-[8px] font-bold tracking-label-x text-gray-500 group-hover:text-indigo-400 transition-colors duration-300">
               FOUNDER
             </span>
-            <span className="text-[10px] font-black tracking-[0.2em] text-gray-400 group-hover:text-white transition-colors duration-300">
+            <span className="text-[10px] font-black tracking-label text-gray-400 group-hover:text-white transition-colors duration-300">
               ARDA GÜNER
             </span>
           </motion.a>
@@ -150,12 +154,12 @@ export default function Navbar() {
               rel="noreferrer"
               whileHover={{ scale: 1.1, color: '#818cf8' }}
               data-cursor="ring"
-              className="text-[10px] font-black tracking-[0.2em] text-gray-600 hover:text-indigo-400 transition-colors uppercase"
+              className="text-[10px] font-black tracking-label text-gray-400 hover:text-indigo-400 transition-colors uppercase"
             >
               INSTAGRAM
             </motion.a>
           </div>
-          <div lang="en" className="text-[9px] font-medium text-gray-700 tracking-widest uppercase">
+          <div lang="en" className="text-[9px] font-medium text-gray-400 tracking-widest uppercase">
             info@ardekostudios.com
           </div>
         </div>
@@ -164,7 +168,13 @@ export default function Navbar() {
       {/* MOBILE HEADER */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-[#05070F]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center px-5 z-50">
         <a href="#">
-          <img src="/ardeko.png" alt="Ardeko" className="h-8 w-auto object-contain" />
+          <img
+            src="/ardeko.png"
+            alt="Ardeko Studios"
+            width={512}
+            height={512}
+            className="h-8 w-auto object-contain"
+          />
         </a>
         <div className="flex items-center gap-3">
           <LanguageSwitch />
@@ -184,14 +194,21 @@ export default function Navbar() {
       {/* MOBILE MENU */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <motion.nav
             initial={{ opacity: 0, clipPath: 'circle(0% at 95% 5%)' }}
             animate={{ opacity: 1, clipPath: 'circle(150% at 95% 5%)' }}
             exit={{ opacity: 0, clipPath: 'circle(0% at 95% 5%)' }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            aria-label="Mobil menü"
             className="fixed inset-0 bg-[#05070F] z-40 flex flex-col justify-center items-center gap-8 lg:hidden"
           >
-            <img src="/ardeko.png" alt="Ardeko" className="h-20 w-auto mb-6 opacity-80" />
+            <img
+              src="/ardeko.png"
+              alt=""
+              width={512}
+              height={512}
+              className="h-20 w-auto mb-6 opacity-80"
+            />
             
             {NAV_ITEMS.map((item, i) => (
               <motion.a
@@ -201,7 +218,7 @@ export default function Navbar() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + i * 0.07 }}
-                className="text-2xl font-black tracking-[0.2em] text-gray-400 hover:text-white transition-colors"
+                className="text-2xl font-black tracking-label text-gray-400 hover:text-white transition-colors"
               >
                 {item}
               </motion.a>
@@ -218,12 +235,12 @@ export default function Navbar() {
               className="flex flex-col items-center gap-0.5 mt-8 group"
               onClick={() => setIsOpen(false)}
             >
-              <span className="text-[9px] font-bold tracking-[0.4em] text-gray-600">FOUNDER</span>
-              <span className="text-sm font-black tracking-[0.15em] text-gray-400 group-hover:text-indigo-400 transition-colors duration-300">
+              <span className="text-[9px] font-bold tracking-label-x text-gray-400">FOUNDER</span>
+              <span className="text-sm font-black tracking-label text-gray-400 group-hover:text-indigo-400 transition-colors duration-300">
                 ARDA GÜNER
               </span>
             </motion.a>
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
     </>

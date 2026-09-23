@@ -48,17 +48,6 @@ export default function CustomCursor() {
       mouseY = e.clientY;
       dot.classList.add('visible');
 
-      // Elemanın kendisini de fareye doğru kaydırmak istersen data-cursor-magnet ekle.
-      // Sitede zaten kendi transform'unu yöneten butonlar var (Hero/Contact/Games
-      // MagneticButton, Games useTilt) — onlarla çakışmaması için bu varsayılan kapalı.
-      if (currentTarget && currentTarget.hasAttribute('data-cursor-magnet')) {
-        const r = currentTarget.getBoundingClientRect();
-        const flavor = currentTarget.getAttribute('data-cursor') || 'solid';
-        const strength = flavor === 'ring' ? 0.22 : 0.35;
-        const relX = e.clientX - r.left - r.width / 2;
-        const relY = e.clientY - r.top - r.height / 2;
-        currentTarget.style.transform = `translate(${relX * strength}px, ${relY * strength}px)`;
-      }
     };
 
     // mouseover/mouseout (delegated on document) yerine tek tek listener
@@ -84,10 +73,6 @@ export default function CustomCursor() {
       dot.classList.remove('hover');
       delete dot.dataset.flavor;
       delete dot.dataset.color;
-      if (currentTarget.hasAttribute('data-cursor-magnet')) {
-        currentTarget.style.transition = 'transform .5s cubic-bezier(.16,1,.3,1)';
-        currentTarget.style.transform = 'translate(0,0)';
-      }
       currentTarget = null;
     };
 

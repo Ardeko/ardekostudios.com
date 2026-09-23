@@ -22,7 +22,7 @@ checkout HEAD` ile eski commit'ten geri yüklendi ve `i18n.js` silindi.
 bil — kullanıcı bir kez bunu istemedi.**
 
 Şu an canonical olan: koyu indigo/mor (`#05070F` zemin, `indigo-400/500/600`,
-`purple-600` vurgular), yuvarlak köşeli camsı kartlar (`rounded-2xl`,
+`purple-600` vurgular), yuvarlak köşeli camsı kartlar (`rounded-card`,
 `bg-white/[0.02-0.05]`, `border-white/8-10`), glow/blur efektler,
 `font-black`/`tracking-widest`/`uppercase` etiketler, emoji ikonlar
 (About.jsx'teki değer kartları gibi), sabit sol sidebar nav (`Navbar.jsx`),
@@ -250,7 +250,7 @@ prompt gelirse:
 ### `Aurora.jsx` — hero arka planı (2026-09-03)
 
 21st.dev **"Velaris"** (simplex-noise WebGL gradyan) uyarlandı;
-`Hero.jsx`'te `<Particles />`'ın da altında, en arkadaki zemin katmanı.
+`Hero.jsx`'te en arkadaki zemin katmanı.
 Kullanıcı dört arka plan adayı getirdi, bu seçildi: tek tam ekran quad +
 piksel başına üç noise, yani dördünün en ucuzu ve renkleri prop.
 
@@ -401,10 +401,172 @@ repoda tutar. Yeni key art eklerken **önce `assets-src/`'e tam boyutu koy,
 sonra `public/games/`'e 720px sürümünü üret.** `public/`'e 1000px'ten
 büyük hiçbir şey koyma.
 
+## UX/UI + tipografi geçişi (2026-09-23)
+
+Kullanıcı "siteyi daha minimal yapabilir miyiz" diye sordu. **Redesign
+YAPILMADI** — yukarıdaki 2026-08-18 kararı duruyor, minimalist redesign
+bir kez reddedildi. Onun yerine "aynı tasarım, ama disiplinli" turu
+atıldı. Bulgular ölçümle çıkarıldı, aşağıdakiler yapıldı.
+
+### ⚠️ Inter artık gerçekten yükleniyor — sakın geri alma
+
+Site aylarca `font-family: 'Inter', sans-serif` yazıp Inter'i **hiç
+yüklemedi**: ne `<link>`, ne `@font-face`, ne paket. Inter kurulu
+olmayan herkes siteyi **Arial/Roboto** ile gördü; yani bütün
+`font-black` (900) başlıklar tasarlandıkları fontla değil, tarayıcının
+bulduğu fontla çizildi. Geliştirme makinesinde Inter kurulu olduğu için
+yıllarca fark edilmedi.
+
+Şimdi `public/fonts/` altında iki woff2 var (latin 47 KB + latin-ext
+83 KB), `@font-face`'leri `index.css`'in başında. Detay ve güncelleme
+komutları orada yorumda. **İki alt küme de gerekli**: ı (U+0131) latin'de
+ama ğ/İ/ş latin-ext'te — sadece latin yüklersen Türkçe kelimeler kelime
+ortasında font değiştirir. `preload` bilerek yok, `font-display: swap`
+var (130 KB'ı kritik yola koymak Preloader'ı geciktirir).
+
+### Kontrast — `text-gray-600` ve `text-gray-700` yasak
+
+`#05070F` zemin üzerinde ölçülen değerler:
+
+| Sınıf | Kontrast | Kural |
+|---|---|---|
+| `text-gray-700` | **1.97:1** | Kullanma |
+| `text-gray-600` | **2.66:1** | Kullanma |
+| `text-gray-500` | 4.16:1 | Sadece bilerek soluk: placeholder, pasif durum |
+| `text-gray-400` | 7.92:1 | Bilgi metninin varsayılanı |
+
+20 yerde `gray-600`, 3 yerde `gray-700` vardı ve çoğu 9–10px uppercase
+metindeydi — en zor okunan boyutta en düşük kontrast. Hepsi geçildi.
+Navbar'daki stüdyo e-postası `gray-700` idi, yani pratikte görünmüyordu.
+
+### Etiket harf aralığı ölçeği
+
+Tek bir iş (küçük + uppercase + seyrek etiket) sekiz farklı değerle
+yazılmıştı. Ölçek artık **0.1 / 0.2 / 0.3 / 0.4**: `tracking-widest`,
+`tracking-label`, `tracking-label-wide`, `tracking-label-x` —
+token'lar `index.css`'teki `@theme` içinde. Yeni etikette bu dördünün
+dışına çıkma. `tracking-tight/tighter` ayrı bir eksen (display
+başlıkları), karıştırma.
+
+⚠️ `Preloader` wordmark'ı 0.5em'den 0.4em'e indi; `index.html`'deki
+statik boot wordmark'ı da **aynı anda** indirildi. İkisi birebir aynı
+kalmalı, yoksa React devralırken harfler kayar.
+
+### Köşe yarıçapı ölçeği + hover yumuşaklığı
+
+Tracking'le aynı mantık, bu sefer köşelerde. Altı farklı değer vardı
+(`md`, `lg`, `xl`, `2xl`, `3xl`, `[4px]`) ve hangisinin nerede
+kullanılacağına dair kural yoktu. Artık **role göre** dört token, hepsi
+4px'in katı — `index.css`'teki `@theme` içinde:
+
+| Token | Değer | Nerede |
+|---|---|---|
+| `rounded-inset` | 4px | kutuya gömülü minik görsel (dil bayrağı) |
+| `rounded-chip` | 8px | rozet, etiket, küçük bağlantı hapı |
+| `rounded-control` | 12px | buton, input, nav öğesi |
+| `rounded-card` | 16px | kart ve panel |
+
+`rounded-full` ayrı kalır (hap/nokta), ölçeğe dahil değil. Ham
+`rounded-*` sınıfı yazma; kartların köşesini değiştirmek isteyen tek
+satır token'ı değiştirir.
+
+⚠️ Oyun kartları eskiden `rounded-3xl` (24px) idi, sitenin geri
+kalanındaki kartlar 16px. İkisi `rounded-card`ta birleşti — yani oyun
+kartlarının köşesi bir tık sertleşti. Bilinçli: tek kart dili.
+
+**`--ease-soft`** (`cubic-bezier(0.4, 0, 0.2, 1)`) da aynı blokta.
+Kart hover'ı önce `duration-300 ease-out` idi ve kullanıcı "yukarı mı
+kalkıyor büyüyor mu anlamıyorum" dedi — haklıydı: `ease-out` tam hızda
+başlar, 4px'lik hareket okunmadan biter. Şimdi `duration-500 ease-soft`
++ 6px kalkma; iki ucu da yumuşak, hareket "yükselme" olarak okunuyor.
+Yeni bir hover/geçiş yazarken bu eğriyi kullan.
+
+### Mıknatıs butonlar kaldırıldı
+
+`Hero.MagneticLink`, `Contact.MagneticButton` ve `Games.MagneticButton`
+(→ `CtaLink`, `SubmitButton`, `ActionLink`) imleç üzerindeyken fareye
+doğru kayıyordu. Tıklama hedefinin tam tıklanacağı anda yer değiştirmesi
+hedefi küçültmekten başka bir şey yapmıyordu ve dokunmatikte zaten hiç
+çalışmıyordu. Vurgu artık renk + glow'da. `CustomCursor`'daki
+`data-cursor-magnet` dalı da gitti (hiçbir eleman kullanmıyordu).
+`Games.MagneticButton` `export` ediliyordu ama hiçbir yer import
+etmiyordu; export da kaldırıldı.
+
+**Bilerek KALANLAR**: `Folder.jsx`'in kâğıtları ve `Viewport`'un
+uygulama iskeleti. İkisi de tıklama hedefi değil.
+
+### Hero katman sayısı 7 → 5
+
+`Aurora` gelince hero'da yedi dekoratif katman üst üste binmişti.
+`Particles` (20 DOM düğümü, her biri sonsuz döngüde) ve mor radial glow
+kaldırıldı — ikisinin de yaptığı işi Aurora zaten yapıyor. Kalan indigo
+glow bilerek duruyor: Aurora sürükleniyor, o nefes alıyor, ikisi farklı
+ritim.
+
+### Games sahneleri ekran dışındayken duruyor
+
+`Games.jsx`'te 85 adet CSS `infinite` animasyon var ve hepsi aynı anda
+dönüyordu. `useSceneIdle()` + tek CSS kuralı (`.gc-idle` →
+`animation-play-state: paused`) ile kart görünür alandan çıkınca
+sahnesi duruyor, geri gelince kaldığı yerden devam ediyor. Durdurmak
+sıfırlamak değil, bakarken hiçbir fark yok. `Journey.jsx`'teki
+"sürekli çalışan animasyon bilerek yok" kuralının Games karşılığı.
+
+### Kartlardaki 3B tilt kaldırıldı — geri koyma
+
+Oyun kartları imlece göre ±6° dönüyordu (`useTilt`). Kullanıcı "bir oyun
+stüdyosu sitesi için acemi mi duruyor" diye sordu; değerler zaten
+ölçülüydü, sorun abartı değildi. Gerçek gerekçeler:
+
+- **Çerçeve, içindeki işi sallıyordu.** Kartların içinde stüdyonun asıl
+  zanaatı var (elle çizilmiş sahneler); tilt onların çerçevesini
+  döndürünce göz sanat eserine değil kutuya gidiyordu.
+- **Tek imlece üç tepki**: Spotlight + sahne animasyonu + kart dönüşü.
+- **Jenerik.** Sayfadaki diğer bütün hareket bu stüdyoya ait; tilt
+  herhangi bir portföy şablonundan kopyalanmış olabilecek tek parçaydı
+  ve en önemli içeriğin üstündeydi.
+- Implementasyon "lastik" hissi veriyordu: her `mousemove`'da
+  `transition: transform .1s` yazıldığı için kart imleci takip etmiyor,
+  kovalıyordu.
+
+Yerine saf CSS hover geldi: 4px kalkma + kenar aydınlanması + indigo
+glow. `will-change-transform` de gitti — eskiden 11 kart hover olmasa
+da sayfa boyunca ayrı compositor katmanındaydı.
+
+Konuşulan ama seçilmeyen alternatif, ileride gündeme gelirse: çerçeveyi
+döndürmek yerine **kartın içindeki sahneyi** katman katman farklı hızda
+kaydırmak (parallax). Bir oyun motoru deyimi, şablonlarda yok; maliyeti
+11 sahnenin ayrı ayrı elle ayarlanması (`LoreScene`'in hizalama notları
+gibi bir iş).
+
+### Semantik / erişilebilirlik
+
+- **İki `<h1>` vardı.** `Navbar`'daki "ARDEKO" logotipi `<h1>`'di ve
+  Hero'nun asıl başlığıyla yarışıyordu → `<p>` oldu.
+- **Form label'ları hiçbir input'a bağlı değildi** (`htmlFor`/`id` yok).
+  Bağlandı; ayrıca `autoComplete`, `aria-invalid`,
+  `aria-describedby` ve hata mesajlarında `role="alert"` eklendi.
+- Mobil açılır menü düz `<div>`'di → `<nav aria-label="Mobil menü">`.
+  Masaüstü sidebar zaten `<motion.nav>`'dı, ona da ad verildi.
+- `App.jsx`'e **"İçeriğe atla"** linki, `<main id="main">`.
+- `ardeko.png` `h-8 w-auto` olarak basılan 3 yerde `width/height` yoktu
+  → CLS. Eklendi (512×512).
+- `Games.jsx`'te `font-family: Impact` vardı (Android/Linux'ta yok).
+- Hero `<h1>`'inde `select-none` vardı — sitenin ana cümlesi
+  kopyalanamıyordu. Gradyanın bittiği ton da `gray-600` → `gray-400`.
+- `App.jsx`'te hiç okunmayan `cursorVariant` state'i silindi.
+
+Sonuç: eslint hatası 18 → 2. Bundle gzip 137.6 → 137.1 KB. Font ayrıca 130 KB
+(cache'lenir, kritik yolda değil).
+
 ## Yapılacak
 
 1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
-2. JS bundle 484 KB (gzip 144 KB); yavaş 3G'de açılışın kalan ~9 sn'si
+2. JS bundle 430 KB (gzip 137 KB); yavaş 3G'de açılışın kalan ~9 sn'si
    bu transferden geliyor. framer-motion kullanımını gözden geçir / kod
    bölme düşün.
-3. Lighthouse: LCP, CLS ve mobil kontrast.
+3. Lighthouse'u yeniden çalıştır (kontrast ve logo CLS'i düzeltildi,
+   LCP ölçülmedi).
+4. Kalan 2 eslint hatası: `TypewriterWords` effect içinde setState
+   çağırıyor (gerçek, ayrı iş) ve `i18n.jsx`'in react-refresh uyarısı
+   (bilerek böyle, bkz. i18n bölümü).

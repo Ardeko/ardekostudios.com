@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import RevoScene from './RevoScene';
 import { SplitWords } from './Reveal';
 import HoverPreviewList from './HoverPreviewList';
@@ -62,26 +62,73 @@ const containerVariants = {
   },
 };
 
-function useTilt() {
+/* ------------------------------------------------------------------
+   Sahneler ekran dışındayken dursun.
+
+   Bu dosyada 85 adet CSS `infinite` animasyon var — on bir kartın her
+   birinde elle çizilmiş, sürekli oynayan bir sahne. Hepsi aynı anda
+   dönüyordu: sayfanın en altındaki kartın közleri, kullanıcı hero'ya
+   bakarken de yanıyordu. Compositor işi olsa bile bedava değil ve
+   `Journey.jsx`'te zaten "sürekli çalışan animasyon bilerek yok"
+   kuralını koymuştuk (bkz. CLAUDE.md, "Görsel bütçesi").
+
+   Çözüm tek CSS kuralı: kart görünür alandan çıkınca üstüne `gc-idle`
+   geliyor ve altındaki bütün animasyonlar `paused` oluyor. Durdurmak
+   sıfırlamak değil — kart geri geldiğinde sahne kaldığı yerden devam
+   ediyor, yani bakarken hiçbir fark yok.
+
+   framer-motion animasyonlarını etkilemez (bu dosyada sadece 4 tane var,
+   hepsi tek seferlik/küçük). rootMargin payı sayesinde kart ekrana
+   girmeden önce sahne çoktan oynuyor oluyor.
+------------------------------------------------------------------- */
+const IDLE_CSS = `
+.gc-idle *, .gc-idle *::before, .gc-idle *::after { animation-play-state: paused !important }
+`;
+
+function useSceneIdle() {
   const ref = useRef(null);
-  const handleMouseMove = (e) => {
+  // Varsayılan false: IntersectionObserver yoksa ya da ilk callback daha
+  // gelmediyse sahneler oynasın. Durdurmak gözlemcinin işi.
+  const [idle, setIdle] = useState(false);
+
+  useEffect(() => {
     const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -6;
-    const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 6;
-    el.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
-    el.style.transition = 'transform 0.1s ease';
-  };
-  const handleMouseLeave = () => {
-    if (!ref.current) return;
-    ref.current.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)';
-    ref.current.style.transition = 'transform 0.5s ease';
-  };
-  return { ref, onMouseMove: handleMouseMove, onMouseLeave: handleMouseLeave };
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+    const io = new IntersectionObserver(([entry]) => setIdle(!entry.isIntersecting), {
+      rootMargin: '300px 0px',
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return [ref, idle];
 }
+
+/* ------------------------------------------------------------------
+   3B tilt KALDIRILDI (2026-09-23) — geri koyma.
+
+   Kartlar imlece göre ±6° dönüyordu (`useTilt`). Sorun abartı değildi,
+   değerler zaten ölçülüydü; sorun şuydu:
+
+   · **Çerçeve, içindeki işi sallıyordu.** Kartların içinde stüdyonun
+     asıl zanaatı var — elle çizilmiş sahneler. Tilt onların çerçevesini
+     döndürünce izleyici sanat eserine değil kutuya bakıyordu.
+   · **Tek imlece üç tepki.** Spotlight imleci takip ediyor, sahne kendi
+     animasyonunu oynuyor, kart da dönüyordu.
+   · **Jenerik.** Sayfadaki diğer her hareket bu stüdyoya ait (Viewport
+     canvas'ı, sahneler, GooeyTabs). Tilt, herhangi bir portföy
+     şablonundan kopyalanmış olabilecek tek parçaydı — üstelik en
+     önemli içeriğin üstünde duruyordu.
+   · Ayrıca implementasyon "lastik" hissi veriyordu: her mousemove'da
+     `transition: transform .1s` yazıldığı için kart imleci TAKİP
+     etmiyor, KOVALIYORDU.
+
+   Yerine gelen: saf CSS hover — 4px kalkma, kenar bir tık aydınlanıyor,
+   altına indigo bir glow düşüyor. Transform yok denecek kadar küçük,
+   `will-change` kalıcı değil (eskiden 11 kart sayfa boyunca ayrı
+   compositor katmanındaydı), reduced-motion'da 4px anında oluyor ki o
+   da zararsız — 6°'lik anlık bir dönmenin aksine.
+------------------------------------------------------------------- */
 
 const TRAIN_CSS = `
 @keyframes tMove1{0%{left:0%;transform:translateX(-100%) scaleX(-1)}100%{left:100%;transform:translateX(0%) scaleX(-1)}}
@@ -141,7 +188,7 @@ const TRAIN_CSS = `
 
 function TrainScene() {
   return (
-    <div className="relative h-[190px] overflow-hidden rounded-2xl border-b border-white/5" style={{background:'#060810'}}>
+    <div className="relative h-[190px] overflow-hidden rounded-card border-b border-white/5" style={{background:'#060810'}}>
       <style>{TRAIN_CSS}</style>
       <div className="ts-scan" />
       <div className="ts-scanbar" />
@@ -569,7 +616,7 @@ const FS_CSS = `
 .fs-orbit { position:absolute;width:0;height:0 }
 .fs-dot { position:absolute;border-radius:50% }
 .fs-launch { position:absolute;width:9px;height:9px;border-radius:50%;animation:fsLaunch 3.4s ease-in-out infinite }
-.fs-perfect { position:absolute;font-family:Impact,sans-serif;font-size:13px;letter-spacing:1px;animation:fsPerfect 3.4s ease-in-out infinite }
+.fs-perfect { position:absolute;font-weight:900;font-size:13px;letter-spacing:1px;animation:fsPerfect 3.4s ease-in-out infinite }
 `;
 
 function ForzaShiftScene() {
@@ -1054,7 +1101,7 @@ const LORE_SPARKS = [
 /**
  * LORE — diğer sahnelerden farklı olarak elle çizilmiş SVG değil, hazır
  * anahtar görsel. Diğer kartların sahne kutusuyla aynı ölçüde durması için
- * çerçeve birebir aynı (h-190, rounded-2xl, alt kenar çizgisi).
+ * çerçeve birebir aynı (h-190, rounded-card, alt kenar çizgisi).
  *
  * Görsel hazır olduğu için canlandırma da diğerlerinden farklı: çizimin kendisi
  * animasyonlu değil, görselin ÜSTÜNE ışık ve parçacık katmanları biniyor — iki
@@ -1083,7 +1130,7 @@ const LORE_SPARKS = [
 function LoreScene() {
   return (
     <div
-      className="lr relative h-[190px] overflow-hidden rounded-2xl border-b border-white/5"
+      className="lr relative h-[190px] overflow-hidden rounded-card border-b border-white/5"
       style={{ background: '#0A0714' }}
     >
       <style>{LORE_CSS}</style>
@@ -1132,19 +1179,14 @@ function LoreScene() {
 }
 
 function GameCard({ game }) {
+  const [sceneRef, sceneIdle] = useSceneIdle();
   const { t } = useLang();
-  const tilt = useTilt();
   const Scene = game.scene;
 
   if (game.status === 'secret') {
     return (
-      <motion.div variants={cardVariants}>
-        <div
-          ref={tilt.ref}
-          onMouseMove={tilt.onMouseMove}
-          onMouseLeave={tilt.onMouseLeave}
-          className="group relative rounded-3xl border border-dashed border-white/8 bg-white/[0.01] overflow-hidden flex flex-col min-h-[460px] will-change-transform"
-        >
+      <motion.div ref={sceneRef} variants={cardVariants} className={sceneIdle ? 'gc-idle' : undefined}>
+        <div className="group relative flex min-h-[460px] flex-col overflow-hidden rounded-card border border-dashed border-white/8 bg-white/[0.01] transition-[transform,border-color,box-shadow] duration-500 ease-soft hover:-translate-y-1.5 hover:border-white/15">
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
           </div>
@@ -1171,7 +1213,7 @@ function GameCard({ game }) {
                 items={REDACTED_SHEETS}
               />
             </div>
-            <span className="text-[9px] font-black tracking-[0.4em] text-indigo-400/60 uppercase mb-2">
+            <span className="text-[9px] font-black tracking-label-x text-indigo-400/60 uppercase mb-2">
               {t.games.secret.codename}
             </span>
             <h3 className="text-xl font-black text-white mb-4 tracking-wider uppercase">{t.games.secret.title}</h3>
@@ -1185,7 +1227,7 @@ function GameCard({ game }) {
                 className="h-full w-1/3 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"
               />
             </div>
-            <span className="text-[9px] text-gray-600 font-bold tracking-widest uppercase mt-2">
+            <span className="text-[9px] text-gray-400 font-bold tracking-widest uppercase mt-2">
               {t.games.secret.soon}
             </span>
           </div>
@@ -1201,14 +1243,11 @@ function GameCard({ game }) {
     ? words.title || game.title
     : game.title;
   return (
-    <motion.div variants={cardVariants}>
+    <motion.div ref={sceneRef} variants={cardVariants} className={sceneIdle ? 'gc-idle' : undefined}>
       <div
-        ref={tilt.ref}
-        onMouseMove={tilt.onMouseMove}
-        onMouseLeave={tilt.onMouseLeave}
         data-cursor="soft"
         data-cursor-color={game.id === 'revo' ? 'teal' : undefined}
-        className="group relative rounded-3xl border border-white/10 bg-white/[0.03] overflow-hidden flex flex-col min-h-[460px] will-change-transform"
+        className="group relative flex min-h-[460px] flex-col overflow-hidden rounded-card border border-white/10 bg-white/[0.03] transition-[transform,border-color,box-shadow] duration-500 ease-soft hover:-translate-y-1.5 hover:border-white/20 hover:shadow-[0_24px_60px_-24px_rgba(99,102,241,0.45)]"
       >
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
@@ -1226,7 +1265,7 @@ function GameCard({ game }) {
         <div className="relative z-10 flex flex-col flex-1 p-8">
           <div className="flex items-center justify-between mb-5">
             <StatusBadge status={game.status} label={words.statusLabel} />
-            <span className="text-[9px] text-gray-600 font-bold tracking-widest">{game.platforms}</span>
+            <span className="text-[9px] text-gray-400 font-bold tracking-widest">{game.platforms}</span>
           </div>
           <h3 className={`text-2xl font-black text-white tracking-tight ${words.subtitle ? 'mb-1' : 'mb-3'}`}>
   {displayTitle}
@@ -1252,24 +1291,24 @@ function GameCard({ game }) {
                   {game.links.secondary ? t.games.hintBrowser : t.games.hintOneClick}
                 </span>
               </div>
-              <MagneticButton
+              <ActionLink
                 href={game.links.primary}
                 target="_blank"
                 rel="noreferrer"
                 cursorColor="teal"
-                className="w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-xl text-[10px] font-black tracking-widest uppercase text-center shadow-[0_0_25px_rgba(62,207,192,0.25)] block"
+                className="w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-control text-[10px] font-black tracking-widest uppercase text-center shadow-[0_0_25px_rgba(62,207,192,0.25)] block"
               >
                 {words.linkPrimary} →
-              </MagneticButton>
+              </ActionLink>
 
               {game.links.secondary && (
                 <>
-                  <MagneticButton
+                  <ActionLink
                     href={game.links.secondary}
                     target="_blank"
                     rel="noreferrer"
                     cursorColor="teal"
-                    className="w-full px-6 py-3.5 border border-[#3ECFC0]/30 hover:border-[#3ECFC0]/70 rounded-xl text-[10px] font-black tracking-widest text-[#3ECFC0] uppercase text-center transition-colors flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3.5 border border-[#3ECFC0]/30 hover:border-[#3ECFC0]/70 rounded-control text-[10px] font-black tracking-widest text-[#3ECFC0] uppercase text-center transition-colors flex items-center justify-center gap-2"
                   >
                     <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M12 3v12" />
@@ -1277,9 +1316,9 @@ function GameCard({ game }) {
                       <path d="M4 20h16" />
                     </svg>
                     {words.linkSecondary}
-                  </MagneticButton>
+                  </ActionLink>
                   {words.linkSecondaryNote && (
-                    <span className="text-[9px] text-gray-600 font-bold tracking-widest uppercase text-center">
+                    <span className="text-[9px] text-gray-400 font-bold tracking-widest uppercase text-center">
                       {words.linkSecondaryNote}
                     </span>
                   )}
@@ -1298,24 +1337,24 @@ function GameCard({ game }) {
               )}
               <div className="flex gap-3">
                 {game.appStore && (
-                  <MagneticButton
+                  <ActionLink
                     href={game.appStore}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 px-6 py-3.5 bg-white text-[#05070F] rounded-xl text-[10px] font-black tracking-widest uppercase text-center"
+                    className="flex-1 px-6 py-3.5 bg-white text-[#05070F] rounded-control text-[10px] font-black tracking-widest uppercase text-center"
                   >
                     App Store
-                  </MagneticButton>
+                  </ActionLink>
                 )}
                 {game.googlePlay && (
-                  <MagneticButton
+                  <ActionLink
                     href={game.googlePlay}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 px-6 py-3.5 border border-white/15 hover:border-white/40 rounded-xl text-[10px] font-black tracking-widest text-white uppercase text-center transition-colors block"
+                    className="flex-1 px-6 py-3.5 border border-white/15 hover:border-white/40 rounded-control text-[10px] font-black tracking-widest text-white uppercase text-center transition-colors block"
                   >
                     Google Play
-                  </MagneticButton>
+                  </ActionLink>
                 )}
               </div>
             </>
@@ -1328,7 +1367,7 @@ function GameCard({ game }) {
                   className="h-full w-1/3 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"
                 />
               </div>
-              <span className="text-[9px] text-gray-500 font-black tracking-[0.3em] uppercase">
+              <span className="text-[9px] text-gray-500 font-black tracking-label-wide uppercase">
                 {/* Ortak metin "mağazalarda yakında" diyor; mobil oyunlar için
                     doğru ama mağazasız çıkacak yapımlar için değil. Oyun kendi
                     soonNote'unu verirse o kazanır. */}
@@ -1342,30 +1381,17 @@ function GameCard({ game }) {
   );
 }
 
-function MagneticButton({ href, className, children, target, rel, cursorColor }) {
-  const ref = useRef(null);
-  const handleMouseMove = (e) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    el.style.transform = `translate(${x * 0.28}px, ${y * 0.28}px) scale(1.04)`;
-    el.style.transition = 'transform 0.1s ease';
-  };
-  const handleMouseLeave = () => {
-    if (!ref.current) return;
-    ref.current.style.transform = 'translate(0px, 0px) scale(1)';
-    ref.current.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
-  };
+/* Eskiden MagneticButton'dı; mıknatıs efekti siteden kaldırıldı, bkz.
+   Hero.jsx'teki CtaLink notu. (Kartların 3B tilt'i de aynı gün
+   kaldırıldı; yukarıdaki nota bak.)
+   Not: dosya bunu bir zamanlar `export` ediyordu ama hiçbir yer import
+   etmiyordu; export da kaldırıldı. */
+function ActionLink({ href, className, children, target, rel, cursorColor }) {
   return (
     <a
-      ref={ref}
       href={href}
       target={target}
       rel={rel}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       data-cursor="ring"
       data-cursor-color={cursorColor}
       className={className}
@@ -1374,8 +1400,6 @@ function MagneticButton({ href, className, children, target, rel, cursorColor })
     </a>
   );
 }
-
-export { MagneticButton };
 
 export default function Games() {
   const { t } = useLang();
@@ -1476,6 +1500,7 @@ export default function Games() {
   ];
   return (
     <section id="games" className="py-32 px-6 max-w-[1280px] mx-auto overflow-hidden">
+      <style>{IDLE_CSS}</style>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -1483,7 +1508,7 @@ export default function Games() {
         transition={{ duration: 0.8 }}
         className="mb-20 text-center lg:text-left"
       >
-        <p className="text-[11px] font-black tracking-[0.4em] text-indigo-400 uppercase mb-3">
+        <p className="text-[11px] font-black tracking-label-x text-indigo-400 uppercase mb-3">
           {t.games.eyebrow}
         </p>
         <SplitWords

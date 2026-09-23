@@ -81,7 +81,7 @@ export default function HoverPreviewList({ items = [], className = '' }) {
                     alt=""
                     loading="lazy"
                     decoding="async"
-                    className="h-14 w-20 shrink-0 rounded-lg object-cover"
+                    className="h-14 w-20 shrink-0 rounded-chip object-cover"
                   />
                 )}
 
@@ -109,7 +109,7 @@ export default function HoverPreviewList({ items = [], className = '' }) {
                       x: isActive ? 0 : 14,
                     }}
                     transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    className="hidden shrink-0 text-[10px] font-bold uppercase tracking-[0.35em] text-indigo-400 md:block"
+                    className="hidden shrink-0 text-[10px] font-bold uppercase tracking-label-wide text-indigo-400 md:block"
                   >
                     {item.meta}
                   </motion.span>
@@ -144,7 +144,7 @@ export default function HoverPreviewList({ items = [], className = '' }) {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden rounded-2xl border border-white/10 shadow-[0_30px_80px_-20px_rgba(99,102,241,0.45)]"
+                  className="overflow-hidden rounded-card border border-white/10 shadow-[0_30px_80px_-20px_rgba(99,102,241,0.45)]"
                 >
                   <img
                     src={activeItem.image}

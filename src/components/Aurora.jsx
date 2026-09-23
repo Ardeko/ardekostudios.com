@@ -23,8 +23,9 @@ import { useEffect, useRef, useState } from 'react';
       kalıp görünür bir bant bırakırdı. Vignette ve alt kenar artık
       doğrudan `u_bg`'ye eriyor, ek bir maske/gradient katmanı gerekmiyor.
    4. **Şiddet ayarlanabilir.** Hero'da zaten iki animasyonlu
-      radial-gradient glow ve `Particles` var; upstream'in tam güçteki
-      karışımı onların üstüne binince çamur oluyor. `u_strength` bütün
+      radial-gradient glow vardı; upstream'in tam güçteki karışımı
+      onların üstüne binince çamur oluyordu. (Aurora yerleştikten sonra
+      `Particles` ve mor glow kaldırıldı, indigo glow kaldı.) `u_strength` bütün
       mix ağırlıklarını tek yerden kısıyor.
    5. **Görsel bütçesi.** bkz. CLAUDE.md. rAF yalnızca hero ekrandayken
       ve sekme öndeyken dönüyor (IntersectionObserver + visibilitychange),

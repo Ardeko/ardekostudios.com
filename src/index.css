@@ -1,6 +1,103 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   Inter — SELF-HOST. Buraya bir daha dokunacaksan önce bunu oku.
+
+   Site aylarca `font-family: 'Inter', sans-serif` yazıp Inter'i HİÇ
+   yüklemedi: ne <link>, ne @font-face, ne paket. Inter'i kurulu olmayan
+   herkes siteyi Arial/Roboto ile gördü — yani `font-black` (900)
+   başlıklar tasarlandıkları fontla değil, tarayıcının bulduğu fontla
+   çizildi. Geliştirme makinesinde Inter kurulu olduğu için fark
+   edilmedi. Fallback zinciri de eksikti (`system-ui` bile yoktu).
+
+   Dosyalar `@fontsource-variable/inter` 5.3.0'dan alındı ve
+   `public/fonts/`e kopyalandı; paket bağımlılıkta DURMUYOR, sadece
+   kaynaktı. Güncellemek için:
+     npm i -D @fontsource-variable/inter
+     cp node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2      public/fonts/inter-latin.woff2
+     cp node_modules/@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2  public/fonts/inter-latin-ext.woff2
+     npm un @fontsource-variable/inter
+
+   İKİ alt küme de gerekli: ı (U+0131) latin'de ama ğ/İ/ş (U+011E-015F)
+   latin-ext'te. Sadece latin yüklersen Türkçe kelimeler kelime ortasında
+   font değiştirir. unicode-range sayesinde İngilizce sayfada tarayıcı
+   latin-ext'i zaten indirmez.
+
+   `preload` YOK, `font-display: swap` VAR — bilerek. 130 KB'ı kritik
+   yola koymak Preloader'ın boyanmasını geciktirir (bkz. CLAUDE.md
+   "Görsel bütçesi"). Metin önce fallback'le çizilir, font gelince takas
+   olur; fallback zinciri de bu yüzden Inter'e metrik olarak yakın
+   olanlardan kuruldu.
+------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/inter-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/inter-latin-ext.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
 @theme {
+  /* ------------------------------------------------------------------
+     Etiket harf aralığı ölçeği.
+
+     Sitenin imza öğesi "küçük + büyük harf + seyrek aralıklı etiket" ama
+     bu tek iş SEKİZ farklı değerle yazılmıştı: widest(0.1) ve elle
+     yazılmış 0.15 / 0.2 / 0.25 / 0.3 / 0.35 / 0.4 / 0.5em. Göz tekrar
+     eden bir ritim arayıp bulamayınca sayfa "yoğun" hissettiriyordu.
+
+     Ölçek artık 0.1 / 0.2 / 0.3 / 0.4 — dördü de bir öncekinin katı:
+       tracking-widest      0.1em   (Tailwind'in kendi değeri, 32 kullanım)
+       tracking-label       0.2em
+       tracking-label-wide  0.3em
+       tracking-label-x     0.4em
+
+     tracking-tight/tighter AYRI bir eksen (display başlıkları sıkıştırır),
+     bu ölçeğe karıştırma. Yeni bir etiket yazarken bu dördünün dışına
+     çıkma; gerekiyorsa ölçeği burada değiştir.
+  ------------------------------------------------------------------ */
+  /* ------------------------------------------------------------------
+     Köşe yarıçapı ölçeği — ROLE göre, boyuta göre değil.
+
+     Altı farklı değer vardı (`md`, `lg`, `xl`, `2xl`, `3xl`, `[4px]`)
+     ve hangisinin nerede kullanılacağına dair bir kural yoktu. Artık
+     dört rol var ve hepsi 4px'in katı:
+
+       rounded-inset    4px   kutu içine gömülü minik görsel (bayrak)
+       rounded-chip     8px   rozet, etiket, küçük bağlantı hapı
+       rounded-control  12px  buton, input, nav öğesi
+       rounded-card     16px  kart ve panel
+
+     `rounded-full` ayrı kalır (hap/nokta), ölçeğe dahil değil.
+     Kartların köşesini değiştirmek istersen TEK YER burası — oyun
+     kartları eskiden 24px'ti, sitenin geri kalanındaki kartlar 16px;
+     ikisi tek role indirildi.
+  ------------------------------------------------------------------ */
+  --radius-inset: 0.25rem;
+  --radius-chip: 0.5rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
+
+  /* Hover/geçiş yumuşaklığı. `ease-out` tam hızda başlayıp yavaşlıyor,
+     yani hareket "pat" diye başlıyor ve kart yükseliyor mu büyüyor mu
+     okunmuyordu. Bu eğri iki ucu da yumuşatıyor: yavaş başla, yavaş bit. */
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --tracking-label: 0.2em;
+  --tracking-label-wide: 0.3em;
+  --tracking-label-x: 0.4em;
+
   --color-indigo-400: #818cf8;
   --color-indigo-500: #6366f1;
   --color-indigo-600: #4f46e5;
@@ -13,7 +110,7 @@
 body {
   background-color: #05070F;
   color: #F3F4F6;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* clip, hidden'ın aksine scroll konteyneri oluşturmaz -> sticky çalışır */
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;

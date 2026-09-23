@@ -286,7 +286,7 @@ export default function GooeyTabs({ tabs, value, onChange, className = '', trail
             data-cursor="ring"
             className={[
               'relative z-[2] cursor-pointer border-r border-white/8 px-4 py-3',
-              'text-[10px] font-black uppercase tracking-[0.25em] transition-colors duration-200',
+              'text-[10px] font-black uppercase tracking-label transition-colors duration-200',
               active ? 'text-white' : 'text-gray-500 hover:text-gray-300',
             ].join(' ')}
           >

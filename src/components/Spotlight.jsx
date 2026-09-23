@@ -7,7 +7,7 @@ import { motion, useSpring, useTransform } from 'framer-motion';
  * Konumlanmış (relative/absolute) ve taşanı kırpan herhangi bir kabın
  * DOĞRUDAN çocuğu olarak bırak; kabı kendisi bulur:
  *
- *   <div className="relative overflow-hidden rounded-3xl ...">
+ *   <div className="relative overflow-hidden rounded-card ...">
  *     <Spotlight />
  *     <div className="relative z-10">...içerik...</div>
  *   </div>
