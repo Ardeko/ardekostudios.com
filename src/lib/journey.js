@@ -69,7 +69,7 @@ export const MILESTONES = [
     year: 2024,
     category: 'game',
     tech: ['Python', 'Pygame'],
-    links: { github: `${GH}/Legend-Of-Rey` },
+    links: { github: `${GH}/Legend-Of-Rey`, itch: 'https://ardeko.itch.io/legend-of-rey' },
   },
   {
     id: 'renault',
@@ -163,8 +163,10 @@ export const MILESTONES = [
     month: 8,
     category: 'game',
     tech: ['React', 'TypeScript', 'Capacitor'],
-    links: {},
-    inProgress: true,
+    links: {
+      appStore: 'https://apps.apple.com/tr/app/torpidodan/id6807162427?l=tr',
+      googlePlay: 'https://play.google.com/store/apps/details?id=com.ardeko.torpidodan',
+    },
   },
   {
     id: 'growth',

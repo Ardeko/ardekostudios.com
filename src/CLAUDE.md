@@ -203,6 +203,61 @@ Alev/parıltı şiddetleri bir tur kısıldı: ilk değerlerde meşaleler mor bi
 lekeye, kılıç da ışın kılıcına dönüyordu — katman sanat eserinin kendi ışığını
 titretmeli, ikinci bir ışık kaynağı gibi durmamalı.
 
+### `Games.jsx` → `TorpidodanScene` — oyundan birebir (2026-09-27)
+
+Eski sahne (bej kâğıt, karikatür mavi araba, büyüteç) kullanıcıya göre
+"oyuna hiç uymuyordu" — haklıydı. Oyun `~/Desktop/projects/torpidodan`
+koyu gece galerisi + galeri sarısı + TR evrak estetiği kullanıyor. Yeni
+sahne oyunun tezinin 12 sn'lik hâli: göz kararı ±%51 → tarama → temel
+±%22 → tarama → tam ±%7 → gizli kusur → "pahalı duruyor" → pazarlık →
+el sıkışma → ışıklar söner, sıradaki araç. Bu sahneye dokunmadan önce
+oyunun kendisine bak; kaynak orası.
+
+- **Görsel dil oyunun token'larından**: `src/styles/tokens.css` (ink
+  rampası, `--sari #f7bd3f`, plaka mavisi, kaporta skalası
+  orijinal/lokal/boyalı/değişen, `--kar`, `--zarar`, `--amber`). Bant
+  oyundaki `UncertaintyBar`/`NegoEstimate`, lekeler `ArtWear`, B/D rozeti
+  `art__marks` (lokal boya B saymaz — oyundaki `isRepainted`), tarama
+  `BodyDiagram` taramasının karşılığı.
+- **Dokuz araç döner, kullanıcının seçimi**: Klior gibiler (Renohut
+  Klior 2020, DasVolk Kroket, Yota Yarışır), Fulanya gibiler (Renohut
+  Fulanya 2012 beyaz, Fiyat DeGea, Yota Kolalara), Porsen gibiler (Porsen
+  Dokuzbirlik, BMB M8.5, Honto Sivil R). Plaka hepsinde **34 ARDO 95**.
+  Görseller oyunun `public/arac/*.webp` dosyaları → `public/games/
+  torpidodan/` (orijinaller `assets-src/games/torpidodan/`). Klior'un
+  kırmızısı mercan turuncuya, Fulanya'nın gümüşü beyaza çevrildi —
+  yalnızca sitedeki kopyalar. Adlar oyunun güncel katalog adları
+  (Clio → Klior, Fluence → Fulanya); motor kodu (TCe, dCi) yazılmıyor,
+  oyun gerçek marka/motor adı kullanmıyor.
+- **Hasar çokgenleri her görsele elle oturtuldu** (`TD_CARS[].panels`,
+  640×427 görsel koordinatı). Görsel değişirse çokgen de değişmeli.
+  `op-korsa.webp`'nin altında dosya adı yazısı kalmış, o yüzden seçilmedi.
+- **Sayılar uydurma değil**: her araç oyunun domain koduyla üretilmiş
+  gerçek bir ilan (`seed` = `createRng` tohumu, `generateListing(model
+  tier'ı, gün 30)`, beceriler 0, üç seviyede `inspect()` +
+  `estimateHint()`). Pazarlık da oyunun `openNegotiation` +
+  `makeOffer`'ıyla oynandı: tam tahminin %3 altından yuvarlak teklif,
+  satıcı kabul ediyor. ⚠️ Satıcının gizli tabanı **gerçek değer ×
+  açgözlülük** (`openNegotiation`) — ilandaki fiyatın türediği görünen
+  değer değil; ilk Şahan sürümünde bu yanlış hesaplanmıştı. İki kapılı
+  görsellerde (Porsen, M8.5) arka kapısı hasarsız ilan seçildi, yoksa
+  leke fotoğrafa oturmaz. Arama şartları: göz/temel bant içi, tam bant
+  dışı (pahalı), gizli kusur var, anlaşma bant içi, görünen yüzde bir
+  değişen + en az bir boyalı/lokal.
+- **Araç değişimi React'te, zamanlama CSS'te**: `tdDim` her tur bittiğinde
+  `animationiteration` atıyor; o an ışık sönük ve ilana ait her şey
+  (`.td-hold`) gizli, değişim görünmüyor. Sıradaki görsel bir tur önceden
+  `decode()` ediliyor; hepsi birden yüklenmiyor (iOS bellek bütçesi).
+- **Hareket azaltma = son kare**: animasyonlar kalkınca ilk araç ve TABAN
+  stiller (el sıkışma anı) kalır; keyframe'ler öbür hâlleri tanımlıyor.
+  Yeni öğe eklerken taban stilini buna göre yaz.
+- Geniş kartta (`@container` ≥440px) araç kutusu büyüyor; `.td`
+  `container-type:inline-size`. Kartın vurgusu ve Spotlight da artık
+  oyunun galeri sarısı.
+- Önizleme listesinin görseli (`public/games/torpidodan.webp`) oyunun
+  ana menü key art'ından kırpıldı; tam boyu `assets-src/games/
+  torpidodan-menu.png` (dosya `.webp` uzantılıydı ama içeriği PNG).
+
 ### React Bits bileşenleri — üçü alındı, beşi reddedildi (2026-08-27)
 
 Kullanıcı sekiz React Bits / shadcn bileşeni için entegrasyon promptu
@@ -322,13 +377,21 @@ bırakıldı. Yılı öğrenilince `journey.js` + iki i18n bloğuna bir satır.
 `Games.jsx` ve `About.jsx`'teki proje adları, tarihler ve linkler
 **gerçek** (eski canlı siteden): Switch Master: Railway (App Store +
 Google Play, 2026), REVO (ardekostudios.xyz + GitHub release), Forza
-Orbit, Apex Shift (ardaguner.com), Kafa Kafaya / Rushville / Skyline
-Swinger ("yakında"). 2026-08-19'da eklenen **Decoy** (yedi ulusun hileli
-savaşı — gerçek zamanlı alan hakimiyeti stratejisi, web/online, repo
-`~/Desktop/projects/decoy`) ve **Torpidodan** (ikinci el araba alım-satım
-simülasyonu, React+Capacitor mobil, repo `~/Desktop/projects/torpidodan`)
-da "yakında" durumunda — ikisinin de henüz canlı adresi ya da mağaza
-linki yok, çıkınca `status: 'live'` + `links` eklenmeli.
+Orbit, Apex Shift (ardaguner.com), Kafa Kafaya ("yakında"). **Decoy**
+(yedi ulusun hileli savaşı, web/online, repo `~/Desktop/projects/decoy`)
+sitenin içinde `/decoy/` altında yayında.
+
+**2026-09-27'de yayına çıkanlar**: Torpidodan, Rushville, Skyline Swinger
+(App Store + Google Play) ve LORE: Legend of Rey (itch.io,
+`ardeko.itch.io/legend-of-rey`). Mağaza linkleri kartta `appStore` /
+`googlePlay` / `itch` alanlarında; butonlar `STORES` dizisinden, logolar
+`StoreIcons.jsx`'ten (Simple Icons yolları, elle çizme). Vitrin sırası
+kullanıcının seçimi: Torpidodan → LORE → Rushville → Skyline → Switch →
+REVO → Apex → Decoy → Forza, sonra Kafa Kafaya + gizli proje;
+`HoverPreviewList` aynı sırada. Hero'daki "Yayında" sayısı (`hero.stats`)
+elle yazılıyor — yeni oyun çıkınca onu da artır. Mağaza puanları
+(4,8★ / 4,7★) **bilerek 5★'ın altında**: kullanıcı, puanları çoğunlukla
+tanıdıklar verdiği için gerçekçi dursun istedi. Geri 5'e çekme.
 `About.jsx`'teki tarihçe: 2023 kuruluş → Legend of
 Rey (2024, itch.io) → Wordeko/Protocol/Nebula - Bubble Shooter (2025,
 ardaguner.com) → Switch Master (2026). İletişim: `info@ardekostudios.com`,

@@ -5,6 +5,7 @@ import { SplitWords } from './Reveal';
 import HoverPreviewList from './HoverPreviewList';
 import Spotlight from './Spotlight';
 import Folder from './Folder';
+import StoreIcon from './StoreIcons';
 import { useLang } from '../lib/i18n';
 
 // Gizli proje klasöründen çıkan üç "karartılmış belge". Metin YOK — ne
@@ -38,13 +39,23 @@ const SPOTLIGHT_COLORS = {
   revo: 'rgba(62, 207, 192, 0.42)',
   decoy: 'rgba(244, 63, 94, 0.38)',
   lore: 'rgba(167, 139, 250, 0.45)',
-  torpidodan: 'rgba(96, 165, 250, 0.42)',
+  // Oyunun "galeri sarısı" (--sari #f7bd3f) — gece galerisinin sodyum lambası.
+  torpidodan: 'rgba(247, 189, 63, 0.38)',
   kafa: 'rgba(52, 211, 153, 0.42)',
   // Beyaz diğer renklerle aynı alfada gözü alıyor — koyu zeminde doygunluğu
   // olmayan tek renk o, bu yüzden bilerek daha kısık.
   rushville: 'rgba(255, 255, 255, 0.26)',
   apex: 'rgba(251, 191, 36, 0.40)',
 };
+
+// Kartın mağaza butonları bu sırayla dizilir; oyunda hangi alan varsa o
+// buton çıkar. İlk çıkan beyaz dolgulu (birincil), gerisi çerçeveli.
+// Etiketler marka adı, iki dilde aynı — bu yüzden i18n'de değil.
+const STORES = [
+  { key: 'appStore', label: 'App Store' },
+  { key: 'googlePlay', label: 'Google Play' },
+  { key: 'itch', label: 'itch.io' },
+];
 
 const cardVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -927,92 +938,456 @@ function DecoyScene() {
   );
 }
 
+/* ------------------------------------------------------------------
+   Torpidodan — gece galerisinde ekspertiz (2026-09-27).
+
+   Oyun (~/Desktop/projects/torpidodan) koyu "gece galerisi" + galeri
+   sarısı + TR evrak estetiği kullanıyor ve tek cümlesi şu: gerçek değeri
+   asla göremezsin, ekspertize para verdikçe tahminin belirsizlik bandı
+   daralır. Sahne o döngünün 12 sn'lik hâli; her tur başka bir ilan:
+
+     göz kararı (±%51) → tarama → temel (±%22) → tarama → tam (±%7)
+     → gizli kusur → "pahalı duruyor" → pazarlık → el sıkışma
+     → ışıklar söner, galeriye sıradaki araç gelir
+
+   · Renkler oyunun `src/styles/tokens.css`'inden birebir: ink zemin,
+     --sari #f7bd3f, plaka mavisi, kaporta skalası (orijinal/lokal/
+     boyalı/değişen), --kar, --zarar, --amber.
+   · Araçlar oyunun kendi çizimleri (`public/arac/*.webp`, 640×427,
+     şeffaf) → `public/games/torpidodan/`. Kullanıcının isteğiyle üç
+     grup: Klior gibiler, Fulanya gibiler, Porsen gibiler. Klior'un
+     kırmızısı mercan turuncuya, Fulanya'nın gümüşü beyaza çevrildi
+     (yalnız bu sitedeki kopyalar; oyunun dosyaları aynı).
+   · SAYILAR UYDURMA DEĞİL. Her araç, oyunun domain koduyla üretilmiş
+     gerçek bir ilan: `generateListing` + üç seviyede `inspect()` +
+     `estimateHint()`, bütün beceriler 0. Pazarlık da oyunun
+     `openNegotiation` + `makeOffer`'ıyla oynandı: oyuncu tam ekspertiz
+     tahmininin %3 altından yuvarlak bir teklif veriyor, satıcı kabul
+     ediyor (teklif gerçek değere bağlı gizli tabanın üstünde). Klior
+     2020, Fulanya 2012 ve beyaz olacak şekilde arandı. `seed` alanı
+     `createRng` tohumu — tekrar üretmek için bkz. src/CLAUDE.md.
+   · Bant oyundaki `UncertaintyBar`/`NegoEstimate` ile aynı: eksen sabit
+     (göz kararı bandı), altın iğne tahmin, mavi iğne masadaki fiyat.
+     `mark` = `estimateHint().priceMark` (son eleman anlaşılan fiyat),
+     `delta` = (fiyat − tahmin) / tahmin → alt yazılardaki yüzdeler.
+   · Hasar lekeleri oyundaki `ArtWear` dili (dolgu .36, çerçeve, 38°
+     tarama, harf) ama kutu değil, her görselin panellerine elle
+     oturtulmuş çokgenler (640×427 görsel koordinatı). Tarama çizgisi
+     geçerken boyanıyorlar: boyalı/lokal birinci taramada (temel),
+     değişen ikincide (tam). Hangi parçanın ne olduğu simülasyondan;
+     iki kapılılarda (Porsen, M8.5) arka kapısı hasarsız ilan seçildi.
+   · Görselin üstündeki rozet oyundaki `art__marks` kuralıyla: boyalı
+     varsa B, değişen bulununca D. Lokal boya B saymaz (`isRepainted`).
+
+   Zaman çizelgesi CSS'te (tek 12 sn'lik döngü, yalnız transform/
+   opacity). Araç değişimi React'te: `tdDim` her tur bittiğinde
+   `animationiteration` atıyor, o an ışık tamamen sönük ve bütün yazılar
+   gizli — değişim görünmüyor. Ekran dışında `.gc-idle` animasyonu
+   durdurduğu için tur da ilerlemiyor. Hareket azaltmada animasyon
+   kalkar, ilk araç ve TABAN stiller (el sıkışma karesi) kalır; yeni bir
+   öğe eklerken taban stilini de "anlaşma" hâline göre yaz.
+------------------------------------------------------------------- */
+const TD_DIR = '/games/torpidodan/';
+
+// panels: [durum, çokgen, harfX, harfY] — koordinatlar 640×427 görselde.
+const TD_CARS = [
+  {
+    img: 'klior', brand: 'Renohut', model: 'Klior', year: 2020, km: 119110, seed: 1404595,
+    ask: 552233, deal: 454000, delta: [0.0821, 0.1839, 0.1792], mark: [0.581, 0.68, 0.676, 0.47],
+    flag: 'tramerHidden', tramer: 115470,
+    panels: [
+      ['degisen', 'M157 140L343 152L338 170L320 183L297 191L243 207L173 227L90 215L42 206L42 192L60 173L103 152Z', 185, 192],
+      ['boyali', 'M297 191L320 183L338 170L343 153L378 158L382 200L385 245L384 270L372 256L356 244L336 237L314 237L294 243L278 254L266 268L256 262L262 240L280 214Z', 334, 224],
+    ],
+  },
+  {
+    img: 'fulanya', brand: 'Renohut', model: 'Fulanya', year: 2012, km: 269819, seed: 1241903,
+    ask: 151783, deal: 123000, delta: [0.3572, 0.1714, 0.192], mark: [0.85, 0.668, 0.688, 0.467],
+    flag: 'tramerHidden', tramer: 112796,
+    panels: [
+      ['boyali', 'M165 150L350 161L325 180L300 201L235 214L172 226L110 219L52 209L50 197L90 176L125 160Z', 193, 199],
+      ['degisen', 'M300 202L325 180L347 162L372 168L376 210L378 250L377 283L370 252L356 236L331 230L302 236L282 248L284 232L291 218Z', 340, 221],
+      ['lokalBoyali', 'M374 173L486 161L487 220L483 279L381 292L377 232Z', 431, 237],
+    ],
+  },
+  {
+    img: 'porsen', brand: 'Porsen', model: 'Dokuzbirlik', year: 2012, km: 291986, seed: 1845784,
+    ask: 1757282, deal: 1293000, delta: [0.2134, 0.0564, 0.3175], mark: [0.709, 0.555, 0.811, 0.47],
+    flag: 'tramerHidden', tramer: 958932,
+    panels: [
+      ['degisen', 'M228 222L236 196L282 174L322 165L380 163L402 170L405 225L406 282L398 262L386 240L368 227L350 220L330 221L312 228L302 238L266 245L231 240Z', 324, 217],
+      ['boyali', 'M406 173L525 155L531 190L529 235L524 268L408 293L405 230Z', 467, 234],
+    ],
+  },
+  {
+    img: 'yarisir', brand: 'Yota', model: 'Yarışır', year: 2010, km: 239205, seed: 228680,
+    ask: 328964, deal: 240000, delta: [0.2565, 0.1526, 0.3248], mark: [0.751, 0.65, 0.818, 0.467],
+    flag: 'tramerHidden', tramer: 160390,
+    panels: [
+      ['degisen', 'M380 191L500 166L502 230L500 296L396 315L388 250Z', 445, 252],
+      ['boyali', 'M502 166L575 146L583 180L576 213L558 235L545 265L541 288L502 296Z', 536, 226],
+      ['lokalBoyali', 'M578 146L598 149L603 180L620 195L623 215L618 235L600 223L580 220L560 231L576 213L583 180Z', 597, 207],
+    ],
+  },
+  {
+    img: 'degea', brand: 'Fiyat', model: 'DeGea', year: 2018, km: 107647, seed: 16730,
+    ask: 512101, deal: 433000, delta: [-0.1566, 0.0936, 0.1455], mark: [0.346, 0.592, 0.643, 0.469],
+    flag: 'tramerHidden', tramer: 108520,
+    panels: [
+      ['degisen', 'M500 154L580 138L586 165L581 199L566 220L555 241L550 265L498 278L499 215Z', 537, 214],
+      ['boyali', 'M581 138L608 143L611 170L629 185L634 210L631 234L615 225L595 222L570 226L566 220L581 199L586 165Z', 603, 204],
+    ],
+  },
+  {
+    img: 'm85', brand: 'BMB', model: 'M8.5', year: 2020, km: 90822, seed: 1695625,
+    ask: 2564126, deal: 1967000, delta: [-0.086, 0.0149, 0.2639], mark: [0.416, 0.515, 0.759, 0.47],
+    flag: 'kmRollback', tramer: 0,
+    panels: [
+      ['degisen', 'M334 203L370 185L415 168L429 168L431 210L433 260L425 235L408 215L380 208L350 210L328 225L323 223L330 213Z', 394, 212],
+      ['boyali', 'M433 161L540 150L546 190L543 235L538 245L434 261L431 210Z', 487, 216],
+    ],
+  },
+  {
+    img: 'kroket', brand: 'DasVolk', model: 'Kroket', year: 2025, km: 8817, seed: 57705,
+    ask: 1923628, deal: 1544000, delta: [0.463, 0.2091, 0.2084], mark: [0.954, 0.705, 0.704, 0.471],
+    flag: 'tramerHidden', tramer: 167019,
+    panels: [
+      ['degisen', 'M503 161L580 153L585 180L580 210L566 234L556 260L551 279L508 286L505 225Z', 539, 225],
+      ['lokalBoyali', 'M581 153L616 158L620 185L631 198L633 220L629 238L613 228L598 223L580 225L566 234L580 210L585 180Z', 604, 208],
+    ],
+  },
+  {
+    img: 'kolalara', brand: 'Yota', model: 'Kolalara', year: 2017, km: 215909, seed: 143893,
+    ask: 763789, deal: 667000, delta: [0.3628, 0.1304, 0.1101], mark: [0.856, 0.628, 0.608, 0.47],
+    flag: 'tramerHidden', tramer: 107237,
+    panels: [
+      ['degisen', 'M155 158L345 168L335 183L313 206L250 219L185 230L128 225L73 219L55 203L85 180L120 166Z', 196, 205],
+      ['boyali', 'M313 206L335 183L345 168L395 176L398 240L400 298L392 265L376 245L350 236L322 238L300 250L287 268L293 240L304 221Z', 356, 227],
+      ['lokalBoyali', 'M500 165L580 150L588 180L583 210L568 233L556 260L550 280L505 289L502 230Z', 539, 226],
+    ],
+  },
+  {
+    img: 'sivil-r', brand: 'Honto', model: 'Sivil R', year: 2017, km: 122080, seed: 138673,
+    ask: 1192829, deal: 1041000, delta: [0.3094, 0.104, 0.1105], mark: [0.803, 0.602, 0.608, 0.47],
+    flag: 'tramerHidden', tramer: 150674,
+    panels: [
+      ['degisen', 'M175 150L362 161L345 178L305 199L250 210L203 220L136 215L70 210L55 197L85 170L128 157Z', 200, 196],
+      ['boyali', 'M305 199L345 178L362 161L392 165L396 230L400 293L395 262L382 240L360 228L335 227L315 236L302 250L300 228Z', 356, 219],
+    ],
+  },
+];
+
+const TD_HARF = { boyali: 'B', lokalBoyali: 'L', degisen: 'D' };
+
+/** Oyundaki NegoEstimate alt yazısının aynısı, simülasyonun sayılarıyla. */
+function tdCaptions(car, w, fmt) {
+  const tl = (n) => `${fmt.format(n)} TL`;
+  const pct = (d) => w.pct.replace('{n}', Math.abs(Math.round(d * 100)));
+  const inside = (d) =>
+    Math.round(d * 100) === 0 ? w.same : w.inside.replace('{p}', pct(d)).replace('{dir}', d > 0 ? w.up : w.down);
+  return [
+    inside(car.delta[0]),
+    inside(car.delta[1]),
+    w.flags[car.flag].replace('{tl}', tl(car.tramer)),
+    w.above.replace('{p}', pct(car.delta[2])),
+    w.dealLine.replace('{tl}', tl(car.deal)),
+  ];
+}
+
 const TD_CSS = `
-/* Mercek aracın kendi genişliği boyunca süpürür; hasar kayıtlarıyla senkron
-   kart ne kadar geniş olursa olsun bozulmasın diye yüzde değil px kullanılıyor. */
-@keyframes tdSweep{0%,6%{left:calc(50% - 86px)}64%,72%{left:calc(50% + 86px)}86%,100%{left:calc(50% - 86px)}}
-@keyframes tdLens{0%,4%{opacity:0}10%,70%{opacity:1}80%,100%{opacity:0}}
-@keyframes tdMarkA{0%,26%{opacity:0;transform:scale(.4)}32%{opacity:1;transform:scale(1.3)}38%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
-@keyframes tdMarkB{0%,42%{opacity:0;transform:scale(.4)}48%{opacity:1;transform:scale(1.3)}54%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
-@keyframes tdBadge{0%,54%{opacity:0;transform:translate(-50%,3px)}62%,90%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,0)}}
-@keyframes tdBand{0%{left:10%;right:10%}64%,86%{left:39%;right:39%}100%{left:10%;right:10%}}
+/* Zaman çizelgesi (12 sn, %1 = 0,12 sn):
+   0–3      ışık titreyip yanar, yazılar belirir | 20,5–29,5  1. tarama (boyalı, lokal)
+   30       TEMEL: bant ±%22                     | 43,5–52,5  2. tarama (değişen)
+   53       TAM: bant ±%7, gizli kusur           | 63         "pahalı duruyor", iğne yanıp söner
+   73,5–76  pazarlık: iğne banda girer           | 95,5–100   yazılar söner, ışık titreyip kararır
+   100 = 0  React sıradaki aracı koyar (tdDim'in animationiteration'ı) */
+@keyframes tdBar{0%{opacity:.15}1.2%{opacity:1}2%{opacity:.4}3.2%,95.4%{opacity:1}96.2%{opacity:.3}97%{opacity:.9}97.8%{opacity:.2}98.6%,100%{opacity:.15}}
+@keyframes tdDim{0%{opacity:.82}1.2%{opacity:.45}2%{opacity:.7}3.2%,95.4%{opacity:0}96.2%{opacity:.5}97%{opacity:.2}97.8%{opacity:.6}98.6%,100%{opacity:.82}}
+@keyframes tdHold{0%,.6%{opacity:0}3%,95.4%{opacity:1}96.8%,100%{opacity:0}}
+@keyframes tdScan{0%,20%{transform:translateX(-6%);opacity:0}20.8%,29.2%{opacity:1}30%{transform:translateX(106%);opacity:0}30.1%,43%{transform:translateX(-6%);opacity:0}43.8%,52.2%{opacity:1}53%,100%{transform:translateX(106%);opacity:0}}
+@keyframes tdWipeA{0%,20.54%{transform:translateX(-100%)}29.46%,97%{transform:translateX(0)}97.5%,100%{transform:translateX(-100%)}}
+@keyframes tdWipeAIn{0%,20.54%{transform:translateX(100%)}29.46%,97%{transform:translateX(0)}97.5%,100%{transform:translateX(100%)}}
+@keyframes tdWipeB{0%,43.54%{transform:translateX(-100%)}52.46%,97%{transform:translateX(0)}97.5%,100%{transform:translateX(-100%)}}
+@keyframes tdWipeBIn{0%,43.54%{transform:translateX(100%)}52.46%,97%{transform:translateX(0)}97.5%,100%{transform:translateX(100%)}}
+@keyframes tdMarkB{0%,29.4%{opacity:0;transform:scale(.5)}30.2%{opacity:1;transform:scale(1.18)}31%,52.6%{opacity:1;transform:scale(1)}53.2%,100%{opacity:0;transform:scale(1)}}
+@keyframes tdMarkD{0%,52.4%{opacity:0;transform:scale(.5)}53.2%{opacity:1;transform:scale(1.18)}54%,100%{opacity:1;transform:scale(1)}}
+@keyframes tdPip2{0%,29.8%{opacity:0;transform:scale(.4)}30.6%{opacity:1;transform:scale(1.35)}31.4%,100%{opacity:1;transform:scale(1)}}
+@keyframes tdPip3{0%,52.8%{opacity:0;transform:scale(.4)}53.6%{opacity:1;transform:scale(1.35)}54.4%,100%{opacity:1;transform:scale(1)}}
+@keyframes tdT1{0%,29.8%{opacity:1;transform:translateY(0)}30.6%,100%{opacity:0;transform:translateY(-3px)}}
+@keyframes tdT2{0%,29.8%{opacity:0;transform:translateY(3px)}30.6%,52.8%{opacity:1;transform:translateY(0)}53.6%,100%{opacity:0;transform:translateY(-3px)}}
+@keyframes tdT3{0%,52.8%{opacity:0;transform:translateY(3px)}53.6%,100%{opacity:1;transform:translateY(0)}}
+@keyframes tdC3{0%,52.8%{opacity:0;transform:translateY(3px)}53.6%,62.8%{opacity:1;transform:translateY(0)}63.6%,100%{opacity:0;transform:translateY(-3px)}}
+@keyframes tdC4{0%,62.8%{opacity:0;transform:translateY(3px)}63.6%,72.8%{opacity:1;transform:translateY(0)}73.6%,100%{opacity:0;transform:translateY(-3px)}}
+@keyframes tdC5{0%,73.4%{opacity:0;transform:translateY(3px)}74.4%,100%{opacity:1;transform:translateY(0)}}
+@keyframes tdZone{0%{transform:scaleX(1)}7%{transform:scaleX(.965)}14%{transform:scaleX(1)}21%{transform:scaleX(.965)}29.8%{transform:scaleX(1);animation-timing-function:cubic-bezier(.22,1.15,.36,1)}33%{transform:scaleX(.4235)}52.8%{transform:scaleX(.4235);animation-timing-function:cubic-bezier(.22,1.15,.36,1)}56%,100%{transform:scaleX(.1353)}}
+@keyframes tdAsk{0%,29.8%{transform:translateX(var(--td-m0));animation-timing-function:cubic-bezier(.22,1.15,.36,1)}33%{transform:translateX(var(--td-m1))}52.8%{transform:translateX(var(--td-m1));animation-timing-function:cubic-bezier(.22,1.15,.36,1)}56%{transform:translateX(var(--td-m2))}73.4%{transform:translateX(var(--td-m2));animation-timing-function:cubic-bezier(.65,0,.35,1)}76.4%,100%{transform:translateX(var(--td-m3))}}
+@keyframes tdBlink{0%,63.6%{opacity:1}65%{opacity:.25}66.4%{opacity:1}67.8%{opacity:.25}69.2%{opacity:1}70.6%{opacity:.25}72%,100%{opacity:1}}
+@keyframes tdV1{0%,73.6%{opacity:1;transform:translateY(0)}74.6%,100%{opacity:0;transform:translateY(-7px)}}
+@keyframes tdV2{0%,73.8%{opacity:0;transform:translateY(7px)}74.8%,100%{opacity:1;transform:translateY(0)}}
+@keyframes tdOld{0%,74.6%{opacity:0;transform:translateY(-3px)}75.8%,100%{opacity:1;transform:translateY(0)}}
+@keyframes tdDeal{0%,73.8%{opacity:0}74.8%{opacity:1}80%,95.4%{opacity:.45}96.8%,100%{opacity:0}}
 
-.td { position:relative;width:100%;height:190px;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#f2ece0,#ded6c4) }
-.td-rule { position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,rgba(26,79,160,.05) 0 1px,transparent 1px 15px),repeating-linear-gradient(90deg,rgba(26,79,160,.04) 0 1px,transparent 1px 15px) }
-.td-stamp { position:absolute;top:12px;right:14px;padding:2px 7px;border:1.5px dashed rgba(26,79,160,.4);border-radius:4px;font-size:6px;font-weight:900;letter-spacing:2px;color:rgba(26,79,160,.55);transform:rotate(-6deg) }
+/* Sahne: oyunun gece galerisi — ink rampası, tavandan sodyum ışığı. */
+.td { position:relative;width:100%;height:190px;border-radius:14px;overflow:hidden;isolation:isolate;container-type:inline-size;
+  background:radial-gradient(58% 70% at 50% -6%,rgba(247,189,63,.16),transparent 72%),linear-gradient(180deg,#111821 0%,#0d131a 58%,#090d12 100%) }
+.td-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums }
+/* Tek araçlık içerik: tur sonunda söner, yeni araçla belirir. */
+.td-hold { animation:tdHold 12s linear infinite }
 
-.td-shadow { position:absolute;left:50%;top:112px;width:172px;height:9px;transform:translateX(-50%);border-radius:50%;background:rgba(20,35,59,.16) }
-.td-car { position:absolute;left:50%;top:62px;width:150px;height:52px;transform:translateX(-50%);z-index:3 }
-.td-body { position:absolute;left:0;bottom:9px;width:150px;height:24px;border-radius:9px 11px 6px 6px;background:linear-gradient(180deg,#2c4270,#16233d) }
-.td-roof { position:absolute;left:34px;bottom:30px;width:74px;height:22px;border-radius:12px 16px 2px 2px;background:linear-gradient(180deg,#33507f,#1d2f52) }
-.td-win { position:absolute;bottom:33px;height:14px;border-radius:5px 7px 2px 2px;background:rgba(190,222,255,.72) }
-.td-wheel { position:absolute;bottom:0;width:22px;height:22px;border-radius:50%;background:#111827;box-shadow:inset 0 0 0 3px #4b5563;z-index:4 }
-.td-hub { position:absolute;left:50%;top:50%;width:12px;height:2px;margin:-1px 0 0 -6px;background:#9ca3af;border-radius:1px }
+/* Tavandaki LED çubuğu + ışık konisi: oyunun menü görselindeki showroom. */
+.td-bar { position:absolute;left:33%;right:33%;top:4px;height:2px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,#ffd166 18%,#fff0c4 50%,#ffd166 82%,transparent);
+  box-shadow:0 0 10px rgba(247,189,63,.7),0 0 22px rgba(247,189,63,.35);animation:tdBar 12s linear infinite }
+.td-cone { position:absolute;left:11%;right:11%;top:5px;height:118px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,209,102,.12),rgba(247,189,63,.035) 60%,transparent);
+  clip-path:polygon(28% 0,72% 0,100% 100%,0 100%) }
+.td-floor { position:absolute;left:0;right:0;top:86px;bottom:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(255,255,255,.03) 22px 23px);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 30%,transparent 90%);mask-image:linear-gradient(180deg,transparent,#000 30%,transparent 90%) }
+.td-pool { position:absolute;left:50%;top:92px;width:250px;height:34px;margin-left:-125px;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(247,189,63,.2),rgba(247,189,63,.06) 60%,transparent) }
+.td-shadow { position:absolute;left:50%;top:104px;width:176px;height:12px;margin-left:-88px;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent) }
+/* Islak beton yansıması: aynı görsel, lastik hizasından ters çevrilmiş. */
+.td-refl { position:absolute;left:50%;top:94px;width:174px;height:116px;margin-left:-87px;opacity:.13;transform:scaleY(-1);pointer-events:none;
+  -webkit-mask-image:linear-gradient(to top,#000,transparent 32%);mask-image:linear-gradient(to top,#000,transparent 32%) }
 
-.td-mark { position:absolute;width:15px;height:15px;z-index:5 }
-.td-mark::before,.td-mark::after { content:'';position:absolute;left:50%;top:50%;width:15px;height:2px;margin:-1px 0 0 -7.5px;background:#d1443c;border-radius:1px }
-.td-mark::before { transform:rotate(45deg) }
-.td-mark::after { transform:rotate(-45deg) }
+/* Araç kutusu görselin oranında (640×427); çokgenler aynı koordinatta. */
+.td-car { position:absolute;left:50%;top:12px;width:174px;height:116px;margin-left:-87px }
+.td-img { position:absolute;inset:0;width:100%;height:100%;z-index:2 }
 
-.td-lens { position:absolute;top:56px;width:56px;height:56px;margin-left:-28px;z-index:6;animation:tdSweep 6.4s ease-in-out infinite }
-.td-glass { position:absolute;inset:0;border-radius:50%;border:3px solid #14233b;background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.55),rgba(120,190,255,.16));box-shadow:0 3px 8px rgba(20,35,59,.28);animation:tdLens 6.4s ease-in-out infinite }
-.td-grip { position:absolute;left:78%;top:80%;width:5px;height:20px;border-radius:3px;background:#14233b;transform:rotate(-42deg);transform-origin:top center;animation:tdLens 6.4s ease-in-out infinite }
-.td-tramer { position:absolute;left:50%;top:-14px;padding:2px 6px;border-radius:4px;background:#d1443c;color:#fff;font-size:6px;font-weight:900;letter-spacing:1.4px;white-space:nowrap;transform:translateX(-50%);animation:tdBadge 6.4s ease-in-out infinite }
+/* Hasar lekeleri — oyundaki ArtWear dili. Tarama çizgisiyle birlikte
+   soldan sağa "boyanır": dış kutu açılırken iç kutu ters yönde kayıyor,
+   içerik yerinde duruyor (yalnız transform, kompozitörde). */
+.td-wear-all { position:absolute;inset:0;z-index:3;pointer-events:none }
+.td-wipe { position:absolute;inset:0;overflow:hidden }
+.td-wipe > div { position:absolute;inset:0 }
+.td-wipe--a { animation:tdWipeA 12s linear infinite }
+.td-wipe--a > div { animation:tdWipeAIn 12s linear infinite }
+.td-wipe--b { animation:tdWipeB 12s linear infinite }
+.td-wipe--b > div { animation:tdWipeBIn 12s linear infinite }
+.td-wear { position:absolute;inset:0;width:100%;height:100%;overflow:visible }
+.td-p .td-p-fill { fill-opacity:.36;stroke-opacity:.9;stroke-width:2.4;stroke-linejoin:round }
+.td-p--boyali { fill:#e8b13c;stroke:#e8b13c }
+.td-p--degisen { fill:#d8503f;stroke:#d8503f }
+.td-p--lokalBoyali { fill:#4a90d9;stroke:#4a90d9 }
+.td-hatch { fill:none;stroke:#090d12;stroke-opacity:.42;stroke-width:5 }
+.td-harf { fill:#090d12;stroke:#eef1f3;stroke-width:7px;stroke-linejoin:round;paint-order:stroke;font-size:34px;font-weight:800 }
 
-.td-plate { position:absolute;left:14px;bottom:13px;display:flex;align-items:stretch;height:20px;border-radius:3px;overflow:hidden;border:1.5px solid #14233b;background:#fff;box-shadow:0 2px 4px rgba(20,35,59,.2);z-index:7 }
-.td-plate-tr { display:flex;align-items:flex-end;justify-content:center;width:13px;padding-bottom:2px;background:#1a4fa0;color:#fff;font-size:5px;font-weight:900 }
-.td-plate-no { display:flex;align-items:center;padding:0 6px;color:#14233b;font-size:11px;font-weight:900;letter-spacing:1px }
+/* Tarama: gövdeye maskelenmiş ışık şeridi + üstünde ince ışın.
+   Maske görseli satır içi stilden (araca göre değişiyor). */
+.td-sheen { position:absolute;inset:0;z-index:4;pointer-events:none;
+  -webkit-mask-position:0 0;-webkit-mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-position:0 0;mask-size:100% 100%;mask-repeat:no-repeat }
+.td-sweep { position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;animation:tdScan 12s linear infinite }
+.td-sheen .td-sweep i { position:absolute;top:0;bottom:0;left:-40px;width:42px;
+  background:linear-gradient(90deg,transparent,rgba(255,240,196,.12) 55%,rgba(255,240,196,.55) 92%,rgba(255,255,255,.85)) }
+.td-beam i { position:absolute;top:-4px;bottom:-8px;left:-1px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,transparent,#fff0c4 18%,#f7bd3f 50%,#fff0c4 82%,transparent);
+  box-shadow:0 0 8px rgba(247,189,63,.85),0 0 18px rgba(247,189,63,.4) }
 
-.td-est { position:absolute;right:14px;bottom:13px;width:42%;z-index:7 }
-.td-est-row { display:flex;align-items:center;justify-content:space-between;margin-bottom:3px }
-.td-est-lbl { font-size:6px;font-weight:900;letter-spacing:1.6px;color:rgba(20,35,59,.62) }
-.td-est-cur { font-size:9px;font-weight:900;color:#14233b;letter-spacing:1px }
-.td-est-track { position:relative;height:6px;border-radius:3px;background:rgba(20,35,59,.14);overflow:hidden }
-.td-est-band { position:absolute;top:0;bottom:0;left:39%;right:39%;border-radius:3px;background:linear-gradient(90deg,rgba(26,79,160,.35),#1a4fa0,rgba(26,79,160,.35));animation:tdBand 6.4s ease-in-out infinite }
+/* Işık titremesi — araç değişimi bunun altında oluyor. */
+.td-dim { position:absolute;inset:0;z-index:5;background:#090d12;opacity:0;pointer-events:none;animation:tdDim 12s linear infinite }
 
-@media (prefers-reduced-motion: reduce) { .td * { animation: none !important } }
+/* Görselin üstündeki durum işareti (oyundaki art__marks): boyalı varsa
+   önce B, değişen bulununca yerini D alır — oyundaki kural da bu. Tarama
+   bitip rapor çıktığı an belirir (seviye değiştiği an); panelin nerede
+   olduğundan bağımsız, her araçta aynı zamanlama. */
+.td-marks { position:absolute;left:20px;top:32px;z-index:6;width:14px;height:14px }
+.td-mark { position:absolute;inset:0;display:grid;place-items:center;border-radius:4px;font-size:8.5px;font-weight:800;line-height:1;color:#090d12;box-shadow:0 2px 6px rgba(0,0,0,.45) }
+.td-mark--b { background:#e8b13c;opacity:0;animation:tdMarkB 12s linear infinite }
+.td-mark--d { background:#d8503f;animation:tdMarkD 12s linear infinite }
+
+/* Plaka — oyundaki TR plakası: mavi şerit, açık yüz, mono rakam. Altında
+   ilanın adı, yılı ve kilometresi (oyundaki pazarlık başlığı gibi). */
+.td-plate { position:absolute;left:10px;top:10px;z-index:7;display:flex;height:16px;border-radius:3px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.45) }
+.td-plate-tr { display:grid;place-items:center;width:12px;background:#1450a8;color:#fff;font-size:5.5px;font-weight:800 }
+.td-plate-no { display:flex;align-items:center;padding:0 5px;background:#eceff1;color:#14181c;font-size:9.5px;font-weight:700;letter-spacing:.06em;white-space:nowrap }
+.td-info { position:absolute;left:10px;top:30px;z-index:7;text-shadow:0 1px 4px rgba(0,0,0,.7) }
+.td-info b { display:block;font-size:8.5px;line-height:10px;font-weight:800;color:#eef1f3;white-space:nowrap }
+.td-info span { display:block;margin-top:2px;font-size:7.5px;line-height:9px;color:#8d9aa6;white-space:nowrap }
+
+/* Masadaki fiyat — galeri sarısı mono rakam; anlaşınca yuvarlanıp değişir. */
+.td-price { position:absolute;right:10px;top:7px;z-index:7;text-align:right }
+.td-price-lbl { display:block;font-size:6.5px;line-height:8px;font-weight:800;letter-spacing:.12em;color:#6fa8ff;white-space:nowrap }
+.td-price-val { position:relative;display:block;height:15px;margin-top:1px;overflow:hidden }
+.td-price-val span { display:block;font-size:12.5px;line-height:15px;font-weight:700;color:#f7bd3f;white-space:nowrap;text-shadow:0 0 12px rgba(247,189,63,.3) }
+/* v1 akışta kalıp kutunun genişliğini verir; v2 üstüne biner. İkisi de
+   mutlak olsaydı kutu etiket kadar daralır, rakamın solu kırpılırdı.
+   İstenen ve anlaşılan fiyat aynı uzunlukta değilse kutu v1'e göre. */
+.td-v1 { opacity:0;animation:tdV1 12s linear infinite }
+.td-v2 { position:absolute;right:0;top:0;animation:tdV2 12s linear infinite }
+.td-price-old { display:block;margin-top:1px;font-size:7.5px;line-height:9px;color:#63707c;text-decoration:line-through;animation:tdOld 12s linear infinite }
+
+/* Tahmin paneli — oyundaki NegoEstimate'in küçük hâli: pip + seviye + ±%,
+   belirsizlik bandı, alt satırda karar. */
+.td-hud { position:absolute;left:10px;right:10px;bottom:8px;z-index:7;padding:7px 10px;border-radius:11px;border:1px solid #1d2833;
+  background:radial-gradient(120% 90% at 0% 0%,rgba(247,189,63,.14),transparent 50%),linear-gradient(168deg,rgba(23,33,44,.94),rgba(13,19,26,.94) 64%);
+  box-shadow:0 10px 26px -12px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.07) }
+.td-hud::after { content:'';position:absolute;inset:-1px;border-radius:inherit;border:1px solid rgba(52,185,120,.8);box-shadow:0 0 16px -3px rgba(52,185,120,.5);opacity:.45;pointer-events:none;animation:tdDeal 12s linear infinite }
+.td-head { display:flex;align-items:center;gap:6px;height:11px }
+.td-pips { display:flex;gap:3px;flex-shrink:0 }
+.td-pip { position:relative;width:6px;height:6px;border-radius:50%;background:#2e3f50 }
+.td-pip::after { content:'';position:absolute;inset:0;border-radius:50%;background:#f7bd3f;box-shadow:0 0 6px rgba(247,189,63,.65) }
+.td-pip:nth-child(2)::after { animation:tdPip2 12s linear infinite }
+.td-pip:nth-child(3)::after { animation:tdPip3 12s linear infinite }
+.td-title,.td-pct,.td-cap { position:relative;height:11px }
+.td-title { flex:1;min-width:0 }
+.td-pct { width:40px;flex-shrink:0 }
+.td-title span,.td-pct span,.td-cap span { position:absolute;top:0;white-space:nowrap;line-height:11px }
+.td-title span { left:0;font-size:8px;font-weight:800;letter-spacing:.08em;color:#8d9aa6 }
+.td-pct span { right:0;font-size:8.5px;font-weight:700;color:#8d9aa6 }
+.td-pct .td-s3 { color:#34b978 }
+.td-s1 { opacity:0;animation:tdT1 12s linear infinite }
+.td-s2 { opacity:0;animation:tdT2 12s linear infinite }
+.td-s3 { animation:tdT3 12s linear infinite }
+.td-track { position:relative;height:10px;margin-top:6px;border-radius:999px;border:1px solid #1d2833;background:linear-gradient(180deg,#090d12,#0d131a);box-shadow:inset 0 1px 3px rgba(0,0,0,.5) }
+.td-zone { position:absolute;inset:2px;border-radius:999px;transform:scaleX(.1353);animation:tdZone 12s linear infinite;
+  background:linear-gradient(90deg,transparent,rgba(247,189,63,.36) 22%,rgba(247,189,63,.36) 78%,transparent) }
+.td-est { position:absolute;top:1px;bottom:1px;left:50%;width:2px;margin-left:-1px;border-radius:2px;background:#f7bd3f;box-shadow:0 0 6px rgba(247,189,63,.6) }
+.td-ask { position:absolute;inset:0;transform:translateX(var(--td-m3));animation:tdAsk 12s linear infinite }
+.td-ask i { position:absolute;top:-3px;bottom:-3px;left:50%;width:2px;margin-left:-1px;border-radius:2px;background:#1c63c9;box-shadow:0 0 8px rgba(28,99,201,.75);animation:tdBlink 12s linear infinite }
+.td-ask i::after { content:'';position:absolute;top:-5px;left:50%;margin-left:-3.5px;border-left:3.5px solid transparent;border-right:3.5px solid transparent;border-top:5px solid #1c63c9 }
+.td-cap { margin-top:6px }
+.td-cap span { left:0;font-size:8.5px;font-weight:600;color:#8d9aa6 }
+.td-cap .td-c3 { color:#e0783a;opacity:0;animation:tdC3 12s linear infinite }
+.td-cap .td-c4 { color:#e6493c;opacity:0;animation:tdC4 12s linear infinite }
+.td-cap .td-c5 { color:#34b978;animation:tdC5 12s linear infinite }
+
+/* Geniş kartta (masaüstü iki sütun) araç sahnede küçük kalıyordu: kutuyu
+   büyüt, lastik hizası panelin üstünde kalsın. Yansıma yine lastik
+   hizasından (4 + 131 × 0,853 ≈ 116) ters çevriliyor. */
+@container (min-width:440px) {
+  .td-car { top:4px;width:196px;height:131px;margin-left:-98px }
+  .td-refl { top:97px;width:196px;height:131px;margin-left:-98px }
+  .td-shadow { top:110px;width:198px;margin-left:-99px }
+  .td-pool { top:98px;width:280px;margin-left:-140px }
+}
+
+@media (prefers-reduced-motion: reduce) { .td, .td *, .td *::before, .td *::after { animation:none !important } }
 `;
 
 function TorpidodanScene() {
-  const { t } = useLang();
-  const words = t.games.scenes.torpidodan;
+  const { t, lang } = useLang();
+  const w = t.games.scenes.torpidodan;
+  const [index, setIndex] = useState(0);
+  const car = TD_CARS[index];
+  const src = `${TD_DIR}${car.img}.webp`;
+  const nextSrc = `${TD_DIR}${TD_CARS[(index + 1) % TD_CARS.length].img}.webp`;
+  const fmt = new Intl.NumberFormat(lang === 'tr' ? 'tr-TR' : 'en-US');
+  const captions = tdCaptions(car, w, fmt);
+  const price = `${fmt.format(car.ask)} TL`;
+  const hasB = car.panels.some(([state]) => state === 'boyali');
+
+  // Sıradaki aracın görselini bir tur önceden indirip çöz: değişim anında
+  // boş kare kalmasın. Hepsini baştan yüklemiyoruz — iOS bellek bütçesi
+  // (bkz. CLAUDE.md "Görsel bütçesi"), aynı anda en fazla iki araç.
+  useEffect(() => {
+    const img = new Image();
+    img.src = nextSrc;
+    img.decode?.().catch(() => {});
+  }, [nextSrc]);
+
+  // Işık tamamen sönükken (tdDim'in tur sonu) sıradaki araç.
+  const onIteration = (e) => {
+    if (e.animationName === 'tdDim') setIndex((n) => (n + 1) % TD_CARS.length);
+  };
+
+  // İğnenin yeri: 0.5 bandın ortası; kutu genişliğinin yüzdesi olarak kaydırılıyor.
+  const needle = Object.fromEntries(car.mark.map((m, i) => [`--td-m${i}`, `${((m - 0.5) * 100).toFixed(1)}%`]));
+  const mask = `url(${src})`;
+
+  const wear = (pass) => (
+    <div className={`td-wipe td-wipe--${pass}`}>
+      <div>
+        <svg className="td-wear" viewBox="0 0 640 427" aria-hidden="true" focusable="false">
+          {car.panels
+            .filter(([state]) => (pass === 'b') === (state === 'degisen'))
+            .map(([state, d, x, y]) => (
+              <g key={state} className={`td-p td-p--${state}`}>
+                <path className="td-p-fill" d={d} />
+                <path d={d} fill="url(#tdHatch)" stroke="none" />
+                <text className="td-harf" x={x} y={y} textAnchor="middle">{TD_HARF[state]}</text>
+              </g>
+            ))}
+        </svg>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="td">
+    <div className="td" aria-hidden="true" style={needle} onAnimationIteration={onIteration}>
       <style>{TD_CSS}</style>
-      <div className="td-rule" />
-      <div className="td-stamp">{words.stamp}</div>
-
+      <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
+        <defs>
+          <pattern id="tdHatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+            <path className="td-hatch" d="M0 0H22" />
+          </pattern>
+        </defs>
+      </svg>
+      <div className="td-cone" />
+      <div className="td-bar" />
+      <div className="td-floor" />
+      <div className="td-pool" />
       <div className="td-shadow" />
-      <div className="td-car">
-        <div className="td-roof" />
-        <div className="td-win" style={{ left: '38px', width: '30px' }} />
-        <div className="td-win" style={{ left: '72px', width: '32px' }} />
-        <div className="td-body" />
-        <div className="td-wheel" style={{ left: '22px' }}><div className="td-hub" /></div>
-        <div className="td-wheel" style={{ right: '22px' }}><div className="td-hub" /></div>
-        {/* Mercek üzerlerinden geçtikçe ortaya çıkan hasar kayıtları */}
-        <div className="td-mark" style={{ left: '30px', top: '20px', animation: 'tdMarkA 6.4s ease-in-out infinite' }} />
-        <div className="td-mark" style={{ left: '104px', top: '26px', animation: 'tdMarkB 6.4s ease-in-out infinite' }} />
-      </div>
+      {/* loading="lazy" şart: Preloader ekrandaki eager görselleri sayıyor (bkz. LoreScene). */}
+      <img className="td-refl" src={src} alt="" loading="lazy" decoding="async" width={640} height={427} />
 
-      <div className="td-lens">
-        <div className="td-glass" />
-        <div className="td-grip" />
-        <div className="td-tramer">{words.tramer}</div>
+      <div className="td-car">
+        <img className="td-img" src={src} alt="" loading="lazy" decoding="async" width={640} height={427} />
+        <div className="td-wear-all td-hold">
+          {wear('a')}
+          {wear('b')}
+        </div>
+        <div className="td-sheen" style={{ WebkitMaskImage: mask, maskImage: mask }}>
+          <div className="td-sweep"><i /></div>
+        </div>
+        <div className="td-sweep td-beam"><i /></div>
+        <div className="td-marks td-hold">
+          {hasB && <span className="td-mark td-mark--b">B</span>}
+          <span className="td-mark td-mark--d">D</span>
+        </div>
       </div>
+      <div className="td-dim" />
 
       <div className="td-plate">
-        <div className="td-plate-tr">TR</div>
-        <div className="td-plate-no">34 ARD 34</div>
+        <span className="td-plate-tr">TR</span>
+        <span className="td-plate-no td-mono">34 ARDO 95</span>
+      </div>
+      <div className="td-info td-hold">
+        <b>{car.brand} {car.model}</b>
+        <span className="td-mono">{car.year} · {fmt.format(car.km)} km</span>
       </div>
 
-      <div className="td-est">
-        <div className="td-est-row">
-          <span className="td-est-lbl">{words.inspect}</span>
-          <span className="td-est-cur">₺ ? ? ?</span>
-        </div>
-        <div className="td-est-track">
-          <div className="td-est-band" />
+      <div className="td-price td-hold">
+        <span className="td-price-lbl">{w.ask}</span>
+        <span className="td-price-val td-mono">
+          <span className="td-v1">{price}</span>
+          <span className="td-v2">{fmt.format(car.deal)} TL</span>
+        </span>
+        <span className="td-price-old td-mono">{price}</span>
+      </div>
+
+      <div className="td-hud">
+        <div className="td-hold">
+          <div className="td-head">
+            <span className="td-pips"><i className="td-pip" /><i className="td-pip" /><i className="td-pip" /></span>
+            <span className="td-title">
+              {w.levels.map((l, i) => <span key={l} className={`td-s${i + 1}`}>{l}</span>)}
+            </span>
+            <span className="td-pct td-mono">
+              {w.bands.map((b, i) => <span key={b} className={`td-s${i + 1}`}>{b}</span>)}
+            </span>
+          </div>
+          <div className="td-track">
+            <span className="td-zone" />
+            <span className="td-est" />
+            <span className="td-ask"><i /></span>
+          </div>
+          <div className="td-cap">
+            {captions.map((c, i) => (
+              <span key={i} className={i < 2 ? `td-s${i + 1}` : `td-c${i + 1}`}>{c}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -1335,27 +1710,29 @@ function GameCard({ game }) {
                   <span className="text-xs text-gray-500 font-medium">{words.rating} {t.games.reviewsSuffix}</span>
                 </div>
               )}
-              <div className="flex gap-3">
-                {game.appStore && (
+              {/* flex-wrap: kart içeriği mobilde ve lg'nin iki sütununda
+                  ~210–280px'e iniyor, ikonlu iki buton oraya yan yana
+                  sığmıyor — o zaman alt alta düşüp ikisi de tam genişlik
+                  oluyor. whitespace-nowrap şart: yoksa "GOOGLE PLAY" buton
+                  içinde kırılır ve satıra sığmış sayılır. `lang="en"`:
+                  belge dili tr, CSS büyütmesi "itch.io"yu "İTCH.İO" yapar. */}
+              <div className="flex flex-wrap gap-3">
+                {STORES.filter((s) => game[s.key]).map((s, i) => (
                   <ActionLink
-                    href={game.appStore}
+                    key={s.key}
+                    href={game[s.key]}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 px-6 py-3.5 bg-white text-[#05070F] rounded-control text-[10px] font-black tracking-widest uppercase text-center"
+                    className={`flex-1 inline-flex items-center justify-center gap-2 whitespace-nowrap px-5 py-3.5 rounded-control text-[10px] font-black tracking-widest uppercase ${
+                      i === 0
+                        ? 'bg-white text-[#05070F]'
+                        : 'border border-white/15 hover:border-white/40 text-white transition-colors'
+                    }`}
                   >
-                    App Store
+                    <StoreIcon kind={s.key} />
+                    <span lang="en">{s.label}</span>
                   </ActionLink>
-                )}
-                {game.googlePlay && (
-                  <ActionLink
-                    href={game.googlePlay}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 px-6 py-3.5 border border-white/15 hover:border-white/40 rounded-control text-[10px] font-black tracking-widest text-white uppercase text-center transition-colors block"
-                  >
-                    Google Play
-                  </ActionLink>
-                )}
+                ))}
               </div>
             </>
           ) : (
@@ -1402,8 +1779,48 @@ function ActionLink({ href, className, children, target, rel, cursorColor }) {
 }
 
 export default function Games() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  // Vitrin sırası kullanıcının kendi seçimi (2026-09-27): en yeni çıkan
+  // dördü önde, sonra eski yayındakiler. Aşağıdaki HoverPreviewList de
+  // aynı sırada — birini değiştirirsen ötekini de değiştir.
   const games = [
+    {
+      id: 'torpidodan',
+      status: 'live',
+      title: 'Torpidodan',
+      platforms: 'IOS · ANDROID',
+      scene: TorpidodanScene,
+      accent: '#F7BD3F',
+      appStore: 'https://apps.apple.com/tr/app/torpidodan/id6807162427?l=tr',
+      googlePlay: 'https://play.google.com/store/apps/details?id=com.ardeko.torpidodan',
+    },
+    {
+      id: 'lore',
+      status: 'live',
+      title: 'LORE - Legend of Rey: Echoes',
+      platforms: 'WINDOWS · PC',
+      scene: LoreScene,
+      accent: '#A78BFA',
+      itch: 'https://ardeko.itch.io/legend-of-rey',
+    },
+    {
+      id: 'rushville',
+      status: 'live',
+      title: 'Rushville',
+      platforms: 'IOS · ANDROID',
+      scene: RushvilleScene,
+      appStore: 'https://apps.apple.com/tr/app/rushville/id6808291839?l=tr',
+      googlePlay: 'https://play.google.com/store/apps/details?id=com.ardeko.rushville',
+    },
+    {
+      id: 'skyline',
+      status: 'live',
+      title: 'Skyline Swinger',
+      platforms: 'IOS · ANDROID',
+      scene: SkylineSwingerScene,
+      appStore: 'https://apps.apple.com/tr/app/skyline-swinger/id6807957503?l=tr',
+      googlePlay: 'https://play.google.com/store/apps/details?id=com.ardeko.skylineswinger',
+    },
     {
       id: 'switch',
       status: 'live',
@@ -1427,6 +1844,14 @@ export default function Games() {
       },
     },
     {
+      id: 'apex',
+      status: 'live',
+      title: 'Apex Shift',
+      platforms: 'WEB · BROWSER',
+      scene: ApexShiftScene,
+      links: { primary: 'https://ardaguner.com/apex-shift' },
+    },
+    {
       id: 'decoy',
       status: 'live',
       title: 'Decoy',
@@ -1444,44 +1869,6 @@ export default function Games() {
       platforms: 'WEB · BROWSER',
       scene: ForzaShiftScene,
       links: { primary: 'https://ardaguner.com/forza-orbit' },
-    },
-    {
-      id: 'apex',
-      status: 'live',
-      title: 'Apex Shift',
-      platforms: 'WEB · BROWSER',
-      scene: ApexShiftScene,
-      links: { primary: 'https://ardaguner.com/apex-shift' },
-    },
-    {
-  id: 'lore',
-  status: 'soon',
-  title: 'LORE - Legend of Rey: Echoes',
-  platforms: 'WINDOWS · PC',
-  scene: LoreScene,
-  accent: '#A78BFA',
-},
-    {
-      id: 'rushville',
-      status: 'soon',
-      title: 'Rushville',
-      platforms: 'IOS · ANDROID',
-      scene: RushvilleScene,
-    },
-    {
-      id: 'skyline',
-      status: 'soon',
-      title: 'Skyline Swinger',
-      platforms: 'IOS · ANDROID',
-      scene: SkylineSwingerScene,
-    },
-    {
-      id: 'torpidodan',
-      status: 'soon',
-      title: 'Torpidodan',
-      platforms: 'IOS · ANDROID',
-      scene: TorpidodanScene,
-      accent: '#60A5FA',
     },
     // Kafa Kafaya listenin sonunda: proje rafa kalkma yolunda, yakın
     // zamanda çıkmayacak. Diğer "soon" yapımların önünde durup onların
@@ -1531,15 +1918,17 @@ export default function Games() {
       <HoverPreviewList
         className="mt-32"
         items={[
-          { id: 'switch',    title: 'Switch Master',   meta: t.games.previewMeta.switch,    image: '/games/switch.jpg',    href: '#games' },
-          { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
-          { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,     image: '/games/decoy.svg',     href: '#games' },
-          { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
-          { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
-          { id: 'lore',      title: t.games.items.lore.title, meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
+          { id: 'torpidodan', title: 'Torpidodan',     lang: 'tr', meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.webp', href: '#games' },
+          // Başlık aktif dilden geliyor (TR'de "Rey Efsanesi"), lang da onu
+          // izlemeli — yoksa TR başlık en kuralıyla "EFSANESI" diye büyür.
+          { id: 'lore',      title: t.games.items.lore.title, lang, meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
           { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
           { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
-          { id: 'torpidodan', title: 'Torpidodan',     lang: 'tr', meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.svg', href: '#games' },
+          { id: 'switch',    title: 'Switch Master',   meta: t.games.previewMeta.switch,    image: '/games/switch.jpg',    href: '#games' },
+          { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
+          { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
+          { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,     image: '/games/decoy.svg',     href: '#games' },
+          { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
           { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
         ]}
       />
