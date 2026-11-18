@@ -300,8 +300,8 @@ export const CONTENT = {
       secondary: 'About Us',
       stats: [
         { value: '9', label: 'Live' },
-        { value: '4.8★', label: 'App Store Rating' },
-        { value: '4.7★', label: 'Google Play Rating' },
+        { value: '5★', label: 'App Store Rating' },
+        { value: '4.6★', label: 'Google Play Rating' },
       ],
       scroll: 'Scroll',
     },
