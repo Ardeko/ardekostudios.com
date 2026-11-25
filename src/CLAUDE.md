@@ -92,13 +92,15 @@ Site tarandı, etkilenen 20 metnin hepsi elden geçirildi. İki kalıp var:
 - **Karışık TR+EN metin → İngilizce token'ı kaynakta zaten büyük yaz**
   (markup gerekmez, `Games.jsx`'teki `platforms: 'IOS · ANDROID'`
   deseniyle aynı): `'WINDOWS için indir'`,
-  `'WINDOWS 10/11 · 64-BIT · Kurulum dosyası'` ve `previewMeta`'daki
-  `'IOS · ANDROID'` / `'WEB · WINDOWS'` / `'WEB · BROWSER'`.
+  `'WINDOWS 10/11 · 64-BIT · Kurulum dosyası'` (eskiden `previewMeta`'daki
+  `'IOS · ANDROID'` vb. de vardı — `previewMeta`, HoverPreviewList ile
+  birlikte 2026-11-25'te silindi).
 
-`HoverPreviewList` başlıkları CSS ile büyütülüyor ve çoğu İngilizce ürün
-adı, bu yüzden span `lang={item.lang ?? 'en'}` kullanıyor; Türkçe adlar
-`Games.jsx`'te `lang: 'tr'` ile işaretli. **Yeni proje eklerken adı
-Türkçeyse `lang: 'tr'` koymayı unutma.**
+Kural genel: **CSS ile büyütülen bir ürün adı İngilizceyse `lang="en"`,
+Türkçeyse `lang="tr"`.** (Bu kuralın en çok kullanıldığı yer olan
+`HoverPreviewList` 2026-11-25'te kaldırıldı, bkz. "Arayüz yükseltmesi".)
+Canvas'a çizilen metin CSS uppercase bilmez — Metroray Mini'nin HUD
+etiketleri i18n'de zaten büyük harf (`YÜK`, `KANCA`).
 
 Kasıtlı olarak `İ` ile kalanlar: **TORPİDODAN** (Türkçe ürün adı; EN
 sayfada da öyle kalır, özel ad kendi dilini korur) ve **HUKUKİ**.
@@ -119,28 +121,48 @@ tonları) + çoğu stil doğrudan Tailwind'in varsayılan paletiyle
 ## Bileşen ağacı (App.jsx)
 
 `CustomCursor` → `Navbar` (sabit sol sidebar, `lg:pl-64` ile içerik
-kaydırılıyor) → `main`: `Hero` → `Games` → `About` → `Contact` → `Footer`.
+kaydırılıyor) → `main`: `Hero` (hero bölümü + altında `#engine` sahnesinde
+lazy `Viewport`) → `Games` (lazy) → `About` → `Contact` → `Footer`.
 `SmoothScroll`/`lenis` ve `scrollVelocity.js` scroll hızını `Marquee`'ye
 besliyor (şu an Marquee hiçbir yerde render edilmiyor — kullanılmıyor
 ama silinmedi, eski koddan kalma).
 
-### `src/components/Viewport.jsx` — Hero'ya eklenen imza öğesi
+### `src/components/Viewport.jsx` — "neler yapıyoruz"un canlı örneği
 
-Minimalist redesign'dan kalan tek parça, bilinçli olarak tutuldu ve eski
-tasarıma göre yeniden derlendi (indigo/emerald renk, `rounded-2xl` camsı
-kart, `font-black`/`tracking-widest` etiketler — artık `t` prop'una ya da
-i18n'e bağımlı değil, string'ler dosyanın içinde sabit).
+Hero'nun ALTINDA, kendi sahnesinde (`#engine`; eskiden hero'nun içindeydi
+ve hero'nun scroll'a bağlı solmasıyla birlikte soluyordu). `Hero.jsx`'te
+`lazy` — ayrı chunk (~12 KB gzip), perde kalkınca boşta önceden iniyor;
+chunk inene kadar aynı ölçülerde `ViewportShell` duruyor (CLS yok).
 
-`Hero.jsx` içinde CTA butonlarının altında, STATS satırının üstünde
-render ediliyor. İki sekme:
-- **OYUN** — wireframe mesh, imleç yüzeyi fiziksel olarak deforme eder.
-- **UYGULAMA** — kendini kuran arayüz iskeleti; elemanlar imlece doğru
-  *manyetik* şekilde çekilip üzerinden geçince parlıyor (`Hero`/`Contact`
-  içindeki `MagneticLink`/`MagneticButton` diliyle bilerek aynı).
+Kabuk: sıvı cam monitör (`.lg`), GooeyTabs, ilk görünüşte **CRT açılışı**
+(yatay ışık çizgisi → dikey açılış, clip-path), altta künye + fps HUD'u.
+İki sekme — 2026-11-25'te soyut çizimlerden stüdyonun KENDİ işlerine
+geçti (kullanıcı "daha iyi örnekler" istedi):
 
-Altında gerçek fps/frame HUD'u var. `prefers-reduced-motion`'a saygı
-duyar (tek kare, pointer etkisi kapalı). Stok video/görsel kullanmıyor —
-stüdyonun görsel asset'i yok, bu yüzden canvas'ta canlı çiziliyor.
+- **OYUN → `MetrorayMini.jsx`** — geliştirilmekte olan yük treni oyunu
+  Metroray'ın (`~/Desktop/projects/metroray`, Phaser + Matter) oynanabilir
+  çekirdek mekaniği. Oyunun kendisi DEĞİL (≈1 MB, hero'ya girmez); aynı
+  arazi formülü, aynı kanca eşikleri, aynı palet. Tek tuş: basılı tut =
+  gaz, bırak = regülatör. Kimse oynamazken otopilot sürer. Fizik saf
+  modülde: `src/lib/metrorayMini.js` (DOM yok) — ayar notları dosyanın
+  başında. **Sayı değiştirince Node'da politikaları yeniden koştur**:
+  dikkatli sürücü 9/9, sürekli tam gaz 0/9 teslim etmeli (hız ↔ yük
+  takası oyunun kendisi). ⚠️ Tren yuvarlanarak başlar (v=62): duran treni
+  kaldırmak kancaya en büyük darbeyi vuruyordu, herkesin ilk saniyesi
+  kancanın yarısını yiyordu. ⚠️ Lokomotif x=250'de başlar: son vagon x≥20
+  sınırının içinde olmalı, yoksa sınıra kenetlenip kancayı ezer ve tren
+  fırlar (ilk sürümde oldu).
+- **UYGULAMA → `RevoMini.jsx`** — yayındaki REVO'nun etkileşimli mini
+  odası: bas-konuş, gürültü engelleme anahtarı, kişi başı ses kaydırıcısı,
+  E2E/gecikme rozeti, "REVO'yu aç" (ardekostudios.xyz). Mikrofon izni
+  istenmez, seviyeler benzetim. Diğer üç kişi açık takma ad (nova/hermes/
+  rey) — gerçek kişi gibi durmasın.
+
+İkisi de döngüsünü `stageRef`'i (kırpılmayan dış kap) izleyerek durdurur/
+başlatır — bkz. "Arayüz yükseltmesi"ndeki clip-path + IntersectionObserver
+tuzağı. Canvas'ta `touch-pan-y` korunur (mobil scroll tuzağı, bkz. Mobil
+#2); oyun dışındayken basış 140 ms gecikmeli başlatır ki kaydırmak isteyen
+parmak yanlışlıkla oyunu başlatmasın.
 
 ### `src/components/Journey.jsx` — Yolculuk (2026-08-20'de yeniden yazıldı)
 
@@ -387,11 +409,13 @@ sitenin içinde `/decoy/` altında yayında.
 `googlePlay` / `itch` alanlarında; butonlar `STORES` dizisinden, logolar
 `StoreIcons.jsx`'ten (Simple Icons yolları, elle çizme). Vitrin sırası
 kullanıcının seçimi: Torpidodan → LORE → Rushville → Skyline → Switch →
-REVO → Apex → Decoy → Forza, sonra Kafa Kafaya + gizli proje;
-`HoverPreviewList` aynı sırada. Hero'daki "Yayında" sayısı (`hero.stats`)
+REVO → Apex → Decoy → Forza, sonra Kafa Kafaya + gizli proje.
+Hero'daki "Yayında" sayısı (`hero.stats`)
 elle yazılıyor — yeni oyun çıkınca onu da artır. Mağaza puanları
-(4,8★ / 4,7★) **bilerek 5★'ın altında**: kullanıcı, puanları çoğunlukla
-tanıdıklar verdiği için gerçekçi dursun istedi. Geri 5'e çekme.
+**App Store 5★, Google Play 4,6★** (TR ve EN aynı; kullanıcı 2026-11-25'te
+söyledi). Eskiden bilerek 4,8★ / 4,7★ yazıyordu — o not artık geçersiz;
+puanı kullanıcı söylemeden değiştirme. v4.0.2'de yalnız EN güncellenmişti,
+TR geride kalmıştı: puan değişince iki dili birlikte güncelle.
 `About.jsx`'teki tarihçe: 2023 kuruluş → Legend of
 Rey (2024, itch.io) → Wordeko/Protocol/Nebula - Bubble Shooter (2025,
 ardaguner.com) → Switch Master (2026). İletişim: `info@ardekostudios.com`,
@@ -544,6 +568,14 @@ başlar, 4px'lik hareket okunmadan biter. Şimdi `duration-500 ease-soft`
 + 6px kalkma; iki ucu da yumuşak, hareket "yükselme" olarak okunuyor.
 Yeni bir hover/geçiş yazarken bu eğriyi kullan.
 
+⚠️ **Ama 2026-11-25'e kadar bu geçiş HİÇ çalışmadı.** Tailwind v4'te
+`translate-*`/`scale-*` sınıfları `transform` değil ayrı `translate` /
+`scale` CSS özelliklerini yazıyor; kartta `transition-[transform,…]`
+vardı, yani 6px'lik kalkma anında sıçrıyordu (canlı derlenmiş CSS'te
+doğrulandı). Artık `transition-[translate,border-color,box-shadow]`.
+**Keyfi transition listesi yazarken `translate`/`scale`/`rotate` adını
+kullan**; hazır `transition-transform` v4'te üçünü de kapsıyor, o güvenli.
+
 ### Mıknatıs butonlar kaldırıldı
 
 `Hero.MagneticLink`, `Contact.MagneticButton` ve `Games.MagneticButton`
@@ -555,8 +587,9 @@ hedefi küçültmekten başka bir şey yapmıyordu ve dokunmatikte zaten hiç
 `Games.MagneticButton` `export` ediliyordu ama hiçbir yer import
 etmiyordu; export da kaldırıldı.
 
-**Bilerek KALANLAR**: `Folder.jsx`'in kâğıtları ve `Viewport`'un
-uygulama iskeleti. İkisi de tıklama hedefi değil.
+**Bilerek KALAN**: `Folder.jsx`'in kâğıtları (tıklama hedefi değil).
+`Viewport`'un manyetik uygulama iskeleti 2026-11-25'te REVO Mini ile
+değişti.
 
 ### Hero katman sayısı 7 → 5
 
@@ -622,14 +655,117 @@ gibi bir iş).
 Sonuç: eslint hatası 18 → 2. Bundle gzip 137.6 → 137.1 KB. Font ayrıca 130 KB
 (cache'lenir, kritik yolda değil).
 
+## Arayüz yükseltmesi (2026-11-25)
+
+Kullanıcı: "arayüzü en kaliteli hâle getir" — verdiği 40'lık stil
+listesinden uygun olanları uygun yerlere koy, rareui.com / 21st.dev'den
+ilham al, GitHub'daki popüler skill'leri kullan, Codex imagegen kullan.
+Ardından: "profesyonel, ilgi çekici, modern elit dursun; kendini tekrar
+eden yapıları ayıkla."
+
+**Redesign DEĞİL** — 2026-08-18 kararı (minimalist yeniden tasarım
+reddedildi) duruyor. Koyu indigo/mor, camsı kartlar, font-black
+etiketler, sidebar, cursor, preloader aynı; üstüne malzeme + hareket
+katmanı eklendi (`index.css` sonundaki "MALZEME KATMANI").
+
+Kaynaklar: projede kurulu `ui-ux-pro-max` skill'i; Anthropic
+`frontend-design` (anthropics/skills — "cesaretini tek yerde harca",
+"her bölüme fade-in serpiştirme"); `pbakaus/impeccable` animate/polish/
+bolder ("hover'da eleman değil çocuğu hareket eder", "çıkış girişten
+hızlı", "ekran dışı döngüler durur"). 21st.dev'in popüler desenleri
+(Spotlight Card, Liquid Glass Button, kayan cam hap, metin reveal)
+uyarlandı. **rareui.com otomatik erişimi engelliyor** (429; tarayıcıyla
+denemek de reddedildi) — oradan bir şey alınmadı.
+
+### Stil haritası — hangi stil nerede
+
+| Stil | Nerede | Neden orada |
+|---|---|---|
+| Dark Mode / OLED | Zemin `#05070F` (değişmedi) | Sitenin DNA'sı |
+| Aurora UI | Hero arkası (WebGL, vardı) + Contact altında statik "final ışığı" | Sayfayı aynı ışıkla açıp kapatıyor |
+| Liquid Glass | `.lg` / `.lg-primary`: sidebar, header, CTA, dil anahtarı, rozet, Viewport monitörü | Yalnızca KROM; içerik camın arkasında kalmaz |
+| Neumorphic Glass | `.well`: dil anahtarı rayı, form alanları, REVO gürültü anahtarı | Fiziksel "içine bir şey oturur" kontrolleri |
+| Glassmorphism (sade) | `.card-glass`: oyun / journey / bento / iletişim kartları | İçerik yüzeyi; halka yok, blur yok |
+| Spotlight rim | Spotlight'ın kenar halkası — oyun kartları + bento | Aynı ışığın kenara vurması (ayrı tepki değil) |
+| Kinetic Typography | Hero `KineticWord` + harf harf başlık; bölüm başlıkları `SplitWords`; footer'da dev ARDEKO | Stüdyonun sesi tipografide |
+| Spatial UI | Viewport: yüzen cam monitör + CRT açılışı + zemin ışığı | Motor ekranı metaforu |
+| Bento Grid | About: manifesto + İstanbul + 4 değer | "Stüdyoya bir bakışta" |
+| Pixel Art | About'taki İstanbul döşemesi (Codex) | LORE'un dili + "Made in Istanbul" |
+| Line Art / Monoline | lucide ikonlar, çizilerek beliren onay işareti | Emoji yerine tek ikon ailesi |
+| Cyberpunk (mikro) | Gizli proje: çözülen kod adı + tarama çizgileri | "Gizli dosya" hissi, tek yerde |
+| Editorial | Journey'de kontur yıl başlıkları | Zaman çizelgesi gerçekten bir dizi |
+
+Seçilmeyenler (Brutalism, Y2K, Vaporwave, Memphis, Art Deco, Bauhaus,
+Japandi, Wabi-Sabi, Grunge, Pop Art, Low Poly, Claymorphism, Skeuo-,
+Material, Flat, Anti-Design…) bu markanın karanlık-cam dünyasıyla
+çelişiyor ya da bir şey söylemeden gürültü ekliyordu.
+
+### Tek orkestre an — açılış
+`lib/intro.js`: Preloader panjurları kaldırırken `markIntroOpened()`,
+Hero `useIntroOpened()` ile bekliyor. Eskiden hero'nun giriş animasyonu
+perdenin ARKASINDA, kimse bakmazken oynuyordu. Artık başlık harf harf
+panjurların arasından yükseliyor, istatistikler sayarak doluyor
+(`NumberTicker`). Güvenlik ağı: 6 sn sonra her koşulda açılır.
+
+### Kaldırılanlar — geri getirme
+- **HoverPreviewList** (oyun kartlarının altındaki dev yazılı liste):
+  aynı 10 oyunu ikinci kez gösteriyordu; kullanıcı "kendini tekrar eden
+  anlamsız bir yapı" dedi. Oyunlar sayfada BİR kez, kartlarda.
+  `public/games/*.jpg` key art'ları artık sayfada kullanılmıyor ama
+  silinmedi (OG görseli vb. için).
+- Typewriter → `KineticWord`: sabit yükseklikli yuva, kelime genişliğe
+  sığdırılır (`scale`) — satır asla zıplamaz.
+- Viewport'un soyut mesh/iskelet çizimleri → Metroray Mini / REVO Mini.
+- Değer kartlarındaki emoji → Codex cam ikonları; iletişimdeki emoji → lucide.
+- Konum kartının `href="#"`'i (tıklayınca sayfanın başına zıplatıyordu).
+- Games başlığındaki "9 proje yayında" çipi (aynı sayı hero ve Journey'de
+  zaten var — sayfada üç kez tekrar ediyordu).
+
+### Tuzaklar (bu turda yaşandı)
+1. **Tamamen kırpılmış elemanda whileInView tetiklenmez** — SplitWords
+   #7'nin aynısı, bu sefer clip-path ile. Ayrıca Chrome ATANIN
+   clip-path'ini IntersectionObserver kesişimine katıyor: CRT kabının
+   içindeki canvas'ı izleyen döngü açılıştan önce hiç başlamıyordu.
+   Tetikleyici ve gözlemci hep kırpılmayan dış kapta (`stageRef`).
+2. Tailwind v4 `translate` özelliği — bkz. "Köşe yarıçapı ölçeği"ndeki not.
+3. Footer wordmark'ı sayfanın en dibinde: negatif alt marjlı viewport
+   ile hiç kesişmiyordu (mobilde görünmüyordu) → `amount: 0.25`.
+4. `NumberTicker`/`ScrambleText` kare başına `textContent` DEĞİL metin
+   düğümünün `nodeValue`'sunu yazıyor — textContent React'in düğüm
+   referansını koparır, dil değişince ekran güncellenmez.
+5. React 19: ref callback'i değer döndürürse temizleme fonksiyonu
+   sanılır — `ref={(el) => (x = el)}` yazma, blok gövde kullan.
+6. Yeni malzeme sınıflarında `backdrop-filter` YOK (iOS bütçesi); App'teki
+   imleç bulutunun `blur-[100px]`'i de radial-gradient'e çevrildi.
+
+### Codex imagegen — asset hattı
+Codex CLI PATH'te yok; VS Code eklentisinin içinde:
+`~/.vscode/extensions/openai.chatgpt-<sürüm>/bin/windows-x86_64/codex.exe`
+(`codex features list` → `image_generation stable true`). Çalıştırma:
+`codex exec --skip-git-repo-check -s workspace-write -C <klasör> -c
+model_reasoning_effort="low" -` ve stdin'e "görsel aracıyla üret, X.png
+olarak bu klasöre kaydet" promptu. Kopyası `~/.codex/generated_images/`.
+- **Değer ikonları**: TEK görselde 2×2 set istendi (tutarlı ışık ve
+  malzeme), saf siyah zemin. Çeyreklere bölündü, siyah → alfa (alfa = en
+  büyük kanal, renk ön-çarpımsız), 192px webp. Kaynak
+  `assets-src/about/values-icons.png`.
+- **İstanbul**: 1536×1024 "16-bit pixel art" istendi; 4px ızgaraya
+  (384×256) BOX ile indirildi, 256 renge (FASTOCTREE) kuantize edildi
+  (22 KB). ⚠️ 48 renk median-cut amber pencere ışıklarını yok etti — az
+  renk kullanma. `.pixelated` ile BÜYÜTÜLEREK basılıyor; döşeme hiçbir
+  ekranda görselden küçük değil (min-h ≥ 300px).
+Yeni görsel: önce `assets-src/`'e tam boyut, `public/`'e ≤1000px sürüm.
+
 ## Yapılacak
 
 1. `info@ardekostudios.com` adresi gerçekten çalışıyor mu, kontrol et.
-2. JS bundle 430 KB (gzip 137 KB); yavaş 3G'de açılışın kalan ~9 sn'si
-   bu transferden geliyor. framer-motion kullanımını gözden geçir / kod
-   bölme düşün.
+2. Ana JS bundle 451 KB (gzip 145 KB; 2026-11-25). Viewport (12 KB gzip)
+   ve Games (26 KB gzip) zaten ayrı chunk. Sıradaki aday framer-motion'ın
+   ağırlığı — `LazyMotion` + `m` bileşenlerine geçiş ayrı bir iş.
 3. Lighthouse'u yeniden çalıştır (kontrast ve logo CLS'i düzeltildi,
    LCP ölçülmedi).
-4. Kalan 2 eslint hatası: `TypewriterWords` effect içinde setState
-   çağırıyor (gerçek, ayrı iş) ve `i18n.jsx`'in react-refresh uyarısı
-   (bilerek böyle, bkz. i18n bölümü).
+4. Kalan 1 eslint hatası: `i18n.jsx`'in react-refresh uyarısı (bilerek
+   böyle, bkz. i18n bölümü). `TypewriterWords`'ün effect-içi setState
+   hatası bileşenle birlikte gitti (yerine `KineticWord`).
+5. Metroray Mini'nin metni "geliştiriliyor" diyor — Metroray yayına
+   çıkınca `viewport.game.caption`'ı ve Games/Journey listelerini güncelle.

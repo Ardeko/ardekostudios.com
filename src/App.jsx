@@ -65,14 +65,23 @@ export default function App() {
       <Preloader />
       <CustomCursor />
 
+      {/* İlerleme çubuğu — indigo → mor → pembe, ucunda parlayan bir baş. */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] bg-indigo-500 origin-left z-[100]"
+        className="fixed top-0 left-0 right-0 h-[2px] origin-left z-[100] bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-400 shadow-[0_0_12px_rgba(168,85,247,0.7)]"
         style={{ scaleX }}
       />
 
+      {/* İmleç bulutu. Eskiden `blur-[100px]` idi: 300px'lik bir katmanda
+          100px gauss çekirdeği, üstelik her mousemove'da yer değiştiriyor.
+          Radial-gradient aynı yumuşaklığı filtresiz verir (Hero glow'ları
+          ve Spotlight ile aynı karar). */}
       <motion.div
-        className="hidden md:block fixed w-[300px] h-[300px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none z-0"
-        style={{ x: cursorXSpring, y: cursorYSpring }}
+        className="hidden md:block fixed w-[300px] h-[300px] rounded-full pointer-events-none z-0"
+        style={{
+          x: cursorXSpring,
+          y: cursorYSpring,
+          background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, rgba(99,102,241,0.05) 40%, transparent 70%)',
+        }}
       />
 
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none z-0" />

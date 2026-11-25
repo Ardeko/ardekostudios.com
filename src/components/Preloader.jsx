@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLenis } from 'lenis/react';
+import { introPlays, markIntroDone, markIntroOpened } from '../lib/intro';
 
 /**
  * Ardeko Studios — açılış sekansı.
@@ -27,24 +28,8 @@ const MAX_DURATION = 3200;
 // mantığın tamamı ölür ve perde ekranda kalır. setTimeout bu koşullarda da tetiklenir.
 const HARD_STOP = MAX_DURATION + 1500;
 
-// Gizli sekmede / uygulama içi tarayıcıda (Instagram, vb.) sessionStorage'a
-// erişmek istisna fırlatabilir. Korumasız erişim render sırasında patlarsa
-// React tüm ağacı söker ve geriye siyah ekran kalır — i18n.jsx'teki desenin aynısı.
-function readIntroDone() {
-  try {
-    return sessionStorage.getItem('adk-intro') === 'done';
-  } catch {
-    return false;
-  }
-}
-
-function markIntroDone() {
-  try {
-    sessionStorage.setItem('adk-intro', 'done');
-  } catch {
-    // sessizce yut — intro bu oturumda bir daha görünmese de sorun değil
-  }
-}
+// sessionStorage okuma/yazma ve "intro oynuyor mu" kararı `lib/intro.js`'te:
+// Hero da aynı kararı okuyup girişini perdenin kalktığı ana bağlıyor.
 
 function useLoadProgress() {
   const [value, setValue] = useState(0);
@@ -129,11 +114,7 @@ function useLoadProgress() {
 export default function Preloader({ onDone }) {
   const lenis = useLenis();
 
-  const [skip] = useState(() =>
-    typeof window === 'undefined' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-    readIntroDone()
-  );
+  const [skip] = useState(() => !introPlays());
 
   const [visible, setVisible] = useState(!skip);
   const { value, complete } = useLoadProgress();
@@ -156,6 +137,9 @@ export default function Preloader({ onDone }) {
       // fırlatırsa (gizli sekme) setVisible'a hiç sıra gelmiyordu ve
       // perde ekranda kalıyordu.
       setVisible(false);
+      // Panjurlar şimdi kalkmaya başlıyor — Hero başlığı aralarından
+      // yükselsin (bkz. lib/intro.js).
+      markIntroOpened();
       onDone?.();
       markIntroDone();
     }, 320);

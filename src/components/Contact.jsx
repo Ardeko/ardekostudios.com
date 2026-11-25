@@ -1,6 +1,25 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useState } from 'react';
+import { ArrowRight, ArrowUpRight, Mail, MapPin } from 'lucide-react';
 import { useLang } from '../lib/i18n';
+import { SplitWords } from './Reveal';
+
+/* Instagram, lucide v1'den çıkarıldı (marka ikonları kaldırıldı). Bu,
+   Feather Icons'un (MIT) çizgi Instagram glifinin birebir aynısı — lucide
+   ile aynı 24'lük ızgara ve 2px çizgi, yani yanındaki Mail/MapPin ile tek
+   aile. Dolgu marka logosu değil, çizgi ikon: kartlarda diğerleriyle
+   aynı dili konuşsun diye. */
+function InstagramIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+const CARD_ICONS = { email: Mail, instagram: InstagramIcon, location: MapPin };
 
 const cardsContainer = {
   hidden: {},
@@ -47,9 +66,8 @@ function SubmitButton({ loading, disabled }) {
       type="submit"
       disabled={disabled || loading}
       data-cursor="soft"
-      className="mt-2 px-8 py-4 bg-indigo-600 text-white rounded-control text-[10px] font-black tracking-widest uppercase shadow-[0_0_30px_rgba(99,102,241,0.25)] hover:shadow-[0_0_50px_rgba(99,102,241,0.5)] transition-shadow duration-300 relative overflow-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
+      className="lg-primary shine group mt-2 overflow-hidden px-8 py-4 rounded-control text-[10px] font-black tracking-widest uppercase disabled:opacity-60 disabled:cursor-not-allowed"
     >
-      <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <span className="relative z-10 flex items-center justify-center gap-2">
         {loading ? (
           <>
@@ -61,10 +79,51 @@ function SubmitButton({ loading, disabled }) {
             {t.contact.form.sending}
           </>
         ) : (
-          t.contact.form.send
+          <>
+            {/* i18n metni "Gönder →" — ok metinde. Hareketli ok ikonu onun
+                yerine geçiyor (hover'da ikon kayar, buton değil). */}
+            {t.contact.form.send.replace(/\s*→\s*$/, '')}
+            <ArrowRight
+              aria-hidden="true"
+              strokeWidth={2.5}
+              className="h-3.5 w-3.5 transition-transform duration-500 ease-out-expo group-hover:translate-x-1"
+            />
+          </>
         )}
       </span>
     </button>
+  );
+}
+
+/* Başarı işareti — çizilerek beliriyor (pathLength). 🎉 emojisinin
+   yerine: hareketin bir anlamı var ("tamamlandı"), dekor değil. */
+function SuccessMark() {
+  const reduce = useReducedMotion();
+  return (
+    <div className="relative h-16 w-16">
+      <motion.span
+        aria-hidden="true"
+        className="absolute inset-0 rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(52,211,153,0.35), transparent 70%)' }}
+        initial={reduce ? false : { scale: 0.4, opacity: 0 }}
+        animate={{ scale: 1.6, opacity: 1 }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+      />
+      <svg viewBox="0 0 64 64" className="relative h-16 w-16" fill="none" aria-hidden="true">
+        <motion.circle
+          cx="32" cy="32" r="29" stroke="rgba(52,211,153,0.9)" strokeWidth="2.5"
+          initial={reduce ? false : { pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.7, ease: [0.65, 0, 0.35, 1] }}
+        />
+        <motion.path
+          d="M20 33.5 28.5 42 45 24" stroke="#34D399" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"
+          initial={reduce ? false : { pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.45, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -129,12 +188,24 @@ export default function Contact() {
 
   // text-base (16px) mobilde şart: iOS Safari 16px altındaki bir alana
   // odaklanınca sayfayı kendiliğinden yakınlaştırıyor. sm'den itibaren 14px.
+  // `.well`: içe basık cam kuyu (neumorphic glass) — "buraya bir şey
+  // yazılır" diyen tek yüzey dili; kenar çizgisi kontrastı taşıyor.
   const inputBase =
-    'w-full bg-white/[0.03] border rounded-control px-4 py-3.5 text-base sm:text-sm text-white placeholder:text-gray-500 outline-none transition-all duration-300 focus:bg-white/[0.05]';
+    'well w-full border rounded-control px-4 py-3.5 text-base sm:text-sm text-white placeholder:text-gray-500 outline-none transition-colors duration-300';
 
   return (
-    <section id="contact" className="py-32 px-6 overflow-hidden">
-      <div className="max-w-[1280px] mx-auto">
+    <section id="contact" className="relative py-32 px-6 overflow-hidden">
+      {/* Final ışığı — hero'daki Aurora'nın sayfanın sonundaki yankısı.
+          Statik radial-gradient: animasyon yok, filtre yok. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%]"
+        style={{
+          background:
+            'radial-gradient(60% 55% at 85% 100%, rgba(147,51,234,0.12), transparent 70%), radial-gradient(55% 50% at 15% 100%, rgba(79,70,229,0.14), transparent 70%)',
+        }}
+      />
+      <div className="relative max-w-[1280px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -145,9 +216,11 @@ export default function Contact() {
           <p className="text-[11px] font-black tracking-label-x text-indigo-400 uppercase mb-3">
             {t.contact.eyebrow}
           </p>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase">
-            {t.contact.title}
-          </h2>
+          <SplitWords
+            as="h2"
+            className="text-3xl sm:text-5xl font-black text-white tracking-tight uppercase"
+            text={t.contact.title}
+          />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
@@ -306,15 +379,9 @@ export default function Contact() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   className="flex flex-col items-center justify-center h-64 gap-4 text-center"
                 >
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 0.5 }}
-                    className="text-4xl"
-                  >
-                    🎉
-                  </motion.div>
+                  <SuccessMark />
                   <h3 className="text-xl font-black text-white">{t.contact.form.successTitle}</h3>
-                  <p className="text-gray-500 text-sm font-light">{t.contact.form.successBody}</p>
+                  <p className="text-gray-400 text-sm font-light">{t.contact.form.successBody}</p>
                   <button
                     onClick={() => { setSubmitted(false); setForm({ name: '', email: '', message: '' }); setErrors({}); }}
                     data-cursor="ring"
@@ -345,27 +412,45 @@ export default function Contact() {
               viewport={{ once: true }}
               className="flex flex-col gap-5"
             >
-              {t.contact.cards.map((card, i) => (
-                <motion.a
-                  key={i}
-                  href={card.href}
-                  variants={cardItem}
-                  whileHover={{ x: 6, borderColor: 'rgba(99,102,241,0.3)' }}
-                  data-cursor="ring"
-                  className="flex items-center gap-4 bg-white/[0.02] border border-white/8 rounded-card px-5 py-4 transition-colors group"
-                >
-                  <span className="text-xl w-8 text-center">{card.icon}</span>
-                  <div>
-                    <div className="text-[9px] font-black tracking-widest text-gray-400 uppercase mb-0.5">
-                      {card.label}
+              {/* Kart linke gidiyorsa <a>, gitmiyorsa (Konum) düz kutu —
+                  eskiden Konum `href="#"` idi: tıklayınca sayfanın başına
+                  zıplıyordu. Hover'da kart değil ikon ve ok hareket ediyor. */}
+              {t.contact.cards.map((card) => {
+                const Icon = CARD_ICONS[card.kind];
+                const Tag = card.href ? motion.a : motion.div;
+                const external = card.href?.startsWith('http');
+                return (
+                  <Tag
+                    key={card.kind}
+                    {...(card.href
+                      ? { href: card.href, 'data-cursor': 'ring', ...(external ? { target: '_blank', rel: 'noreferrer' } : {}) }
+                      : {})}
+                    variants={cardItem}
+                    className={`group card-glass flex items-center gap-4 rounded-card border border-white/10 px-5 py-4 transition-colors duration-500 ease-soft ${
+                      card.href ? 'hover:border-indigo-400/30' : ''
+                    }`}
+                  >
+                    <span className="lg flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-indigo-300 transition-colors duration-300 group-hover:text-white">
+                      {Icon ? <Icon className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" /> : card.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-[9px] font-black tracking-widest text-gray-400 uppercase mb-0.5">
+                        {card.label}
+                      </div>
+                      <div className="truncate text-sm text-gray-300 font-medium group-hover:text-white transition-colors">
+                        {card.value}
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-300 font-medium group-hover:text-white transition-colors">
-                      {card.value}
-                    </div>
-                  </div>
-                  <span className="ml-auto text-gray-400 group-hover:text-indigo-400 transition-colors text-xs">→</span>
-                </motion.a>
-              ))}
+                    {card.href && (
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        strokeWidth={2.2}
+                        className="ml-auto h-4 w-4 shrink-0 text-gray-400 transition-[translate,color] duration-500 ease-out-expo group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-indigo-300"
+                      />
+                    )}
+                  </Tag>
+                );
+              })}
             </motion.div>
 
             <div className="flex items-center gap-2 mt-2">

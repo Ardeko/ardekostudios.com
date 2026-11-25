@@ -6,6 +6,7 @@ import {
   useSpring,
   useReducedMotion,
 } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { MILESTONES, FILTER_OF, groupByYear } from '../lib/journey';
 import StoreIcon from './StoreIcons';
@@ -88,10 +89,10 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
       />
 
       <div
-        className={`rounded-card border transition-colors ${
+        className={`rounded-card border transition-colors duration-500 ease-soft ${
           isStudio
             ? 'border-indigo-500/25 bg-indigo-500/[0.06]'
-            : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+            : `card-glass hover:border-white/20 ${open ? 'border-white/20' : 'border-white/10'}`
         }`}
       >
         <button
@@ -135,10 +136,14 @@ function Milestone({ item, words, months, linkWords, badges, expandLabel, reduce
           </div>
 
           <span
-            className="mt-1 shrink-0 text-[9px] font-black tracking-label text-gray-400"
+            className="mt-1 inline-flex shrink-0 items-center gap-1.5 text-[9px] font-black tracking-label text-gray-400"
             aria-hidden="true"
           >
-            {open ? '—' : expandLabel}
+            <span className="hidden sm:inline">{expandLabel}</span>
+            <ChevronDown
+              strokeWidth={2.5}
+              className={`h-3.5 w-3.5 transition-transform duration-500 ease-out-expo ${open ? 'rotate-180 text-indigo-300' : ''}`}
+            />
           </span>
         </button>
 
@@ -277,7 +282,9 @@ export default function Journey() {
         </div>
       </div>
 
-      {/* kategori süzgeci */}
+      {/* kategori süzgeci — aktif çipin arkasındaki cam hap çipler arasında
+          KAYIYOR (layoutId), Navbar'daki nav-pill ile aynı dil: "seçim buraya
+          taşındı" gözle takip edilebiliyor. */}
       <div className="mb-12 flex flex-wrap gap-2">
         {FILTERS.map((key) => {
           const active = filter === key;
@@ -290,14 +297,21 @@ export default function Journey() {
               onClick={() => setFilter(key)}
               aria-pressed={active}
               data-cursor="soft"
-              className={`inline-flex min-h-[40px] items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-black tracking-label transition-colors ${
+              className={`relative inline-flex min-h-[40px] items-center gap-2 rounded-full border px-4 py-2 text-[10px] font-black tracking-label transition-colors duration-300 ${
                 active
-                  ? 'border-indigo-400/50 bg-indigo-500/15 text-white'
-                  : 'border-white/10 bg-white/[0.02] text-gray-500 hover:border-white/25 hover:text-gray-300'
+                  ? 'border-transparent text-white'
+                  : 'border-white/10 bg-white/[0.02] text-gray-400 hover:border-white/25 hover:text-gray-200'
               }`}
             >
-              {t.about.journeyFilters[key]}
-              <span className={active ? 'text-indigo-300' : 'text-gray-500'}>{count}</span>
+              {active && (
+                <motion.span
+                  layoutId={reduce ? undefined : 'journey-pill'}
+                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                  className="lg absolute inset-0 rounded-full bg-indigo-500/15"
+                />
+              )}
+              <span className="relative">{t.about.journeyFilters[key]}</span>
+              <span className={`relative tabular-nums ${active ? 'text-indigo-300' : 'text-gray-500'}`}>{count}</span>
             </button>
           );
         })}
@@ -311,7 +325,18 @@ export default function Journey() {
           className="absolute bottom-0 left-[13px] top-0 w-px origin-top bg-gradient-to-b from-indigo-400 via-indigo-500 to-purple-600 sm:left-[21px]"
         />
 
-        <div className="flex flex-col gap-10">
+        {/* Süzgeç değişince liste bir bütün olarak çapraz geçiş yapıyor
+            (eski çıkar, yeni yükselir). Tek tek FLIP yerine bütün liste:
+            yıl grupları da değiştiği için tek tek animasyon zıplıyordu;
+            bu, "liste değişti" mesajını en net veren en ucuz hareket. */}
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={filter}
+          initial={reduce ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } }}
+          exit={reduce ? undefined : { opacity: 0, y: -8, transition: { duration: 0.2, ease: 'easeIn' } }}
+          className="flex flex-col gap-10"
+        >
           {years.map((group) => (
             <div key={group.year}>
               <div className="relative mb-5 pl-12 sm:pl-16">
@@ -319,7 +344,12 @@ export default function Journey() {
                   className="absolute left-[13px] top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-indigo-400/40 bg-[#05070F] sm:left-[21px]"
                   aria-hidden="true"
                 />
-                <span className="text-2xl font-black tracking-tight text-white/90 tabular-nums sm:text-3xl">
+                {/* Kontur yıl (editoryal/kinetik tipografi): dolu değil,
+                    çizgi; kartların önüne geçmeden bölümü işaretliyor. */}
+                <span
+                  className="text-3xl font-black tracking-tight tabular-nums text-transparent sm:text-4xl"
+                  style={{ WebkitTextStroke: '1px rgba(199, 210, 254, 0.75)' }}
+                >
                   {group.year}
                 </span>
               </div>
@@ -340,7 +370,8 @@ export default function Journey() {
               </ul>
             </div>
           ))}
-        </div>
+        </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

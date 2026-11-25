@@ -32,9 +32,12 @@ export default function LanguageSwitch({ className = '', showFlag = true }) {
       onClick={handleClick}
       data-cursor="ring"
       aria-label={lang === 'tr' ? 'Switch language to English' : 'Dili Türkçe olarak değiştir'}
-      className={`group inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.02] py-1.5 pl-1.5 pr-3 transition-colors duration-300 hover:border-indigo-400/40 ${className}`}
+      className={`lg group inline-flex cursor-pointer items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-3 ${className}`}
     >
-      <span className="relative flex h-6 w-[52px] shrink-0 items-center rounded-full bg-black/40">
+      {/* Neumorphic glass (2026-11-25): ray içe basık bir kuyu (`.well`),
+          üstündeki nokta ışığı üstten alan cam bir damla. Fiziksel bir
+          anahtar olduğu için yumuşak UI'nin sitedeki doğru yeri burası. */}
+      <span className="well relative flex h-6 w-[52px] shrink-0 items-center rounded-full">
         <AnimatePresence>
           <motion.span
             key={pulseKey}
@@ -48,7 +51,7 @@ export default function LanguageSwitch({ className = '', showFlag = true }) {
         <motion.span
           layout
           transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-          className="absolute top-1/2 h-[18px] w-[18px] -translate-y-1/2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.75)]"
+          className="absolute top-1/2 h-[18px] w-[18px] -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_32%_28%,#c7d2fe_0%,#818cf8_38%,#4f46e5_100%)] shadow-[0_0_12px_rgba(99,102,241,0.8),inset_0_1px_1px_rgba(255,255,255,0.7),inset_0_-1px_2px_rgba(30,27,75,0.6)]"
           style={{ left: lang === 'tr' ? '3px' : 'calc(100% - 21px)' }}
         />
 

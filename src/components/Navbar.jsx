@@ -47,7 +47,20 @@ export default function Navbar() {
         aria-label="Ana menü"
         className="hidden lg:flex fixed top-0 left-0 h-screen w-64 bg-[#05070F]/80 backdrop-blur-2xl border-r border-white/5 flex-col justify-between items-center py-12 px-8 z-50"
       >
-        <div className="w-full flex flex-col items-center gap-4">
+        {/* Sıvı cam kenar: sağ kenarda ışığın vurduğu ince bir şerit +
+            logonun arkasından sızan indigo. Sidebar zaten blur'lu, sabit
+            ve küçük bir yüzey — sitede backdrop-filter'ın kaldığı iki
+            yerden biri (diğeri mobil header). */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-indigo-400/0 via-indigo-300/40 to-indigo-400/0"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-72"
+          style={{ background: 'radial-gradient(70% 60% at 50% 0%, rgba(99,102,241,0.16), transparent 75%)' }}
+        />
+        <div className="relative w-full flex flex-col items-center gap-4">
           <motion.a
             href="#"
             whileHover={{ scale: 1.05 }}
@@ -71,7 +84,12 @@ export default function Navbar() {
           <LanguageSwitch className="mt-2" />
         </div>
 
-        <div className="flex flex-col gap-2 w-full">
+        {/* Aktif bölüm göstergesi TEK bir cam hap ve öğeler arasında yay
+            fiziğiyle KAYIYOR (layoutId). Eskiden her öğe kendi arka planını
+            ayrı ayrı açıp kapatıyordu — gözün takip edeceği bir "şey"
+            yoktu. Aynı hareket dili: Journey süzgeç çipleri, Viewport
+            sekmeleri. */}
+        <div className="relative flex flex-col gap-2 w-full">
           {NAV_ITEMS.map((item) => {
             const isActive = activeSection === item.toLowerCase();
             return (
@@ -80,29 +98,18 @@ export default function Navbar() {
                 href={`#${item.toLowerCase()}`}
                 whileTap={{ scale: 0.97 }}
                 data-cursor="ring"
-                className="relative group flex items-center gap-3 px-4 py-3 rounded-control transition-colors duration-200"
+                aria-current={isActive ? 'location' : undefined}
+                className="relative group flex items-center gap-3 px-4 py-3 rounded-control"
               >
-                <motion.div
-                  className="absolute inset-0 rounded-control"
-                  animate={{
-                    backgroundColor: isActive ? 'rgba(99,102,241,0.08)' : 'transparent',
-                    borderColor: isActive ? 'rgba(99,102,241,0.2)' : 'transparent',
-                  }}
-                  style={{ border: '1px solid' }}
-                  transition={{ duration: 0.3 }}
-                />
-
-                <AnimatePresence>
-                  {isActive && (
-                    <motion.div
-                      layoutId="active-bar"
-                      initial={{ scaleY: 0 }}
-                      animate={{ scaleY: 1 }}
-                      exit={{ scaleY: 0 }}
-                      className="absolute left-0 top-2 bottom-2 w-[2px] bg-indigo-500 rounded-full"
-                    />
-                  )}
-                </AnimatePresence>
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-pill"
+                    transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+                    className="lg absolute inset-0 rounded-control"
+                  >
+                    <span className="absolute left-0 top-2.5 bottom-2.5 w-[2px] rounded-full bg-indigo-400 shadow-[0_0_10px_rgba(129,140,248,0.9)]" />
+                  </motion.span>
+                )}
 
                 <span
                   className={`relative z-10 text-[11px] font-black tracking-label-wide transition-colors duration-300 ${
@@ -112,19 +119,18 @@ export default function Navbar() {
                   {item}
                 </span>
 
-                {isActive && (
-                  <motion.div
-                    layoutId="active-dot"
-                    className="ml-auto w-1 h-1 rounded-full bg-indigo-400"
-                  />
-                )}
+                <span
+                  className={`relative z-10 ml-auto h-1 w-1 rounded-full bg-indigo-400 transition-opacity duration-300 ${
+                    isActive ? 'opacity-100 shadow-[0_0_8px_rgba(129,140,248,0.9)]' : 'opacity-0'
+                  }`}
+                />
               </motion.a>
             );
           })}
         </div>
 
         {/* BOTTOM AREA (FOUNDER & SOCIALS) */}
-        <div className="w-full flex flex-col items-center gap-4">
+        <div className="relative w-full flex flex-col items-center gap-4">
           
           {/* Kişisel Web Sitesi Linki (Modern & Minimal Yerleşim) */}
           <motion.a
@@ -166,7 +172,12 @@ export default function Navbar() {
       </motion.nav>
 
       {/* MOBILE HEADER */}
-      <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-[#05070F]/80 backdrop-blur-xl border-b border-white/5 flex justify-between items-center px-5 z-50">
+      <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-[#05070F]/75 backdrop-blur-xl flex justify-between items-center px-5 z-50 shadow-[inset_0_-1px_0_rgba(255,255,255,0.06)]">
+        {/* Alt kenarda ışık şeridi — sidebar'ın sağ kenarındakinin yatay hâli. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-indigo-400/0 via-indigo-300/35 to-indigo-400/0"
+        />
         <a href="#">
           <img
             src="/ardeko.png"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionTemplate, useSpring, useTransform } from 'framer-motion';
 
 /**
  * Spotlight — imleci takip eden yumuşak ışık lekesi.
@@ -41,9 +41,20 @@ import { motion, useSpring, useTransform } from 'framer-motion';
 // 300 / mass 0.5) — o bir atmosfer katmanı, bu ise imlece yapışık olmalı.
 const SPRING = { stiffness: 400, damping: 30, mass: 0.28 };
 
+/* Kenar halkası (2026-11-25): aynı ışık kaynağı kartın kenarına da
+   vuruyor — 21st.dev'deki "Spotlight Card" deseni. Ayrı bir imleç
+   tepkisi DEĞİL (tilt'i kaldırırken saydığımız "tek imlece üç tepki"
+   sorununa dönmüyoruz): aynı yay, aynı konum, iki yüzey. Halka çocuksuz
+   tek bir div; her mousemove'da sadece onun background-position'ı
+   yazılıyor — kartın alt ağacında stil yeniden hesabı yok (kart
+   üstüne CSS değişkeni yazsaydık sahnelerin bütün düğümleri yeniden
+   hesaplanırdı). */
 export default function Spotlight({
   size = 300,
   color = 'rgba(99, 102, 241, 0.55)',
+  rim = true,
+  rimColor,
+  rimSize = 420,
   className = '',
 }) {
   const ref = useRef(null);
@@ -63,6 +74,9 @@ export default function Spotlight({
   const y = useSpring(0, SPRING);
   const left = useTransform(x, (v) => `${v - size / 2}px`);
   const top = useTransform(y, (v) => `${v - size / 2}px`);
+  const rimX = useTransform(x, (v) => v - rimSize / 2);
+  const rimY = useTransform(y, (v) => v - rimSize / 2);
+  const rimPos = useMotionTemplate`${rimX}px ${rimY}px`;
 
   useEffect(() => {
     if (!enabled) return;
@@ -135,19 +149,35 @@ export default function Spotlight({
   if (!enabled) return null;
 
   return (
-    <motion.div
-      ref={ref}
-      aria-hidden="true"
-      className={`pointer-events-none absolute rounded-full transition-opacity duration-500 ${
-        visible ? 'opacity-100' : 'opacity-0'
-      } ${className}`}
-      style={{
-        width: size,
-        height: size,
-        left,
-        top,
-        background: `radial-gradient(circle at center, ${color} 0%, transparent 62%)`,
-      }}
-    />
+    <>
+      <motion.div
+        ref={ref}
+        aria-hidden="true"
+        className={`pointer-events-none absolute rounded-full transition-opacity duration-500 ${
+          visible ? 'opacity-100' : 'opacity-0'
+        } ${className}`}
+        style={{
+          width: size,
+          height: size,
+          left,
+          top,
+          background: `radial-gradient(circle at center, ${color} 0%, transparent 62%)`,
+        }}
+      />
+      {rim && (
+        <motion.div
+          aria-hidden="true"
+          className={`rim-mask pointer-events-none absolute inset-0 z-20 rounded-[inherit] transition-opacity duration-500 ${
+            visible ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{
+            backgroundImage: `radial-gradient(circle at center, ${rimColor || color.replace(/[\d.]+\)$/, '0.9)')} 0%, transparent 62%)`,
+            backgroundSize: `${rimSize}px ${rimSize}px`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: rimPos,
+          }}
+        />
+      )}
+    </>
   );
 }

@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import RevoScene from './RevoScene';
 import { SplitWords } from './Reveal';
-import HoverPreviewList from './HoverPreviewList';
 import Spotlight from './Spotlight';
 import Folder from './Folder';
 import StoreIcon from './StoreIcons';
+import ScrambleText from './ScrambleText';
 import { useLang } from '../lib/i18n';
 
 // Gizli proje klasöründen çıkan üç "karartılmış belge". Metin YOK — ne
@@ -92,9 +92,7 @@ const containerVariants = {
    hepsi tek seferlik/küçük). rootMargin payı sayesinde kart ekrana
    girmeden önce sahne çoktan oynuyor oluyor.
 ------------------------------------------------------------------- */
-const IDLE_CSS = `
-.gc-idle *, .gc-idle *::before, .gc-idle *::after { animation-play-state: paused !important }
-`;
+// `.gc-idle` kuralı artık index.css'te (About'un İstanbul döşemesi de kullanıyor).
 
 function useSceneIdle() {
   const ref = useRef(null);
@@ -1398,9 +1396,16 @@ function TorpidodanScene() {
 function StatusBadge({ status, label }) {
   const { t } = useLang();
   if (status === 'live') {
+    // i18n metni "● Yayında" — nokta metnin içinde. Canlı halka onun
+    // yerine geçiyor, metindeki noktayı göstermiyoruz (iki nokta olmasın).
+    const text = t.games.statusLive.replace(/^●\s*/, '');
     return (
-      <span className="text-[10px] font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full uppercase">
-        {t.games.statusLive}
+      <span className="inline-flex items-center gap-2 text-[10px] font-black tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full uppercase">
+        <span className="relative flex h-1.5 w-1.5" aria-hidden="true">
+          <span className="adk-ping absolute inset-0 rounded-full bg-emerald-400" />
+          <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        </span>
+        {text}
       </span>
     );
   }
@@ -1553,18 +1558,42 @@ function LoreScene() {
   );
 }
 
+/* ------------------------------------------------------------------
+   Hover: kart değil, YÜZEYİ kalkar (2026-11-25).
+
+   Eskiden `hover:-translate-y-1.5` tıklanan elemanın kendisindeydi:
+   imleç kartın alt kenarına yakınken kart 6px yukarı kayınca imleç
+   artık kartın dışında kalıyor, hover düşüyor, kart iniyor, imleç yine
+   üstünde... alt kenarda titreme. Artık dıştaki `group` kutusu (isabet
+   alanı) yerinde duruyor, içindeki `.gc-surface` kalkıyor. Görüntü
+   aynı, titreme yok.
+
+   Sahne de hover'da çok yavaş %3 yakınlaşıyor — çerçeve dönmüyor (tilt
+   kalkmıştı, bkz. aşağıdaki not), sadece bakış biraz yaklaşıyor.
+------------------------------------------------------------------- */
+const SURFACE =
+  'gc-surface relative flex h-full min-h-[460px] flex-col overflow-hidden rounded-card transition-[translate,border-color,box-shadow] duration-500 ease-soft group-hover:-translate-y-1.5';
+
 function GameCard({ game }) {
   const [sceneRef, sceneIdle] = useSceneIdle();
+  const [replay, setReplay] = useState(0);
   const { t } = useLang();
   const Scene = game.scene;
 
   if (game.status === 'secret') {
     return (
-      <motion.div ref={sceneRef} variants={cardVariants} className={sceneIdle ? 'gc-idle' : undefined}>
-        <div className="group relative flex min-h-[460px] flex-col overflow-hidden rounded-card border border-dashed border-white/8 bg-white/[0.01] transition-[transform,border-color,box-shadow] duration-500 ease-soft hover:-translate-y-1.5 hover:border-white/15">
+      <motion.div ref={sceneRef} variants={cardVariants} className={`h-full ${sceneIdle ? 'gc-idle' : ''}`}>
+        <div className="group relative h-full" onPointerEnter={() => setReplay((n) => n + 1)}>
+        <div className={`${SURFACE} border border-dashed border-white/10 bg-white/[0.012] group-hover:border-white/20`}>
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
           </div>
+          {/* Gizli dosya hissi: sabit tarama çizgileri (animasyonsuz). */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 opacity-[0.35]"
+            style={{ background: 'repeating-linear-gradient(to bottom, transparent 0 3px, rgba(129,140,248,0.05) 3px 4px)' }}
+          />
           <Spotlight size={380} color="rgba(129, 140, 248, 0.40)" />
           <div className="relative z-10 flex flex-col flex-1 p-8 items-center justify-center text-center">
             {/* Yükseklik bilerek sabit ve klasör dibe hizalı: açılınca
@@ -1588,9 +1617,15 @@ function GameCard({ game }) {
                 items={REDACTED_SHEETS}
               />
             </div>
-            <span className="text-[9px] font-black tracking-label-x text-indigo-400/60 uppercase mb-2">
-              {t.games.secret.codename}
-            </span>
+            {/* Kod adı kartın üstüne gelince yeniden "çözülüyor" — gizli
+                bir dosyanın kilidi açılıyor. lang="en": İngilizce ifade,
+                CSS uppercase Türkçe kurala düşmesin. */}
+            <ScrambleText
+              lang="en"
+              text={t.games.secret.codename}
+              replay={replay}
+              className="text-[9px] font-black tracking-label-x text-indigo-300/80 uppercase mb-2"
+            />
             <h3 className="text-xl font-black text-white mb-4 tracking-wider uppercase">{t.games.secret.title}</h3>
             <p className="text-gray-500 max-w-xs text-xs font-light leading-relaxed">
               {t.games.secret.desc}
@@ -1607,6 +1642,7 @@ function GameCard({ game }) {
             </span>
           </div>
         </div>
+        </div>
       </motion.div>
     );
   }
@@ -1618,24 +1654,42 @@ function GameCard({ game }) {
     ? words.title || game.title
     : game.title;
   return (
-    <motion.div ref={sceneRef} variants={cardVariants} className={sceneIdle ? 'gc-idle' : undefined}>
+    <motion.div
+      ref={sceneRef}
+      id={`game-${game.id}`}
+      variants={cardVariants}
+      className={`h-full scroll-mt-24 ${sceneIdle ? 'gc-idle' : ''}`}
+    >
       <div
         data-cursor="soft"
         data-cursor-color={game.id === 'revo' ? 'teal' : undefined}
-        className="group relative flex min-h-[460px] flex-col overflow-hidden rounded-card border border-white/10 bg-white/[0.03] transition-[transform,border-color,box-shadow] duration-500 ease-soft hover:-translate-y-1.5 hover:border-white/20 hover:shadow-[0_24px_60px_-24px_rgba(99,102,241,0.45)]"
+        className="group relative h-full"
+      >
+      <div
+        className={`${SURFACE} card-glass border border-white/10 group-hover:border-white/20 group-hover:shadow-[0_28px_70px_-28px_rgba(99,102,241,0.5)]`}
       >
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5" />
         </div>
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Sahnelerin zemini opak, üstelik DOM'da Spotlight'tan SONRA
             geliyor — yani ışık anahtar görselin/çiziminin üstüne binmez,
             sadece altındaki camsı gövdeyi aydınlatır. Bilerek böyle:
-            sahne kendi ışığını taşıyor, ikinci bir kaynak istemiyoruz. */}
+            sahne kendi ışığını taşıyor, ikinci bir kaynak istemiyoruz.
+            Kenar halkası (Spotlight'ın `rim`'i) aynı ışığın kenara vurması;
+            rengi projenin kendi vurgusu. */}
         <Spotlight color={SPOTLIGHT_COLORS[game.id]} />
 
-        {Scene && <Scene />}
+        {/* Sahne kabı: kırpıyor, içi hover'da yavaşça yakınlaşıyor.
+            Transform genişliği değiştirmediği için Torpidodan'ın
+            @container kuralları ve LORE'un cover hizalaması etkilenmez. */}
+        {Scene && (
+          <div className="relative overflow-hidden rounded-card">
+            <div className="origin-center transition-transform duration-[1200ms] ease-out-expo group-hover:scale-[1.03]">
+              <Scene />
+            </div>
+          </div>
+        )}
 
         <div className="relative z-10 flex flex-col flex-1 p-8">
           <div className="flex items-center justify-between mb-5">
@@ -1671,7 +1725,7 @@ function GameCard({ game }) {
                 target="_blank"
                 rel="noreferrer"
                 cursorColor="teal"
-                className="w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-control text-[10px] font-black tracking-widest uppercase text-center shadow-[0_0_25px_rgba(62,207,192,0.25)] block"
+                className="shine relative overflow-hidden w-full px-6 py-3.5 bg-[#3ECFC0] text-[#05070F] rounded-control text-[10px] font-black tracking-widest uppercase text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_0_25px_rgba(62,207,192,0.25)] block"
               >
                 {words.linkPrimary} →
               </ActionLink>
@@ -1725,8 +1779,8 @@ function GameCard({ game }) {
                     rel="noreferrer"
                     className={`flex-1 inline-flex items-center justify-center gap-2 whitespace-nowrap px-5 py-3.5 rounded-control text-[10px] font-black tracking-widest uppercase ${
                       i === 0
-                        ? 'bg-white text-[#05070F]'
-                        : 'border border-white/15 hover:border-white/40 text-white transition-colors'
+                        ? 'shine relative overflow-hidden bg-white text-[#05070F] shadow-[inset_0_-2px_0_rgba(5,7,15,0.12),0_8px_24px_-10px_rgba(255,255,255,0.35)]'
+                        : 'lg text-white transition-colors hover:text-white'
                     }`}
                   >
                     <StoreIcon kind={s.key} />
@@ -1754,6 +1808,7 @@ function GameCard({ game }) {
           )}
         </div>
       </div>
+      </div>
     </motion.div>
   );
 }
@@ -1779,10 +1834,9 @@ function ActionLink({ href, className, children, target, rel, cursorColor }) {
 }
 
 export default function Games() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   // Vitrin sırası kullanıcının kendi seçimi (2026-09-27): en yeni çıkan
-  // dördü önde, sonra eski yayındakiler. Aşağıdaki HoverPreviewList de
-  // aynı sırada — birini değiştirirsen ötekini de değiştir.
+  // dördü önde, sonra eski yayındakiler.
   const games = [
     {
       id: 'torpidodan',
@@ -1887,7 +1941,6 @@ export default function Games() {
   ];
   return (
     <section id="games" className="py-32 px-6 max-w-[1280px] mx-auto overflow-hidden">
-      <style>{IDLE_CSS}</style>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -1915,23 +1968,11 @@ export default function Games() {
           <GameCard key={i} game={game} />
         ))}
       </motion.div>
-      <HoverPreviewList
-        className="mt-32"
-        items={[
-          { id: 'torpidodan', title: 'Torpidodan',     lang: 'tr', meta: t.games.previewMeta.torpidodan, image: '/games/torpidodan.webp', href: '#games' },
-          // Başlık aktif dilden geliyor (TR'de "Rey Efsanesi"), lang da onu
-          // izlemeli — yoksa TR başlık en kuralıyla "EFSANESI" diye büyür.
-          { id: 'lore',      title: t.games.items.lore.title, lang, meta: t.games.previewMeta.lore, image: '/games/lore.webp', href: '#games' },
-          { id: 'rushville', title: 'Rushville',       meta: t.games.previewMeta.rushville, image: '/games/rushville.jpg', href: '#games' },
-          { id: 'skyline',   title: 'Skyline Swinger', meta: t.games.previewMeta.skyline,   image: '/games/skyline.jpg',   href: '#games' },
-          { id: 'switch',    title: 'Switch Master',   meta: t.games.previewMeta.switch,    image: '/games/switch.jpg',    href: '#games' },
-          { id: 'revo',      title: 'REVO',            meta: t.games.previewMeta.revo,      image: '/games/revo.jpg',      href: '#games' },
-          { id: 'apex',      title: 'Apex Shift',      meta: t.games.previewMeta.apex,      image: '/games/apex.jpg',      href: '#games' },
-          { id: 'decoy',     title: 'Decoy',           meta: t.games.previewMeta.decoy,     image: '/games/decoy.svg',     href: '#games' },
-          { id: 'forza',     title: 'Forza Orbit',     meta: t.games.previewMeta.forza,     image: '/games/forza.jpg',     href: '#games' },
-          { id: 'kafa',      title: 'Kafa Kafaya',     lang: 'tr', meta: t.games.previewMeta.kafa,      image: '/games/kafa.jpg',      href: '#games' },
-        ]}
-      />
+      {/* HoverPreviewList (dev tipografili oyun listesi) burada duruyordu —
+          2026-11-25'te KALDIRILDI. Aynı 10 oyunu kartların hemen altında
+          ikinci kez gösteriyordu: yeni bilgi yoktu, sayfaya ~1700px tekrar
+          ekliyordu. Kullanıcı da "kendini tekrar eden bir yapı" dedi.
+          Geri getirme; oyunlar sayfada BİR kez, kartlarda. */}
     </section>
   );
 }
